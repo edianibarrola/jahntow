@@ -118,14 +118,14 @@ export const Home = () => {
           </div>
           <div className="mb-5">
             <button onClick={handleLevelUp}>Level Up</button>
-            <ResetPlayerStats />
-            <button onClick={handleNavigate}>to dashboard</button>
           </div>
         </Tab>
 
         <Tab eventKey="inventory" title="Inventory Upgrades">
-          <EquipmentStore />
-          <InventoryUpgradeComponent />
+          <div className="mb-5 text-center">
+            <EquipmentStore />
+            <InventoryUpgradeComponent />
+          </div>
         </Tab>
       </Tabs>
       <button onClick={handleNavigate}>to dashboard</button>
