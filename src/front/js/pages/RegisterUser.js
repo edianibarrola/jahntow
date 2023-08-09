@@ -8,12 +8,6 @@ export function RegisterUser() {
   const navigate = useNavigate();
   const { store, actions } = React.useContext(Context);
 
-  React.useEffect(() => {
-    if (store.authToken) {
-      navigate("/dashboard");
-    }
-  }, [store.authToken]);
-
   return (
     <div className="container">
       <h3>Register User</h3>
@@ -43,7 +37,11 @@ export function RegisterUser() {
       </div>
       <button
         className="btn btn-primary mt-3"
-        onClick={() => actions.registerUser(email, password)}
+        onClick={() =>
+          actions.registerUser(email, password, () => {
+            navigate("/login");
+          })
+        }
       >
         Register
       </button>

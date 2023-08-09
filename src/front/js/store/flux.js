@@ -876,7 +876,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           );
       },
 
-      registerUser: (email, password) => {
+      registerUser: (email, password, onSuccess) => {
         fetch(process.env.BACKEND_URL + "/api/register", {
           method: "POST",
           mode: "cors",
@@ -886,17 +886,26 @@ const getState = ({ getStore, getActions, setStore }) => {
           },
         })
           .then((resp) => {
-            if (resp.status !== 204) {
+            if (resp.status !== 201) {
+              // Notice the status change to 201
               throw new Error("register-error");
             }
-            // After registering, create player data in the database.
+            return resp.json();
+          })
+          .then((data) => {
+            const token = data.token; // Extract the token from the response body
+            if (!token) {
+              throw new Error("Token not provided");
+            }
+
+            // Use the token in any subsequent fetch you need.
+            // For example, if you need player data right after registration:
             return fetch(process.env.BACKEND_URL + "/api/player", {
-              method: "POST",
+              method: "GET",
               mode: "cors",
-              body: JSON.stringify(defaultPlayer),
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${data.token}`,
+                Authorization: `Bearer ${token}`,
               },
             });
           })
@@ -908,6 +917,9 @@ const getState = ({ getStore, getActions, setStore }) => {
           })
           .then((playerData) => {
             setStore({ player: playerData });
+
+            // If everything is successful and the callback exists, call it.
+            if (onSuccess) onSuccess();
           })
           .catch((error) => {
             setStore({ authError: error, authToken: null });

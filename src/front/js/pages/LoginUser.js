@@ -48,6 +48,13 @@ export function LoginUser() {
       >
         Login
       </button>
+
+      <button
+        className="btn btn-primary mt-3"
+        onClick={() => navigate("/register")}
+      >
+        Register Here
+      </button>
     </div>
   );
 }

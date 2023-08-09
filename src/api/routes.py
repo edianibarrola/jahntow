@@ -39,11 +39,15 @@ def register():
     
     db.session.commit()
 
+    access_token = create_access_token(identity=user.id, additional_claims={"email":user.email})
+
     response_body = {
-        "message": "User and default player created"
+        "message": "User and default player created",
+        "token": access_token
     }
 
-    return jsonify(response_body), 204
+    return jsonify(response_body), 201
+
 
 
 @api.route('/login', methods=['POST'])

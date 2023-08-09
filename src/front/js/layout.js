@@ -20,7 +20,13 @@ const RouteManager = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!store.authToken && window.location.pathname !== "/login") {
+    const currentPath = window.location.pathname;
+
+    if (
+      !store.authToken &&
+      currentPath !== "/login" &&
+      currentPath !== "/register"
+    ) {
       navigate("/login");
     }
   }, [store.authToken, navigate]);
