@@ -1,28 +1,62 @@
-import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import React, { useContext, useEffect } from "react";
+import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
 import ScrollToTop from "./component/scrollToTop";
 import { BackendURL } from "./component/backendURL";
+import { Context } from "./store/appContext";
 
 import { Home } from "./pages/home";
-
 import { Single } from "./pages/single";
 import injectContext from "./store/appContext";
 
 import { Navbar } from "./component/navbar";
 import { Footer } from "./component/footer";
-
 import { LoginUser } from "./pages/LoginUser";
 import { RegisterUser } from "./pages/RegisterUser";
 import { SecurePage } from "./component/SecurePage";
 import { Dashboard } from "./pages/Dashboard";
 
-//create your first component
+const RouteManager = () => {
+  const { store } = useContext(Context);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!store.authToken && window.location.pathname !== "/login") {
+      navigate("/login");
+    }
+  }, [store.authToken, navigate]);
+
+  return (
+    <>
+      <Routes>
+        <Route
+          element={
+            <SecurePage>
+              <Home />
+            </SecurePage>
+          }
+          path="/"
+        />
+        <Route element={<LoginUser />} path="/login" />
+        <Route element={<RegisterUser />} path="/register" />
+        <Route
+          element={
+            <SecurePage>
+              <Dashboard />
+            </SecurePage>
+          }
+          path="/dashboard"
+        />
+        <Route element={<Single />} path="/single/:theid" />
+        <Route element={<h1>Not found!</h1>} />
+      </Routes>
+    </>
+  );
+};
+
 const Layout = () => {
-  //the basename is used when your project is published in a subdirectory and not in the root of the domain
-  // you can set the basename on the .env file located at the root of this project, E.g: BASENAME=/react-hello-webapp/
   const basename = process.env.BASENAME || "";
 
-  if (!process.env.BACKEND_URL || process.env.BACKEND_URL == "")
+  if (!process.env.BACKEND_URL || process.env.BACKEND_URL === "")
     return <BackendURL />;
 
   return (
@@ -30,23 +64,7 @@ const Layout = () => {
       <BrowserRouter basename={basename}>
         <ScrollToTop>
           <Navbar />
-          <Routes>
-            <Route element={<Home />} path="/" />
-            <Route element={<LoginUser />} path="/login" />
-
-            <Route element={<RegisterUser />} path="/register" />
-            <Route
-              path="/dashboard"
-              element={
-                <SecurePage>
-                  <Dashboard />
-                </SecurePage>
-              }
-            />
-
-            <Route element={<Single />} path="/single/:theid" />
-            <Route element={<h1>Not found!</h1>} />
-          </Routes>
+          <RouteManager />
           <Footer />
         </ScrollToTop>
       </BrowserRouter>

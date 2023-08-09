@@ -839,7 +839,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
   return {
     store: {
-      url: "https://3001-4geeksacade-reactflaskh-o3017cmwwlx.ws-us102.gitpod.io/",
+      url: process.env.BACKEND_URL,
       login_token: "",
       authToken: null,
       authError: null,
@@ -1030,7 +1030,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           };
           setStore({ ...store, player: updatedPlayer });
           updatePlayerInLocalStorage(updatedPlayer);
-          // getActions().updatePlayerInDatabase(updatedPlayer);
+          getActions().updatePlayerInDatabase(updatedPlayer);
         }
       },
       startEnergyRegen: () => {
