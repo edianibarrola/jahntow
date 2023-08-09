@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User
+from api.models import db, User, Player
 from api.utils import generate_sitemap, APIException
 
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
@@ -27,16 +27,25 @@ def handle_hello():
 @api.route('/register', methods=['POST'])
 def register():
     content = request.get_json(silent=True)
-    user = User(email = content["email"], password = ph.hash(content["password"]), is_active = True)
+    user = User(email=content["email"], password=ph.hash(content["password"]), is_active=True)
 
+    # Add the new user to the session
     db.session.add(user)
+    db.session.flush()  # This flushes the changes and generates the user's ID
+
+    # Create a default player for the new user
+    player = Player(name=content.get("username", "DefaultName"), user_id=user.id)
+    db.session.add(player)
+    
     db.session.commit()
 
     response_body = {
-        "message": "User Created"
+        "message": "User and default player created"
     }
 
     return jsonify(response_body), 204
+
+
 @api.route('/login', methods=['POST'])
 def login():
 
@@ -67,3 +76,16 @@ def userinfo():
     }
 
     return jsonify(response_body), 200
+
+@api.route('/player', methods=['GET'])
+@jwt_required()
+def get_player_info():
+    current_user_id = get_jwt_identity()
+
+    player = Player.query.filter(Player.user_id == current_user_id).first()
+
+    if not player:
+        return jsonify({"message": "Player not found"}), 404
+
+    return jsonify(player.serialize()), 200
+

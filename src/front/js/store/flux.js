@@ -855,6 +855,27 @@ const getState = ({ getStore, getActions, setStore }) => {
       equipmentItems: equipmentItems,
     },
     actions: {
+      updatePlayerInDatabase: (player) => {
+        const store = getStore();
+        return fetch(process.env.BACKEND_URL + "/api/player", {
+          method: "PUT",
+          mode: "cors",
+          body: JSON.stringify(player),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${store.authToken}`,
+          },
+        })
+          .then((response) => {
+            if (response.status !== 200) {
+              throw new Error("Failed to update player in database");
+            }
+          })
+          .catch((error) =>
+            console.error("Error updating player in database:", error)
+          );
+      },
+
       registerUser: (email, password) => {
         fetch(process.env.BACKEND_URL + "/api/register", {
           method: "POST",
@@ -868,10 +889,29 @@ const getState = ({ getStore, getActions, setStore }) => {
             if (resp.status !== 204) {
               throw new Error("register-error");
             }
-
-            getActions().loginUser(email, password);
+            // After registering, create player data in the database.
+            return fetch(process.env.BACKEND_URL + "/api/player", {
+              method: "POST",
+              mode: "cors",
+              body: JSON.stringify(defaultPlayer),
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${data.token}`,
+              },
+            });
           })
-          .catch((error) => setStore({ authError: error, authToken: null }));
+          .then((resp) => {
+            if (resp.status !== 200) {
+              throw new Error("player-data-error");
+            }
+            return resp.json();
+          })
+          .then((playerData) => {
+            setStore({ player: playerData });
+          })
+          .catch((error) => {
+            setStore({ authError: error, authToken: null });
+          });
       },
 
       logout: () => setStore({ authToken: { ...null } }),
@@ -887,13 +927,37 @@ const getState = ({ getStore, getActions, setStore }) => {
         })
           .then((resp) => {
             if (resp.status !== 200) {
-              throw new Error("authentication-error");
+              throw new Error("Login failed");
             }
-
             return resp.json();
           })
-          .then((data) => setStore({ authToken: data.token, authError: null }))
-          .catch((error) => setStore({ authToken: null, authError: error }));
+          .then((data) => {
+            setStore({ authToken: data.token, authError: null });
+
+            // Fetch player data
+            return fetch(process.env.BACKEND_URL + "/api/player", {
+              method: "GET",
+              mode: "cors",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${data.token}`,
+              },
+            });
+          })
+          .then((resp) => {
+            if (resp.status !== 200) {
+              throw new Error("Failed to fetch player data");
+            }
+            return resp.json();
+          })
+          .then((playerData) => {
+            setStore({ player: playerData });
+            getActions().updatePlayerInDatabase(playerData);
+          })
+          .catch((error) => {
+            console.error("Error during login process:", error);
+            setStore({ authToken: null, authError: error.message });
+          });
       },
 
       updateInventory: () => {
@@ -942,6 +1006,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         const updatedPlayer = { ...player, inventory: updatedInventory };
         setStore({ ...store, player: updatedPlayer });
         updatePlayerInLocalStorage(updatedPlayer);
+        // getActions().updatePlayerInDatabase(updatedPlayer);
       },
 
       resetPlayer: () => {
@@ -951,6 +1016,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           notifications: [],
         });
         updatePlayerInLocalStorage(defaultPlayer);
+        // getActions().updatePlayerInDatabase(defaultPlayer);
       },
 
       updatePlayerLevel: () => {
@@ -964,6 +1030,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           };
           setStore({ ...store, player: updatedPlayer });
           updatePlayerInLocalStorage(updatedPlayer);
+          // getActions().updatePlayerInDatabase(updatedPlayer);
         }
       },
       startEnergyRegen: () => {
@@ -1044,6 +1111,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       updatePlayer: (player) => {
         setStore({ player });
         updatePlayerInLocalStorage(player);
+        getActions().updatePlayerInDatabase(player);
       },
       // Use getActions to call a function within a fuction
       exampleFunction: () => {
