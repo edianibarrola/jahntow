@@ -839,6 +839,10 @@ const getState = ({ getStore, getActions, setStore }) => {
 
   return {
     store: {
+      url: "https://3001-4geeksacade-reactflaskh-o3017cmwwlx.ws-us102.gitpod.io/",
+      login_token: "",
+      authToken: null,
+      authError: null,
       defaultPlayer: defaultPlayer,
 
       player: player,
@@ -851,6 +855,47 @@ const getState = ({ getStore, getActions, setStore }) => {
       equipmentItems: equipmentItems,
     },
     actions: {
+      registerUser: (email, password) => {
+        fetch(process.env.BACKEND_URL + "/api/register", {
+          method: "POST",
+          mode: "cors",
+          body: JSON.stringify({ email, password }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((resp) => {
+            if (resp.status !== 204) {
+              throw new Error("register-error");
+            }
+
+            getActions().loginUser(email, password);
+          })
+          .catch((error) => setStore({ authError: error, authToken: null }));
+      },
+
+      logout: () => setStore({ authToken: { ...null } }),
+
+      loginUser: (email, password) => {
+        fetch(process.env.BACKEND_URL + "/api/login", {
+          method: "POST",
+          mode: "cors",
+          body: JSON.stringify({ email, password }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((resp) => {
+            if (resp.status !== 200) {
+              throw new Error("authentication-error");
+            }
+
+            return resp.json();
+          })
+          .then((data) => setStore({ authToken: data.token, authError: null }))
+          .catch((error) => setStore({ authToken: null, authError: error }));
+      },
+
       updateInventory: () => {
         const store = getStore();
         const { player, propertiesData, itemsData } = store;
