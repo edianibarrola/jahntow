@@ -9,7 +9,12 @@ const MissionsComponent = () => {
   const [isMissionRunning, setMissionRunning] = useState(false);
 
   useEffect(() => {
-    actions.startEnergyRegen();
+    const energyRegenInterval = actions.startEnergyRegen();
+
+    // Return a cleanup function that runs when the component is unmounted
+    return () => {
+      clearInterval(energyRegenInterval);
+    };
   }, []); // Empty dependency array means this effect will only run once, when the component mounts
 
   const missionsPerSet = 4;

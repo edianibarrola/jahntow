@@ -938,7 +938,17 @@ const getState = ({ getStore, getActions, setStore }) => {
         localStorage.setItem("player", JSON.stringify(defaultPlayer));
 
         // Reset the application state's authToken
-        setStore({ player: defaultPlayer, authToken: null });
+        setStore({
+          player: defaultPlayer,
+          itemsData: items_data,
+          missionsData: { ...missionsData },
+          propertiesData: propertiesData,
+          notifications: [],
+          transactions: [],
+          healthRecoveryItems,
+          equipmentItems: equipmentItems,
+          authToken: null,
+        });
       },
       loginUser: (email, password) => {
         fetch(process.env.BACKEND_URL + "/api/login", {
@@ -1069,6 +1079,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             player: updatedPlayer,
           });
         }, 10 * 1000); // 20 seconds
+        return interval;
       },
       adjustPrices: () => {
         // Get the current store
