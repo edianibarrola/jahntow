@@ -1006,7 +1006,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         const updatedPlayer = { ...player, inventory: updatedInventory };
         setStore({ ...store, player: updatedPlayer });
         updatePlayerInLocalStorage(updatedPlayer);
-        // getActions().updatePlayerInDatabase(updatedPlayer);
+        getActions().updatePlayerInDatabase(updatedPlayer);
       },
 
       resetPlayer: () => {
@@ -1016,7 +1016,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           notifications: [],
         });
         updatePlayerInLocalStorage(defaultPlayer);
-        // getActions().updatePlayerInDatabase(defaultPlayer);
+        getActions().updatePlayerInDatabase(defaultPlayer);
       },
 
       updatePlayerLevel: () => {

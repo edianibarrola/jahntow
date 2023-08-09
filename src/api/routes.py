@@ -89,3 +89,25 @@ def get_player_info():
 
     return jsonify(player.serialize()), 200
 
+@api.route('/player', methods=['PUT'])
+@jwt_required()
+def update_player_info():
+    current_user_id = get_jwt_identity()
+
+    player = Player.query.filter(Player.user_id == current_user_id).first()
+
+    if not player:
+        return jsonify({"message": "Player not found"}), 404
+
+    data = request.get_json()
+    
+    # Update player's fields. Assuming `data` has keys corresponding to Player's fields.
+    for key, value in data.items():
+        if hasattr(player, key):
+            setattr(player, key, value)
+
+    db.session.commit()
+
+    return jsonify(player.serialize()), 200
+
+
