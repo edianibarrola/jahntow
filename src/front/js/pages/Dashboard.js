@@ -11,7 +11,7 @@ export function Dashboard() {
         className="btn btn-outline-primary"
         onClick={() => actions.logout()}
       >
-        Exit
+        logout
       </button>
     </div>
   );

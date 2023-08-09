@@ -20,6 +20,7 @@ import EquipmentStore from "../component/equipmentStore";
 
 import rigoImage from "../../img/rigo-baby.jpg";
 import "../../styles/home.css";
+import { Navigate, useNavigate } from "react-router-dom";
 
 // HOW TO REDEPLOY TO GH <PAGES>
 // change env to = /textgame
@@ -35,6 +36,7 @@ import "../../styles/home.css";
 export const Home = () => {
   const { store, actions } = useContext(Context);
   const { player, itemsData } = store;
+  const navigate = useNavigate();
 
   useEffect(() => {
     function runAdjustPrices() {
@@ -54,6 +56,11 @@ export const Home = () => {
       clearTimeout(initialTimeoutId);
     };
   }, [actions]);
+
+  const handleNavigate = () => {
+    // 2. Create an event handler function
+    navigate("/dashboard"); // 3. Inside this function, call the navigate function
+  };
 
   const handleLevelUp = () => {
     const updatedPlayer = {
@@ -112,6 +119,7 @@ export const Home = () => {
           <div className="mb-5">
             <button onClick={handleLevelUp}>Level Up</button>
             <ResetPlayerStats />
+            <button onClick={handleNavigate}>to dashboard</button>
           </div>
         </Tab>
 
