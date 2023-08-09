@@ -4,8 +4,8 @@ import { Context } from "../store/appContext";
 
 export function SecurePage(props) {
   const { store, actions } = React.useContext(Context);
-
-  if (!store.authToken) {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
     return null;
   }
 

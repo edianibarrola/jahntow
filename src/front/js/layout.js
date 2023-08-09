@@ -18,18 +18,14 @@ import { Dashboard } from "./pages/Dashboard";
 const RouteManager = () => {
   const { store } = useContext(Context);
   const navigate = useNavigate();
-
+  const token = localStorage.getItem("authToken");
   useEffect(() => {
     const currentPath = window.location.pathname;
 
-    if (
-      !store.authToken &&
-      currentPath !== "/login" &&
-      currentPath !== "/register"
-    ) {
+    if (!token && currentPath !== "/login" && currentPath !== "/register") {
       navigate("/login");
     }
-  }, [store.authToken, navigate]);
+  }, [token, navigate]);
 
   return (
     <>

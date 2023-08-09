@@ -7,12 +7,12 @@ export function LoginUser() {
   const [password, setPassword] = React.useState("");
   const navigate = useNavigate();
   const { store, actions } = React.useContext(Context);
-
+  const token = localStorage.getItem("authToken");
   React.useEffect(() => {
-    if (store.authToken) {
+    if (token) {
       navigate("/");
     }
-  }, [store.authToken]);
+  }, [token]);
 
   return (
     <div className="container">

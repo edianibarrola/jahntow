@@ -841,7 +841,7 @@ const getState = ({ getStore, getActions, setStore }) => {
     store: {
       url: process.env.BACKEND_URL,
       login_token: "",
-      authToken: null,
+
       authError: null,
       defaultPlayer: defaultPlayer,
 
@@ -856,9 +856,9 @@ const getState = ({ getStore, getActions, setStore }) => {
     },
     actions: {
       updatePlayerInDatabase: (player) => {
-        const store = getStore();
+        const token = localStorage.getItem("authToken");
 
-        if (!store.authToken) {
+        if (!token) {
           console.error(
             "User is not authenticated, cannot update player data."
           );
@@ -871,7 +871,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           body: JSON.stringify(player),
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${store.authToken}`,
+            Authorization: `Bearer ${token}`,
           },
         })
           .then((response) => {
@@ -906,6 +906,8 @@ const getState = ({ getStore, getActions, setStore }) => {
               throw new Error("Token not provided");
             }
 
+            localStorage.setItem("authToken", token); // Store the token in localStorage
+
             // Use the token in any subsequent fetch you need.
             // For example, if you need player data right after registration:
             return fetch(process.env.BACKEND_URL + "/api/player", {
@@ -936,6 +938,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       logout: () => {
         // Set the default player data in local storage
         localStorage.setItem("player", JSON.stringify(defaultPlayer));
+        localStorage.removeItem("authToken"); // Remove the authToken from localStorage
 
         // Reset the application state's authToken
         setStore({
@@ -947,7 +950,6 @@ const getState = ({ getStore, getActions, setStore }) => {
           transactions: [],
           healthRecoveryItems,
           equipmentItems: equipmentItems,
-          authToken: null,
         });
       },
       loginUser: (email, password) => {
@@ -966,7 +968,9 @@ const getState = ({ getStore, getActions, setStore }) => {
             return resp.json();
           })
           .then((data) => {
-            setStore({ authToken: data.token, authError: null });
+            setStore({ authError: null });
+
+            localStorage.setItem("authToken", data.token); // Store the token in localStorage
 
             // Fetch player data
             return fetch(process.env.BACKEND_URL + "/api/player", {
