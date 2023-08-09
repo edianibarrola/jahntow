@@ -933,9 +933,13 @@ const getState = ({ getStore, getActions, setStore }) => {
             setStore({ authError: error, authToken: null });
           });
       },
+      logout: () => {
+        // Set the default player data in local storage
+        localStorage.setItem("player", JSON.stringify(defaultPlayer));
 
-      logout: () => setStore({ authToken: null }),
-
+        // Reset the application state's authToken
+        setStore({ player: defaultPlayer, authToken: null });
+      },
       loginUser: (email, password) => {
         fetch(process.env.BACKEND_URL + "/api/login", {
           method: "POST",
