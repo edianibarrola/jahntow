@@ -39,21 +39,25 @@ export const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let isMounted = true; // To ensure effect doesn't run after component is unmounted
+
     function runAdjustPrices() {
+      if (!isMounted) return; // Check if component is still mounted
       actions.adjustPrices();
       setTimeout(runUpdateInventory, 5000);
     }
 
     function runUpdateInventory() {
+      if (!isMounted) return; // Check if component is still mounted
       actions.updateInventory();
       setTimeout(runAdjustPrices, 5000);
     }
 
     const initialTimeoutId = setTimeout(runAdjustPrices, 5000);
 
-    // Cleanup on component unmount
     return () => {
-      clearTimeout(initialTimeoutId);
+      isMounted = false; // Set flag to false when component unmounts
+      clearTimeout(initialTimeoutId); // Cleanup timeout when component unmounts
     };
   }, [actions]);
 

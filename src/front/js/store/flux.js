@@ -857,6 +857,14 @@ const getState = ({ getStore, getActions, setStore }) => {
     actions: {
       updatePlayerInDatabase: (player) => {
         const store = getStore();
+
+        if (!store.authToken) {
+          console.error(
+            "User is not authenticated, cannot update player data."
+          );
+          return Promise.reject(new Error("User is not authenticated."));
+        }
+
         return fetch(process.env.BACKEND_URL + "/api/player", {
           method: "PUT",
           mode: "cors",
@@ -926,7 +934,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           });
       },
 
-      logout: () => setStore({ authToken: { ...null } }),
+      logout: () => setStore({ authToken: null }),
 
       loginUser: (email, password) => {
         fetch(process.env.BACKEND_URL + "/api/login", {
