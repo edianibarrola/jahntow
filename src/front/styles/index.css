@@ -1,3 +1,168 @@
 /* 
-    General Styles used on every website (Don't Repeat Yourself)
+    General Styles
 */
+body {
+  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1690411745/backgroundspaceascii_nf9lug.png");
+  background-size: cover;
+  /* Center the background image horizontally and vertically */
+  background-position: bottom bottom;
+  /* Fix the background image to prevent scrolling with the content */
+  background-attachment: fixed;
+  /* Add some padding to the body to ensure the content doesn't overlap with the background */
+  padding: 20px;
+  /* Set a fallback background color in case the image is not available or fails to load */
+  background-color: #000000;
+  /* Set the font color for the text on the page */
+  color: #ffffff;
+  height: 100%;
+}
+
+.holo {
+  /* border: 1px solid #faf6f6; 1px solid black border */
+  padding: 20px;
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.233
+  ); /* Green color with opacity (adjust the alpha value) */
+  backdrop-filter: blur(3px);
+  border-radius: 20px;
+  box-shadow: 0 0 10px rgba(1, 247, 255, 0.596),
+    0 0 20px rgba(26, 201, 245, 0.418);
+  color: #fff;
+}
+
+.holobg {
+  /* border: 1px solid #faf6f6; 1px solid black border */
+
+  background-color: rgba(
+    32,
+    69,
+    80,
+    0.527
+  ); /* Green color with opacity (adjust the alpha value) */
+  backdrop-filter: blur(3px);
+  border-radius: 20px;
+  box-shadow: 0 0 10px rgba(1, 247, 255, 0.596),
+    0 0 20px rgba(26, 201, 245, 0.418);
+  color: #fff;
+}
+
+.scrolldiv {
+  height: auto;
+  overflow-y: auto; /* Add this to enable vertical scrolling if content overflows */
+}
+ul {
+  list-style: none;
+}
+html * {
+  color: #fffeea;
+  font-weight: bold;
+
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
+    1px 1px 0 #000;
+  /* The above four shadows create the outline effect */
+}
+
+select {
+  background-color: #60a3be98; /* Replace #f2f2f2 with your desired background color */
+  color: #b1af62; /* Replace #333 with your desired text color */
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(33, 75, 33, 0.199),
+    0 0 20px rgba(69, 200, 233, 0.418);
+}
+button {
+  background-color: #60a3be98; /* Replace #f2f2f2 with your desired background color */
+  color: #b1af62; /* Replace #333 with your desired text color */
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(33, 75, 33, 0.199),
+    0 0 20px rgba(69, 200, 233, 0.418);
+}
+.healthbutton {
+  background-color: #b83a9c98; /* Replace #f2f2f2 with your desired background color */
+  color: #b1af62; /* Replace #333 with your desired text color */
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(33, 75, 33, 0.199),
+    0 0 20px rgba(69, 200, 233, 0.418);
+}
+
+input {
+  background-color: #60a3be98; /* Replace #f2f2f2 with your desired background color */
+  color: #b1af62; /* Replace #333 with your desired text color */
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(33, 75, 33, 0.199),
+    0 0 20px rgba(69, 200, 233, 0.418);
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+  width: 5%;
+}
+
+.carousel-control-prev {
+  margin-left: -5%;
+}
+
+.carousel-control-next {
+  margin-right: -5%;
+}
+
+.heightControl {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.heightControl > div {
+  display: flex;
+  flex-direction: column;
+  width: 100%; /* Ensures that the divs take up the full width */
+}
+
+.heightControl .holo {
+  max-height: 20vh; /* Adjust this to your needs */
+  overflow: auto; /* Makes it scrollable if content exceeds the height */
+}
+
+/* Remove the .h-10 styles as they are not needed */
+
+.carousel-inner {
+  overflow: visible !important;
+}
+
+.accordion-button {
+  background-color: transparent !important;
+  color: #fffeea !important;
+  font-weight: bold !important;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
+    1px 1px 0 #000 !important;
+  border-color: #60a3be98 !important;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: #60a3be98 !important;
+  color: #b1af62 !important;
+}
+
+.accordion-collapse {
+  background-color: rgba(0, 0, 0, 0.233) !important;
+  backdrop-filter: blur(3px);
+  border-radius: 20px;
+  box-shadow: 0 0 10px rgba(1, 247, 255, 0.596),
+    0 0 20px rgba(26, 201, 245, 0.418);
+  color: #fff;
+}
+.healthbutton {
+  background-color: rgba(0, 0, 0, 0.233) !important;
+}
+button {
+  background-color: rgba(0, 0, 0, 0) !important;
+}
+.accordion-button {
+  text-align: center;
+  padding-left: 1rem !important; /* adjust these padding values to your needs */
+  padding-right: 1rem !important;
+}
+h4 {
+  text-decoration: underline;
+}
