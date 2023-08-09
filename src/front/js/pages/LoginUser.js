@@ -10,7 +10,7 @@ export function LoginUser() {
 
   React.useEffect(() => {
     if (store.authToken) {
-      navigate("/dashboard");
+      navigate("/");
     }
   }, [store.authToken]);
 
