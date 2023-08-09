@@ -128,6 +128,7 @@ export const Home = () => {
           <InventoryUpgradeComponent />
         </Tab>
       </Tabs>
+      <button onClick={handleNavigate}>to dashboard</button>
     </div>
   );
 };
