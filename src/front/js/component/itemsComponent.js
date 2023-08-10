@@ -140,8 +140,8 @@ const ItemsComponent = () => {
                   className="d-flex justify-content-between align-items-center"
                 >
                   <span>
-                    {itemName}: Base Cost: {data["Base Cost"].toFixed(1)},
-                    Current Cost: {data["Current Cost"].toFixed(1)}
+                    {itemName}: Base: {data["Base Cost"].toFixed(0)}, Current
+                    Cost: {data["Current Cost"].toFixed(1)}
                   </span>
                   {player.inventory[itemName] && (
                     <span className="ml-auto">

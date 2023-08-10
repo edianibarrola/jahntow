@@ -76,10 +76,6 @@ const PropertiesComponent = () => {
 
   return (
     <div className="row mb-3">
-      <div className="col-12 text-center">
-        <h1>Properties</h1>
-      </div>
-
       <div className="col-12">
         <Accordion defaultActiveKey="0">
           {unlockedCategories.map((categoryName, index) => (
@@ -103,17 +99,28 @@ const PropertiesComponent = () => {
                       const property =
                         store.propertiesData[categoryName][propertyName];
                       return (
-                        <button
-                          key={propertyName}
-                          onClick={() =>
-                            handlePurchase(categoryName, propertyName)
-                          }
-                        >
-                          {player.properties[propertyName] > 0
-                            ? "Owned: "
-                            : "Purchase: "}
-                          {propertyName}
-                        </button>
+                        <div key={propertyName} className="property-container">
+                          <button
+                            onClick={() =>
+                              handlePurchase(categoryName, propertyName)
+                            }
+                          >
+                            {player.properties[propertyName] > 0
+                              ? `Owned: ${propertyName}`
+                              : `Purchase: ${propertyName} for (${property["Base Cost"]})`}
+                          </button>
+                          <div className="property-details">
+                            <p>
+                              This property{" "}
+                              {player.properties[propertyName] > 0
+                                ? "generates"
+                                : "will generate"}{" "}
+                              {property["Generation Rate"]}{" "}
+                              {property["Item Generated"]} every 15 seconds
+                              {/* You can add more details here */}
+                            </p>
+                          </div>
+                        </div>
                       );
                     })}
                 </div>
