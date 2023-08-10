@@ -42,7 +42,9 @@ const missionsData = {
     Reward: 3000,
     Experience: 75,
     Rank: 2,
-    requiredEquipment: {},
+    requiredEquipment: {
+      "Spectral Analyzer": 1,
+    },
     "Health Effect": 10,
     startMessage:
       "E.c.h.o.: Heading towards the asteroid belt for mining operations.",
@@ -57,8 +59,10 @@ const missionsData = {
     Reward: 4500,
     Experience: 112,
     Rank: 4,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Environmental Suit": 1,
+    },
+    "Health Effect": 12,
     startMessage: "E.c.h.o.: Scanning space debris for valuable salvage.",
     successMessage:
       "E.c.h.o.: Salvage successful. Recovered items translated to 450 credits and 112 experience.",
@@ -72,9 +76,9 @@ const missionsData = {
     Experience: 165,
     Rank: 6,
     requiredEquipment: {
-      "Basic Armor": 1,
+      "Alien Skin Armor": 1,
     },
-    "Health Effect": 10,
+    "Health Effect": 14,
     startMessage:
       "E.c.h.o.: Setting coordinates to a rumored alien artifact location.",
     successMessage:
@@ -89,9 +93,10 @@ const missionsData = {
     Experience: 225,
     Rank: 8,
     requiredEquipment: {
-      "Basic Sword": 1,
+      "Hover Board": 1,
+      "Spectral Analyzer": 1,
     },
-    "Health Effect": 10,
+    "Health Effect": 16,
     startMessage:
       "E.c.h.o.: Initiating trading protocols with neighboring galactic entities.",
     successMessage:
@@ -106,9 +111,9 @@ const missionsData = {
     Experience: 300,
     Rank: 10,
     requiredEquipment: {
-      "Basic Armor": 2,
+      "Basic Ship": 2,
     },
-    "Health Effect": 10,
+    "Health Effect": 18,
     startMessage:
       "E.c.h.o.: Preparing for a deep-space exploration mission to uncharted territories.",
     successMessage:
@@ -124,10 +129,10 @@ const missionsData = {
     Experience: 390,
     Rank: 12,
     requiredEquipment: {
-      "Basic Tech": 1,
-      "Basic Armor": 2,
+      "Star Ship": 1,
+      "Environmental Suit": 1,
     },
-    "Health Effect": 10,
+    "Health Effect": 20,
     startMessage:
       "E.c.h.o.: Enrolling in the intergalactic starship racing event.",
     successMessage:
@@ -142,9 +147,11 @@ const missionsData = {
     Experience: 487,
     Rank: 14,
     requiredEquipment: {
-      "Basic Sword": 20,
+      "Scout Drone": 2,
+      "Environmental Suit": 2,
+      "Oxygen Rebreather": 2,
     },
-    "Health Effect": 10,
+    "Health Effect": 22,
     startMessage:
       "E.c.h.o.: Picking up distress signals. Initiating rescue protocols.",
     successMessage:
@@ -159,10 +166,10 @@ const missionsData = {
     Experience: 600,
     Rank: 16,
     requiredEquipment: {
-      "Basic Sword": 24,
-      "Basic Armor": 20,
+      "Star Ship": 10,
+      "Spectral Analyzer": 10,
     },
-    "Health Effect": 10,
+    "Health Effect": 24,
     startMessage:
       "E.c.h.o.: Approaching the event horizon for black hole research.",
     successMessage:
@@ -177,10 +184,10 @@ const missionsData = {
     Experience: 750,
     Rank: 18,
     requiredEquipment: {
-      "Basic Tech": 40,
-      "Basic Armor": 50,
+      "Holo Clone": 10,
+      "Invisi Veil": 20,
     },
-    "Health Effect": 10,
+    "Health Effect": 26,
     startMessage:
       "E.c.h.o.: Establishing communication channels for diplomatic discussions with alien civilizations.",
     successMessage:
@@ -196,10 +203,10 @@ const missionsData = {
     Experience: 900,
     Rank: 20,
     requiredEquipment: {
-      "Basic Sword": 4,
-      "Basic Armor": 2,
+      "Cyber Armor": 4,
+      "Interdimensional Cruiser": 2,
     },
-    "Health Effect": 10,
+    "Health Effect": 28,
     startMessage:
       "E.c.h.o.: Alert! Hostile forces detected. Preparing for defense.",
     successMessage:
@@ -213,8 +220,10 @@ const missionsData = {
     Reward: 43500,
     Experience: 1087,
     Rank: 22,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Teleporter Beacon": 10,
+    },
+    "Health Effect": 30,
     startMessage: "E.c.h.o.: Initiating deep dive into quantum mechanics.",
     successMessage:
       "E.c.h.o.: Successfully mastered quantum mechanics! Earned 4350 credits and 1087 experience.",
@@ -227,8 +236,12 @@ const missionsData = {
     Reward: 52500,
     Experience: 1312,
     Rank: 24,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Cyber Armor": 4,
+      "Porta Lab": 5,
+      "Plasma Blade": 2,
+    },
+    "Health Effect": 32,
     startMessage:
       "E.c.h.o.: Setting course for uncharted territories in the interstellar realm.",
     successMessage:
@@ -242,8 +255,11 @@ const missionsData = {
     Reward: 63000,
     Experience: 1575,
     Rank: 26,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Porta Lab": 4,
+      "Terrain Scanner": 5,
+    },
+    "Health Effect": 34,
     startMessage: "E.c.h.o.: Detected a temporal anomaly. Commencing research.",
     successMessage:
       "E.c.h.o.: Successfully researched the temporal anomaly! Rewarded 6300 credits and 1575 experience.",
@@ -256,8 +272,12 @@ const missionsData = {
     Reward: 75000,
     Experience: 1875,
     Rank: 28,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Porta Lab": 4,
+      "Terrain Scanner": 5,
+      "Bio Collector": 10,
+    },
+    "Health Effect": 36,
     startMessage:
       "E.c.h.o.: Embarking on a quest to uncover the mysteries of ancient galactic civilizations.",
     successMessage:
@@ -272,8 +292,12 @@ const missionsData = {
     Reward: 90000,
     Experience: 2250,
     Rank: 30,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Cyber Armor": 4,
+      "Plasma Blade": 5,
+      "Interdimensional Cruiser": 5,
+    },
+    "Health Effect": 38,
     startMessage:
       "E.c.h.o.: Launching probe to research the origins of the universe.",
     successMessage:
@@ -287,8 +311,12 @@ const missionsData = {
     Reward: 105000,
     Experience: 2625,
     Rank: 32,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Invisi Veil": 4,
+      "Teleporter Beacon": 5,
+      "Terrain Scanner": 2,
+    },
+    "Health Effect": 40,
     startMessage:
       "E.c.h.o.: Preparing to venture into exodimensions. Unknown challenges await.",
     successMessage:
@@ -302,8 +330,12 @@ const missionsData = {
     Reward: 123000,
     Experience: 3075,
     Rank: 34,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Teleporter Beacon": 40,
+      "Interdimensional Cruiser": 5,
+      "Porta Lab": 3,
+    },
+    "Health Effect": 42,
     startMessage: "E.c.h.o.: Initiating procedures to manipulate dark matter.",
     successMessage:
       "E.c.h.o.: Dark matter manipulation successful! Acquired 12300 credits and 3075 experience.",
@@ -316,8 +348,10 @@ const missionsData = {
     Reward: 144000,
     Experience: 3600,
     Rank: 36,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Invisi Veil": 50,
+    },
+    "Health Effect": 44,
     startMessage:
       "E.c.h.o.: Engaging in diplomatic talks with advanced extraterrestrial civilizations.",
     successMessage:
@@ -331,8 +365,12 @@ const missionsData = {
     Reward: 168000,
     Experience: 4200,
     Rank: 38,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Porta Lab": 40,
+      "Cyber Armor": 3,
+      "Teleporter Beacon": 5,
+    },
+    "Health Effect": 46,
     startMessage: "E.c.h.o.: Commencing analysis of mysterious void phenomena.",
     successMessage:
       "E.c.h.o.: Analysis complete! Deciphered void secrets and obtained 16800 credits and 4200 experience.",
@@ -346,8 +384,12 @@ const missionsData = {
     Reward: 195000,
     Experience: 4875,
     Rank: 40,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Teleporter Beacon": 4,
+      "Bio Collector": 50,
+      "Cyber Armor": 4,
+    },
+    "Health Effect": 48,
     startMessage:
       "E.c.h.o.: Initiating protocols to activate the cosmic nexus.",
     successMessage:
@@ -361,8 +403,13 @@ const missionsData = {
     Reward: 225000,
     Experience: 5625,
     Rank: 42,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Hover Board": 40,
+      "Invisi Veil": 50,
+      "Alien Skin Armor": 20,
+      "Basic Ship": 10,
+    },
+    "Health Effect": 50,
     startMessage:
       "E.c.h.o.: Preparing to investigate disturbances in the temporal loop.",
     successMessage:
@@ -376,8 +423,13 @@ const missionsData = {
     Reward: 258000,
     Experience: 6450,
     Rank: 44,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Jet Pack": 40,
+      "Steel Machete": 50,
+      "Basic Ship": 10,
+      "Oxygen Rebreather": 10,
+    },
+    "Health Effect": 52,
     startMessage:
       "E.c.h.o.: Initiating navigation through a tumultuous nebular storm.",
     successMessage:
@@ -391,8 +443,13 @@ const missionsData = {
     Reward: 294000,
     Experience: 7350,
     Rank: 46,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Hover Board": 4,
+      "Jet Pack": 5,
+      "Plasma Blade": 12,
+      "Environmental Suit": 10,
+    },
+    "Health Effect": 54,
     startMessage:
       "E.c.h.o.: Mission is to retrieve a rare celestial artifact from an ancient site.",
     successMessage:
@@ -406,8 +463,13 @@ const missionsData = {
     Reward: 330000,
     Experience: 8250,
     Rank: 48,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Cyber Armor": 6,
+      "Interdimensional Cruiser": 5,
+      "Teleporter Beacon": 10,
+      "Spectral Analyzer": 10,
+    },
+    "Health Effect": 56,
     startMessage:
       "E.c.h.o.: Attempting to contain the imminent supernova and harness its energy.",
     successMessage:
@@ -421,8 +483,15 @@ const missionsData = {
     Reward: 372000,
     Experience: 9300,
     Rank: 50,
-    requiredEquipment: {},
-    "Health Effect": 10,
+    requiredEquipment: {
+      "Interdimensional Cruiser": 5,
+      "Teleporter Beacon": 10,
+      "Spectral Analyzer": 10,
+      "Scout Drone": 10,
+      "Bio Collector": 5,
+      "Cyber Armor": 10,
+    },
+    "Health Effect": 58,
     startMessage:
       "E.c.h.o.: Launching probes to map the event horizon of a black hole.",
     successMessage:
@@ -763,72 +832,123 @@ const healthRecoveryItems = {
   },
 };
 const equipmentItems = {
-  Weapons: {
-    "Basic Sword": {
+  Research: {
+    "Spectral Analyzer": {
       "Base Cost": 50,
       "Current Cost": 50,
       "Required Level": 1,
     },
-    "Advanced Sword": {
+    "Bio Collector": {
       "Base Cost": 150,
       "Current Cost": 150,
-      "Required Level": 5,
+      "Required Level": 10,
     },
-    "Power Sword": {
+    "Porta Lab": {
       "Base Cost": 500,
       "Current Cost": 500,
+      "Required Level": 20,
+    },
+  },
+  Weapons: {
+    "Steel Machete": {
+      "Base Cost": 50,
+      "Current Cost": 50,
+      "Required Level": 1,
+    },
+    "Laser Sword": {
+      "Base Cost": 150,
+      "Current Cost": 150,
       "Required Level": 10,
+    },
+    "Plasma Blade": {
+      "Base Cost": 500,
+      "Current Cost": 500,
+      "Required Level": 20,
     },
   },
   Armor: {
-    "Basic Armor": {
+    "Alien Skin Armor": {
       "Base Cost": 50,
       "Current Cost": 50,
       "Required Level": 1,
     },
-    "Advanced Armor": {
+    "Metalloid Armor": {
       "Base Cost": 150,
       "Current Cost": 150,
       "Required Level": 10,
     },
-    "Power Armor": {
+    "Cyber Armor": {
       "Base Cost": 500,
       "Current Cost": 500,
-      "Required Level": 25,
+      "Required Level": 20,
     },
   },
   Tech: {
-    "Basic Tech": {
+    "Scout Drone": {
       "Base Cost": 50,
       "Current Cost": 50,
-      "Required Level": 10,
+      "Required Level": 1,
     },
-    "Advanced Tech": {
+    "Holo Clone": {
       "Base Cost": 150,
       "Current Cost": 150,
-      "Required Level": 25,
+      "Required Level": 10,
     },
-    "Power Tech": {
+    "Invisi Veil": {
       "Base Cost": 500,
       "Current Cost": 500,
-      "Required Level": 50,
+      "Required Level": 20,
+    },
+  },
+  Transports: {
+    "Hover Board": {
+      "Base Cost": 50,
+      "Current Cost": 50,
+      "Required Level": 1,
+    },
+    "Jet Pack": {
+      "Base Cost": 150,
+      "Current Cost": 150,
+      "Required Level": 10,
+    },
+    "Teleporter Beacon": {
+      "Base Cost": 500,
+      "Current Cost": 500,
+      "Required Level": 20,
+    },
+  },
+  Exploration: {
+    "Environmental Suit": {
+      "Base Cost": 50,
+      "Current Cost": 50,
+      "Required Level": 1,
+    },
+    "Oxygen Rebreather": {
+      "Base Cost": 150,
+      "Current Cost": 150,
+      "Required Level": 10,
+    },
+    "Terrain Scanner": {
+      "Base Cost": 500,
+      "Current Cost": 500,
+      "Required Level": 20,
     },
   },
   Ships: {
     "Basic Ship": {
       "Base Cost": 50,
       "Current Cost": 50,
-      "Required Level": 10,
+      "Required Level": 1,
     },
-    "Advanced Ship": {
+    "Star Ship": {
       "Base Cost": 150,
       "Current Cost": 150,
-      "Required Level": 25,
+      "Required Level": 10,
     },
-    "Power Ship": {
+    "Interdimensional Cruiser": {
       "Base Cost": 500,
       "Current Cost": 500,
-      "Required Level": 50,
+      "Required Level": 20,
     },
   },
 };
