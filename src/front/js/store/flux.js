@@ -68,7 +68,9 @@ const missionsData = {
     Experience: 110,
     "Health Effect": 11,
     Rank: 3,
-    requiredEquipment: {},
+    requiredEquipment: {
+      "Basic Armor": 1,
+    },
     startMessage:
       "E.c.h.o.: Setting coordinates to a rumored alien artifact location.",
     successMessage:
@@ -83,7 +85,9 @@ const missionsData = {
     Experience: 150,
     "Health Effect": 15,
     Rank: 4,
-    requiredEquipment: {},
+    requiredEquipment: {
+      "Basic Sword": 1,
+    },
     startMessage:
       "E.c.h.o.: Initiating trading protocols with neighboring galactic entities.",
     successMessage:
@@ -98,7 +102,9 @@ const missionsData = {
     Experience: 200,
     "Health Effect": 20,
     Rank: 5,
-    requiredEquipment: {},
+    requiredEquipment: {
+      "Basic Armor": 2,
+    },
     startMessage:
       "E.c.h.o.: Preparing for a deep-space exploration mission to uncharted territories.",
     successMessage:
@@ -114,7 +120,10 @@ const missionsData = {
     Experience: 260,
     "Health Effect": 25,
     Rank: 6,
-    requiredEquipment: {},
+    requiredEquipment: {
+      "Basic Tech": 1,
+      "Basic Armor": 2,
+    },
     startMessage:
       "E.c.h.o.: Enrolling in the intergalactic starship racing event.",
     successMessage:
@@ -130,7 +139,7 @@ const missionsData = {
     "Health Effect": 30,
     Rank: 7,
     requiredEquipment: {
-      "Basic Sword": 1,
+      "Basic Sword": 20,
     },
     startMessage:
       "E.c.h.o.: Picking up distress signals. Initiating rescue protocols.",
@@ -147,8 +156,8 @@ const missionsData = {
     "Health Effect": 38,
     Rank: 8,
     requiredEquipment: {
-      "Basic Sword": 1,
-      "Basic Armor": 2,
+      "Basic Sword": 24,
+      "Basic Armor": 20,
     },
     startMessage:
       "E.c.h.o.: Approaching the event horizon for black hole research.",
@@ -164,7 +173,10 @@ const missionsData = {
     Experience: 500,
     "Health Effect": 45,
     Rank: 9,
-    requiredEquipment: {},
+    requiredEquipment: {
+      "Basic Tech": 40,
+      "Basic Armor": 50,
+    },
     startMessage:
       "E.c.h.o.: Establishing communication channels for diplomatic discussions with alien civilizations.",
     successMessage:

@@ -140,7 +140,9 @@ export const Home = () => {
           </div>
         </Tab>
       </Tabs>
-      <button onClick={handleNavigate}>to dashboard</button>
+      <div className="col-12 text-center">
+        <button onClick={handleNavigate}>to dashboard</button>
+      </div>
     </div>
   );
 };

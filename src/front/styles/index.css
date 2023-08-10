@@ -33,21 +33,14 @@ body {
   color: #fff;
 }
 
-.holobg {
-  /* border: 1px solid #faf6f6; 1px solid black border */
-
-  background-color: rgba(
-    32,
-    69,
-    80,
-    0.527
-  ); /* Green color with opacity (adjust the alpha value) */
+/* .holobg {
+  background-color: rgba(32, 69, 80, 0.527);
   backdrop-filter: blur(3px);
   border-radius: 20px;
   box-shadow: 0 0 10px rgba(1, 247, 255, 0.596),
     0 0 20px rgba(26, 201, 245, 0.418);
   color: #fff;
-}
+} */
 
 .scrolldiv {
   height: auto;
@@ -157,7 +150,7 @@ input {
   background-color: rgba(0, 0, 0, 0.233) !important;
 }
 button {
-  background-color: rgba(0, 0, 0, 0) !important;
+  background-color: rgba(0, 0, 0, 0.493) !important;
 }
 .accordion-button {
   text-align: center;

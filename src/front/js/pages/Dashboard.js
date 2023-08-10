@@ -23,6 +23,8 @@ export function Dashboard() {
     <div className="row text-center">
       <div className="col-12 mb-5">
         <h1>Dashboard</h1>
+      </div>
+      <div className="col-12">
         <h2>Hello {store.player.name}!</h2>
         <h3>It's great to see you.</h3>
       </div>

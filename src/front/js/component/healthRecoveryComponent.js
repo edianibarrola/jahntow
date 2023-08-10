@@ -60,15 +60,15 @@ const HealthRecoveryComponent = () => {
   };
 
   return (
-    <div className="row m-0">
+    <div className="row  m-0">
       <div className="col-12 text-center">
         <h1>Recovery</h1>
       </div>
       {Object.keys(healthRecoveryItems).map((category) => (
-        <div key={category} className="text-center">
+        <div key={category} className="col-12 text-center">
           <h4>{category}</h4>
           {Object.keys(healthRecoveryItems[category]).map((item) => (
-            <div key={item} className="col-12">
+            <div key={item} className="col-12 holo ">
               <button
                 className="healthbutton "
                 onClick={() => handleButtonClick(category, item)}
