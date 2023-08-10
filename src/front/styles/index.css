@@ -120,8 +120,9 @@ input {
 }
 
 .heightControl .holo {
-  max-height: 20vh; /* Adjust this to your needs */
+  max-height: 25vh; /* Adjust this to your needs */
   overflow: auto; /* Makes it scrollable if content exceeds the height */
+  text-align: center;
 }
 
 /* Remove the .h-10 styles as they are not needed */

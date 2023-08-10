@@ -39,27 +39,34 @@ export const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let isMounted = true; // To ensure effect doesn't run after component is unmounted
+    let isMounted = true;
+    let adjustCount = 0; // Track the number of times adjustPrices has run
 
     function runAdjustPrices() {
-      if (!isMounted) return; // Check if component is still mounted
-      actions.adjustPrices();
-      setTimeout(runUpdateInventory, 5000);
+      if (!isMounted) return;
+      if (adjustCount < 4) {
+        actions.adjustPrices();
+        adjustCount++;
+        setTimeout(runAdjustPrices, 5000); // Run adjustPrices every 5 seconds until it has run 4 times
+      } else {
+        adjustCount = 0; // Reset the count
+        setTimeout(runUpdateInventory, 15000); // Delayed by 15 seconds after adjustPrices has run 4 times
+      }
     }
 
     function runUpdateInventory() {
-      if (!isMounted) return; // Check if component is still mounted
+      if (!isMounted) return;
       actions.updateInventory();
-      setTimeout(runAdjustPrices, 5000);
+      setTimeout(runAdjustPrices, 5000); // Adjusted to 5 seconds
     }
 
     const initialTimeoutId = setTimeout(runAdjustPrices, 5000);
 
     return () => {
-      isMounted = false; // Set flag to false when component unmounts
-      clearTimeout(initialTimeoutId); // Cleanup timeout when component unmounts
+      isMounted = false;
+      clearTimeout(initialTimeoutId);
     };
-  }, [actions]);
+  }, []);
 
   const handleNavigate = () => {
     // 2. Create an event handler function

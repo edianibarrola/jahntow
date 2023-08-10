@@ -38,6 +38,7 @@ const InventoryUpgradeComponent = () => {
   return (
     <div>
       <h3>Inventory Upgrade</h3>
+      <h4>You can currently store {player.maxInventoryCount} of each item.</h4>
       <button onClick={handleUpgradeClick}>
         Upgrade Inventory for {calculateUpgradeCost()} credits
       </button>

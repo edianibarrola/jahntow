@@ -77,9 +77,7 @@ const Layout = () => {
     <div>
       <BrowserRouter basename={basename}>
         <ScrollToTop>
-          <Navbar />
           <RouteManager />
-          <Footer />
         </ScrollToTop>
       </BrowserRouter>
     </div>
