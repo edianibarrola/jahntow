@@ -702,63 +702,63 @@ const propertiesData = {
 const healthRecoveryItems = {
   Health: {
     "HealPulse Emitter": {
-      Cost: 600,
-      "Health Gain": 30,
+      Cost: 2000,
+      "Health Gain": 25,
       "Energy Gain": 0,
-      Cooldown: 40,
+      Cooldown: 25,
     },
     "VitalWave Device": {
-      Cost: 1000,
-      "Health Gain": 60,
+      Cost: 6000,
+      "Health Gain": 50,
       "Energy Gain": 0,
-      Cooldown: 80,
+      Cooldown: 50,
     },
     "Phoenix Resurrect Kit": {
-      Cost: 1500,
+      Cost: 10000,
       "Health Gain": 100,
       "Energy Gain": 0,
-      Cooldown: 250,
+      Cooldown: 150,
     },
   },
 
   Energy: {
     "EnergyStim Injector": {
-      Cost: 400,
-      "Health Gain": 0,
+      Cost: 5000,
+      "Health Gain": 25,
       "Energy Gain": 15,
       Cooldown: 25,
     },
     "PowerPulse Capsule": {
-      Cost: 700,
+      Cost: 8000,
       "Health Gain": 0,
-      "Energy Gain": 30,
+      "Energy Gain": 50,
       Cooldown: 50,
     },
     "Quantum Energy Kit": {
-      Cost: 1100,
+      Cost: 14000,
       "Health Gain": 0,
-      "Energy Gain": 60,
+      "Energy Gain": 100,
       Cooldown: 150,
     },
   },
   Combo: {
     "NanoMed Injector": {
-      Cost: 500,
+      Cost: 6000,
       "Health Gain": 20,
-      "Energy Gain": 10,
+      "Energy Gain": 20,
       Cooldown: 30,
     },
     "RegenBoost Capsule": {
-      Cost: 800,
-      "Health Gain": 40,
-      "Energy Gain": 25,
+      Cost: 15000,
+      "Health Gain": 45,
+      "Energy Gain": 45,
       Cooldown: 60,
     },
     "Omega Recovery Kit": {
-      Cost: 1200,
-      "Health Gain": 80,
-      "Energy Gain": 50,
-      Cooldown: 200,
+      Cost: 22000,
+      "Health Gain": 95,
+      "Energy Gain": 95,
+      Cooldown: 100,
     },
   },
 };
@@ -809,6 +809,23 @@ const equipmentItems = {
       "Required Level": 25,
     },
     "Power Tech": {
+      "Base Cost": 500,
+      "Current Cost": 500,
+      "Required Level": 50,
+    },
+  },
+  Ships: {
+    "Basic Ship": {
+      "Base Cost": 50,
+      "Current Cost": 50,
+      "Required Level": 10,
+    },
+    "Advanced Ship": {
+      "Base Cost": 150,
+      "Current Cost": 150,
+      "Required Level": 25,
+    },
+    "Power Ship": {
       "Base Cost": 500,
       "Current Cost": 500,
       "Required Level": 50,

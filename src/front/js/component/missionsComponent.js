@@ -74,16 +74,26 @@ const MissionsComponent = () => {
               actions.updatePlayerLevel();
             } else {
               alert(mission.failureMessage); // Display the mission failure message
+
+              // Calculate the updated equipment quantities after removing required items
+              const updatedEquipment = { ...player.equipment };
+              const requiredEquipment = mission.requiredEquipment;
+              Object.keys(requiredEquipment).forEach((equipment) => {
+                const requiredQuantity = requiredEquipment[equipment];
+                if (updatedEquipment[equipment]?.quantity >= requiredQuantity) {
+                  updatedEquipment[equipment].quantity -= requiredQuantity;
+                }
+              });
+
               const updatedPlayer = {
                 ...player,
                 credits: player.credits - mission["Required Credits"],
-                // experience: player.experience + mission["Experience"],
                 health: player.health - mission["Health Effect"],
                 energy:
                   player.energy -
                   mission["Required Energy"] +
                   mission["Required Energy"] / 8,
-                //energy: player.energy, // Recover some energy
+                equipment: updatedEquipment, // Update the equipment after removal
               };
               if (updatedPlayer.health <= 0) {
                 alert("Game Over");
