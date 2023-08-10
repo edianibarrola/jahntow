@@ -19,11 +19,23 @@ const RouteManager = () => {
   const { store } = useContext(Context);
   const navigate = useNavigate();
   const token = localStorage.getItem("authToken");
+
+  // Clear authToken from localStorage on page reload
+  window.addEventListener("beforeunload", () => {
+    localStorage.removeItem("authToken");
+  });
+
   useEffect(() => {
     const currentPath = window.location.pathname;
 
-    if (!token && currentPath !== "/login" && currentPath !== "/register") {
-      navigate("/login");
+    if (!token) {
+      if (currentPath !== "/login" && currentPath !== "/register") {
+        navigate("/login");
+      }
+    } else {
+      if (currentPath === "/login" || currentPath === "/register") {
+        navigate("/dashboard"); // Redirect authenticated users to dashboard
+      }
     }
   }, [token, navigate]);
 

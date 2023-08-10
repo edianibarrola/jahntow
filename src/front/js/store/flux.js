@@ -837,6 +837,27 @@ const getState = ({ getStore, getActions, setStore }) => {
     }
   };
 
+  const fetchPlayerData = (token) => {
+    return fetch(process.env.BACKEND_URL + "/api/player", {
+      method: "GET",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((resp) => {
+        if (resp.status === 200) {
+          return resp.json();
+        } else {
+          return null; // Invalid response, return null
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching player data:", error);
+        return null; // Request failed, return null
+      });
+  };
   return {
     store: {
       url: process.env.BACKEND_URL,
@@ -855,6 +876,8 @@ const getState = ({ getStore, getActions, setStore }) => {
       equipmentItems: equipmentItems,
     },
     actions: {
+      fetchPlayerData: fetchPlayerData,
+
       updatePlayerInDatabase: (player) => {
         const token = localStorage.getItem("authToken");
 
@@ -968,11 +991,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             return resp.json();
           })
           .then((data) => {
-            setStore({ authError: null });
-
-            localStorage.setItem("authToken", data.token); // Store the token in localStorage
-
-            // Fetch player data
+            // Fetch player data first before storing token
             return fetch(process.env.BACKEND_URL + "/api/player", {
               method: "GET",
               mode: "cors",
@@ -980,17 +999,19 @@ const getState = ({ getStore, getActions, setStore }) => {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${data.token}`,
               },
-            });
-          })
-          .then((resp) => {
-            if (resp.status !== 200) {
-              throw new Error("Failed to fetch player data");
-            }
-            return resp.json();
-          })
-          .then((playerData) => {
-            setStore({ player: playerData });
-            getActions().updatePlayerInDatabase(playerData);
+            })
+              .then((resp) => {
+                if (resp.status !== 200) {
+                  throw new Error("Failed to fetch player data");
+                }
+                return resp.json();
+              })
+              .then((playerData) => {
+                // Token is stored only if the above fetch was successful
+                localStorage.setItem("authToken", data.token);
+                setStore({ authError: null, player: playerData });
+                getActions().updatePlayerInDatabase(playerData);
+              });
           })
           .catch((error) => {
             console.error("Error during login process:", error);
