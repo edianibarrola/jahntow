@@ -68,7 +68,7 @@ const PropertiesComponent = () => {
         store.propertiesData[categoryName]
       ).filter(
         (propertyName) =>
-          store.propertiesData[categoryName][propertyName].Rank <= maxRank
+          store.propertiesData[categoryName][propertyName].Rank <= player.level // Use player's level to filter properties
       );
       return unlockedProperties.length > 0;
     }
@@ -93,7 +93,7 @@ const PropertiesComponent = () => {
                     .filter(
                       (propertyName) =>
                         store.propertiesData[categoryName][propertyName].Rank <=
-                        maxRank
+                        player.level
                     )
                     .map((propertyName) => {
                       const property =
@@ -116,7 +116,8 @@ const PropertiesComponent = () => {
                                 ? "generates"
                                 : "will generate"}{" "}
                               {property["Generation Rate"]}{" "}
-                              {property["Item Generated"]} every 15 seconds
+                              {property["Item Generated"]} apprx every 30
+                              seconds
                               {/* You can add more details here */}
                             </p>
                           </div>
@@ -140,7 +141,7 @@ const PropertiesComponent = () => {
           Object.keys(generationRates).map((item) => (
             <div key={item} className="col-12 pl-5 pr-5 text-center">
               <p>
-                {item}: {generationRates[item]} every 5 seconds
+                {item}: {generationRates[item]} apprx every 30 seconds
               </p>
             </div>
           ))

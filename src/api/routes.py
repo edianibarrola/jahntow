@@ -34,7 +34,7 @@ def register():
     db.session.flush()  # This flushes the changes and generates the user's ID
 
     # Create a default player for the new user
-    player = Player(name=content.get("username", "DefaultName"), user_id=user.id)
+    player = Player(name=content.get("username", "Jahntow"), user_id=user.id)
     db.session.add(player)
     
     db.session.commit()

@@ -133,7 +133,7 @@ const ItemsComponent = () => {
           <h4 className="text-center">{category}</h4>
           <ul>
             {Object.entries(items)
-              .filter(([, data]) => data.Rank <= maxRank)
+              .filter(([, data]) => data.Rank <= player.level)
               .map(([itemName, data]) => (
                 <li
                   key={itemName}

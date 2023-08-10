@@ -73,14 +73,14 @@ export const Home = () => {
     navigate("/dashboard"); // 3. Inside this function, call the navigate function
   };
 
-  const handleLevelUp = () => {
-    const updatedPlayer = {
-      ...player,
-      level: player.level + 1,
-      credits: player.credits + 1000,
-    };
-    actions.updatePlayer(updatedPlayer);
-  };
+  // const handleLevelUp = () => {
+  //   const updatedPlayer = {
+  //     ...player,
+  //     level: player.level + 1,
+  //     credits: player.credits + 1000,
+  //   };
+  //   actions.updatePlayer(updatedPlayer);
+  // };
 
   return (
     <div className="mt-2 container holobg">
@@ -99,7 +99,7 @@ export const Home = () => {
       </div>
 
       <Tabs defaultActiveKey="items" id="game-tabs">
-        <Tab eventKey="items" title="Items & Notifications">
+        <Tab eventKey="items" title="Market">
           <ItemsComponent
             itemData={itemsData["Energy Cores"]}
             selectedItem="Alpha Core"
@@ -124,18 +124,19 @@ export const Home = () => {
           <PropertiesComponent />
         </Tab>
 
-        <Tab eventKey="health" title="Health & Recovery">
+        <Tab eventKey="health" title="Medlab">
           <div className="row mb-3 text-center">
             <HealthRecoveryComponent />
           </div>
-          <div className="mb-5">
-            <button onClick={handleLevelUp}>Level Up</button>
-          </div>
         </Tab>
 
-        <Tab eventKey="inventory" title="Inventory Upgrades">
+        <Tab eventKey="equipment" title="Equipment">
           <div className="mb-5 text-center">
             <EquipmentStore />
+          </div>
+        </Tab>
+        <Tab eventKey="upgrades" title="Upgrades">
+          <div className="mb-5 text-center">
             <InventoryUpgradeComponent />
           </div>
         </Tab>

@@ -36,12 +36,18 @@ const InventoryUpgradeComponent = () => {
   };
 
   return (
-    <div>
-      <h3>Inventory Upgrade</h3>
-      <h4>You can currently store {player.maxInventoryCount} of each item.</h4>
-      <button onClick={handleUpgradeClick}>
-        Upgrade Inventory for {calculateUpgradeCost()} credits
-      </button>
+    <div className="row d-flex justify-content-center mt-5 mb-5">
+      <h3 className="mb-5">Inventory Upgrade</h3>
+      <div className="row w-50">
+        <div className="col-12 mb-5 holo">
+          <p>
+            You can currently store {player.maxInventoryCount} of each item.
+          </p>
+          <button onClick={handleUpgradeClick}>
+            Upgrade Inventory for {calculateUpgradeCost()} credits
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

@@ -117,7 +117,7 @@ const MissionsComponent = () => {
       <div className="col-12">
         <Accordion defaultActiveKey="0">
           {Object.entries(missionsData)
-            .filter(([, missionData]) => missionData.Rank <= maxRank)
+            .filter(([, missionData]) => missionData.Rank <= player.level)
             .map(([missionName, missionData], index) => (
               <Accordion.Item
                 className="holo"
@@ -161,7 +161,9 @@ const MissionsComponent = () => {
         >
           <option value="">Select a mission</option>
           {Object.keys(missionsData)
-            .filter((missionName) => missionsData[missionName].Rank <= maxRank)
+            .filter(
+              (missionName) => missionsData[missionName].Rank <= player.level
+            )
             .map((missionName) => (
               <option key={missionName} value={missionName}>
                 {missionName}

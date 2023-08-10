@@ -22,7 +22,7 @@ class User(db.Model):
 
 class Player(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
+    name = db.Column(db.String(80), default='Jahntow')
     level = db.Column(db.Integer, default=1)
     experience = db.Column(db.Integer, default=0)
     health = db.Column(db.Integer, default=100)
