@@ -99,7 +99,7 @@ export const Home = () => {
       </div>
 
       <Tabs defaultActiveKey="items" id="game-tabs">
-        <Tab eventKey="items" title="Market">
+        <Tab eventKey="items" title="Market" className="marketplace">
           <ItemsComponent
             itemData={itemsData["Energy Cores"]}
             selectedItem="Alpha Core"
@@ -120,17 +120,17 @@ export const Home = () => {
           <MissionsComponent />
         </Tab>
 
-        <Tab eventKey="properties" title="Properties">
+        <Tab eventKey="properties" title="Properties" className="properties">
           <PropertiesComponent />
         </Tab>
 
-        <Tab eventKey="health" title="Medlab">
+        <Tab eventKey="health" title="Medlab" className="shipbed">
           <div className="row mb-3 text-center">
             <HealthRecoveryComponent />
           </div>
         </Tab>
 
-        <Tab eventKey="equipment" title="Equipment">
+        <Tab eventKey="equipment" title="Equipment" className="shipeqp">
           <div className="mb-5 text-center">
             <EquipmentStore />
           </div>

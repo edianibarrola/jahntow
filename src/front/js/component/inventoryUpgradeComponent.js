@@ -36,7 +36,7 @@ const InventoryUpgradeComponent = () => {
   };
 
   return (
-    <div className="row d-flex justify-content-center mt-5 mb-5">
+    <div className="row d-flex shipinside justify-content-center mt-5 mb-5">
       <h3 className="mb-5">Inventory Upgrade</h3>
       <div className="row w-50">
         <div className="col-12 mb-5 holo">

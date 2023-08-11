@@ -21,8 +21,7 @@ export function LoginUser() {
         <div className="alert alert-danger">Authentication Error</div>
       )}
 
-      <div className="form-floating mb-3">
-        <label>Email address</label>
+      <div className=" mb-3">
         <input
           value={email}
           onChange={(ev) => setEmail(ev.target.value)}
@@ -31,8 +30,7 @@ export function LoginUser() {
           placeholder="name@example.com"
         />
       </div>
-      <div className="form-floating">
-        <label>Password</label>
+      <div className="mb-3">
         <input
           value={password}
           onChange={(ev) => setPassword(ev.target.value)}

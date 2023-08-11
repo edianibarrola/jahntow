@@ -76,6 +76,10 @@ const PropertiesComponent = () => {
 
   return (
     <div className="row mb-3">
+      <div className="col-12 text-center">
+        <h1>Properties</h1>
+      </div>
+
       <div className="col-12">
         <Accordion defaultActiveKey="0">
           {unlockedCategories.map((categoryName, index) => (
@@ -84,7 +88,7 @@ const PropertiesComponent = () => {
               eventKey={index.toString()}
               key={categoryName}
             >
-              <Accordion.Header className="holo text-center">
+              <Accordion.Header className=" text-center">
                 {categoryName}
               </Accordion.Header>
               <Accordion.Body>

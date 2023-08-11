@@ -59,18 +59,30 @@ const HealthRecoveryComponent = () => {
     return label;
   };
 
+  const filteredItems = {};
+
+  // Filter health recovery items based on rank and player level
+  for (const category in healthRecoveryItems) {
+    filteredItems[category] = {};
+    for (const item in healthRecoveryItems[category]) {
+      if (healthRecoveryItems[category][item].Rank <= player.level) {
+        filteredItems[category][item] = healthRecoveryItems[category][item];
+      }
+    }
+  }
+
   return (
-    <div className="row  m-0">
+    <div className="row m-0">
       <div className="col-12 text-center">
         <h1>Recovery</h1>
       </div>
-      {Object.keys(healthRecoveryItems).map((category) => (
-        <div key={category} className="col-12 text-center">
+      {Object.keys(filteredItems).map((category) => (
+        <div key={category} className="col-12 holo text-center">
           <h4>{category}</h4>
-          {Object.keys(healthRecoveryItems[category]).map((item) => (
-            <div key={item} className="col-12 holo ">
+          {Object.keys(filteredItems[category]).map((item) => (
+            <div key={item} className="col-12">
               <button
-                className="healthbutton "
+                className="healthbutton"
                 onClick={() => handleButtonClick(category, item)}
               >
                 {generateButtonLabel(item, category)}

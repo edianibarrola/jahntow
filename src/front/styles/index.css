@@ -2,7 +2,10 @@
     General Styles
 */
 body {
-  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1690411745/backgroundspaceascii_nf9lug.png");
+  /* background-image: url("https://res.cloudinary.com/petrep/image/upload/v1690411745/backgroundspaceascii_nf9lug.png"); */
+  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691784146/planetbg4_phpssd.png");
+
+  /* background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691785163/_edian__the__Equipment_Wall_section_inside_of_a_futuristic_spac_ce910ae5-1dbc-4808-94a4-7d8e036969f2_vgqm8p.png"); */
   background-size: cover;
   /* Center the background image horizontally and vertically */
   background-position: bottom bottom;
@@ -14,9 +17,101 @@ body {
   background-color: #000000;
   /* Set the font color for the text on the page */
   color: #ffffff;
-  height: 100%;
+}
+.ship {
+  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691786341/_edian__The_view_from_the_pilots_seat_looking_out_the_front_of__255c9199-b286-4b79-a4c1-519be74b4745_z4yyx9.png");
+
+  background-size: cover;
+  /* Center the background image horizontally and vertically */
+  background-position: center bottom;
+  /* Fix the background image to prevent scrolling with the content */
+  background-attachment: fixed;
+  /* Add some padding to the body to ensure the content doesn't overlap with the background */
+  padding: 20px;
+  /* Set a fallback background color in case the image is not available or fails to load */
+
+  /* Set the font color for the text on the page */
+  background-repeat: no-repeat;
+}
+.shipinside {
+  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691785163/_edian__the__Equipment_Wall_section_inside_of_a_futuristic_spac_ce910ae5-1dbc-4808-94a4-7d8e036969f2_vgqm8p.png");
+
+  background-size: cover;
+  /* Center the background image horizontally and vertically */
+  background-position: center center;
+  /* Fix the background image to prevent scrolling with the content */
+  background-attachment: fixed;
+  /* Add some padding to the body to ensure the content doesn't overlap with the background */
+  padding: 20px;
+  /* Set a fallback background color in case the image is not available or fails to load */
+
+  /* Set the font color for the text on the page */
+  background-repeat: no-repeat;
 }
 
+.shipbed {
+  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691792695/_edian__the__Equipment_Wall_section_inside_of_a_futuristic_spac_d6a97ca6-9b96-4e59-bdbc-ebd2cc00341e_xsuyas.png");
+
+  background-size: cover;
+  /* Center the background image horizontally and vertically */
+  background-position: center center;
+  /* Fix the background image to prevent scrolling with the content */
+  background-attachment: fixed;
+  /* Add some padding to the body to ensure the content doesn't overlap with the background */
+  padding: 20px;
+  /* Set a fallback background color in case the image is not available or fails to load */
+
+  /* Set the font color for the text on the page */
+  background-repeat: no-repeat;
+}
+
+.shipeqp {
+  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691791939/_edian__the__Equipment_Wall_section_inside_of_a_futuristic_spac_00116430-6ea7-402f-be6e-9f8b4c03c8f4_musnuq.png");
+
+  background-size: cover;
+  /* Center the background image horizontally and vertically */
+  background-position: center center;
+  /* Fix the background image to prevent scrolling with the content */
+  background-attachment: fixed;
+  /* Add some padding to the body to ensure the content doesn't overlap with the background */
+  padding: 20px;
+  /* Set a fallback background color in case the image is not available or fails to load */
+
+  /* Set the font color for the text on the page */
+  background-repeat: no-repeat;
+}
+
+.marketplace {
+  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691788906/_edian__an_abandoned_Alien_Flea_Market_with_alot_of_empty_shops_bad8c916-e8c7-4d19-b63f-e79d0bba9db0_kwurpv.png");
+
+  background-size: cover;
+  /* Center the background image horizontally and vertically */
+  background-position: center center;
+  /* Fix the background image to prevent scrolling with the content */
+  background-attachment: fixed;
+  /* Add some padding to the body to ensure the content doesn't overlap with the background */
+  padding: 20px;
+  /* Set a fallback background color in case the image is not available or fails to load */
+
+  /* Set the font color for the text on the page */
+  background-repeat: no-repeat;
+}
+
+.properties {
+  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691790558/_edian__several_strange_alien_architecture_structures_and_build_5fa72d73-2e26-412f-9399-b671ceb6ee47_lrox76.png");
+
+  background-size: cover;
+  /* Center the background image horizontally and vertically */
+  background-position: center center;
+  /* Fix the background image to prevent scrolling with the content */
+  background-attachment: fixed;
+  /* Add some padding to the body to ensure the content doesn't overlap with the background */
+  padding: 20px;
+  /* Set a fallback background color in case the image is not available or fails to load */
+
+  /* Set the font color for the text on the page */
+  background-repeat: no-repeat;
+}
 .holo {
   /* border: 1px solid #faf6f6; 1px solid black border */
   padding: 20px;
@@ -24,7 +119,7 @@ body {
     0,
     0,
     0,
-    0.233
+    0.541
   ); /* Green color with opacity (adjust the alpha value) */
   backdrop-filter: blur(3px);
   border-radius: 20px;
@@ -33,14 +128,14 @@ body {
   color: #fff;
 }
 
-/* .holobg {
-  background-color: rgba(32, 69, 80, 0.527);
+.holobg {
+  background-color: rgba(0, 0, 0, 0.527);
   backdrop-filter: blur(3px);
   border-radius: 20px;
-  box-shadow: 0 0 10px rgba(1, 247, 255, 0.596),
-    0 0 20px rgba(26, 201, 245, 0.418);
+  box-shadow: 0 0 20px rgb(0, 0, 0), 0 0 30px rgb(0, 0, 0),
+    0 0 40px rgb(0, 0, 0), 0 0 50px rgb(0, 0, 0);
   color: #fff;
-} */
+}
 
 .scrolldiv {
   height: auto;
@@ -50,12 +145,8 @@ ul {
   list-style: none;
 }
 html * {
-  color: #fffeea;
+  color: #ffffff;
   font-weight: bold;
-
-  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
-    1px 1px 0 #000;
-  /* The above four shadows create the outline effect */
 }
 
 select {
@@ -157,6 +248,7 @@ button {
   padding-left: 1rem !important; /* adjust these padding values to your needs */
   padding-right: 1rem !important;
 }
-h4 {
-  text-decoration: underline;
+
+input.form-control {
+  color: #000000 !important;
 }

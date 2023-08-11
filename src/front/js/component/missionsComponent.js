@@ -119,12 +119,12 @@ const MissionsComponent = () => {
   };
 
   return (
-    <div className="row mb-3">
+    <div className="row ship mb-3">
       <div className="col-12 text-center">
         <h1>Missions</h1>
       </div>
 
-      <div className="col-12">
+      <div className="col-12 text-center">
         <Accordion defaultActiveKey="0">
           {Object.entries(missionsData)
             .filter(([, missionData]) => missionData.Rank <= player.level)
@@ -134,9 +134,7 @@ const MissionsComponent = () => {
                 eventKey={index.toString()}
                 key={missionName}
               >
-                <Accordion.Header className="holo">
-                  {missionName}
-                </Accordion.Header>
+                <Accordion.Header>{missionName}</Accordion.Header>
                 <Accordion.Body>
                   <div className="col-12 pl-5 pr-5 text-center">
                     <ul className="holo">
