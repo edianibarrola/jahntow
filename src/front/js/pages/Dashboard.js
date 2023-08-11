@@ -32,12 +32,12 @@ export function Dashboard() {
   };
 
   return (
-    <div className="row d-flex justify-content-center text-center ">
+    <div className="row  d-flex justify-content-center text-center ">
       <div className="col-12  mb-5">
         <h1>Dashboard</h1>
       </div>
 
-      <div className="row  holo m-0 w-50  ">
+      <div className="row  shipinside holo m-0 w-50  ">
         <div className="col-12 mb-5">
           <h2 className="mb-5">Hello {store.player.name}!</h2>
           <h3>It's great to see you.</h3>
