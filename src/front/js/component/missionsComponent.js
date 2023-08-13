@@ -78,10 +78,16 @@ const MissionsComponent = () => {
               // Calculate the updated equipment quantities after removing required items
               const updatedEquipment = { ...player.equipment };
               const requiredEquipment = mission.requiredEquipment;
+              console.log("Required Equipment:", requiredEquipment); // Add this line
               Object.keys(requiredEquipment).forEach((equipment) => {
                 const requiredQuantity = requiredEquipment[equipment];
                 if (updatedEquipment[equipment]?.quantity >= requiredQuantity) {
                   updatedEquipment[equipment].quantity -= requiredQuantity;
+                  console.log(
+                    "Equipment Removed:",
+                    equipment,
+                    requiredQuantity
+                  ); // Add this line
                 }
               });
 
@@ -95,6 +101,9 @@ const MissionsComponent = () => {
                   mission["Required Energy"] / 8,
                 equipment: updatedEquipment, // Update the equipment after removal
               };
+
+              console.log("Updated Equipment:", updatedEquipment); // Add this line
+              console.log("Updated Player:", updatedPlayer); // Add this line
               if (updatedPlayer.health <= 0) {
                 alert("Game Over");
                 actions.resetPlayer();

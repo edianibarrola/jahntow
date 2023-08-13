@@ -84,65 +84,68 @@ export const Home = () => {
 
   return (
     <div className="mt-2 container holobg">
-      <div className="row mb-2 holo sticky-top">
+      <div className="row mb-2 holo ">
         <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
           <h1>{player.name}</h1>
           <LevelComponent level={player.level} />
           <ExperienceComponent experience={player.experience} />
         </div>
-
+      </div>
+      {/* <div className="row mb-2 holo sticky-top">
         <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
           <HealthComponent health={player.health} />
           <EnergyComponent energy={player.energy} />
           <CreditsComponent credits={player.credits} />
         </div>
-      </div>
+      </div> */}
 
-      <Tabs defaultActiveKey="items" id="game-tabs">
-        <Tab eventKey="items" title="Market" className="marketplace">
-          <ItemsComponent
-            itemData={itemsData["Energy Cores"]}
-            selectedItem="Alpha Core"
-          />
+      <div className="row  ">
+        <Tabs defaultActiveKey="items" id="game-tabs">
+          <Tab eventKey="items" title="Market" className="marketplace ">
+            <ItemsComponent
+              itemData={itemsData["Energy Cores"]}
+              selectedItem="Alpha Core"
+            />
 
-          <div className="row heightControl">
-            <div className="col-12 col-md-6">
-              <NotificationsComponent />
+            <div className="row heightControl">
+              <div className="col-12 col-md-6">
+                <NotificationsComponent />
+              </div>
+
+              <div className="col-12 col-md-6 mb-5">
+                <TransactionsComponent />
+              </div>
             </div>
+          </Tab>
 
-            <div className="col-12 col-md-6 mb-5">
-              <TransactionsComponent />
+          <Tab eventKey="missions" title="Missions">
+            <MissionsComponent />
+          </Tab>
+
+          <Tab eventKey="properties" title="Properties" className="properties">
+            <PropertiesComponent />
+          </Tab>
+
+          <Tab eventKey="health" title="Medlab" className="shipbed">
+            <div className="row mb-3 text-center">
+              <HealthRecoveryComponent />
             </div>
-          </div>
-        </Tab>
+          </Tab>
 
-        <Tab eventKey="missions" title="Missions">
-          <MissionsComponent />
-        </Tab>
-
-        <Tab eventKey="properties" title="Properties" className="properties">
-          <PropertiesComponent />
-        </Tab>
-
-        <Tab eventKey="health" title="Medlab" className="shipbed">
-          <div className="row mb-3 text-center">
-            <HealthRecoveryComponent />
-          </div>
-        </Tab>
-
-        <Tab eventKey="equipment" title="Equipment" className="shipeqp">
-          <div className="mb-5 text-center">
-            <EquipmentStore />
-          </div>
-        </Tab>
-        <Tab eventKey="upgrades" title="Upgrades">
-          <div className="mb-5 text-center">
-            <InventoryUpgradeComponent />
-          </div>
-        </Tab>
-      </Tabs>
-      <div className="col-12 text-center">
-        <button onClick={handleNavigate}>to dashboard</button>
+          <Tab eventKey="equipment" title="Equipment" className="shipeqp">
+            <div className="mb-5 text-center">
+              <EquipmentStore />
+            </div>
+          </Tab>
+          <Tab eventKey="upgrades" title="Upgrades">
+            <div className="mb-5 text-center">
+              <InventoryUpgradeComponent />
+            </div>
+          </Tab>
+        </Tabs>
+        <div className="col-12 text-center">
+          <button onClick={handleNavigate}>to dashboard</button>
+        </div>
       </div>
     </div>
   );

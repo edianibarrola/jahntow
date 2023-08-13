@@ -18,6 +18,36 @@ body {
   /* Set the font color for the text on the page */
   color: #ffffff;
 }
+.characterleathers {
+  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691961881/characterleathers_i4yke7.png");
+
+  background-size: cover;
+  /* Center the background image horizontally and vertically */
+  background-position: bottom bottom;
+  /* Fix the background image to prevent scrolling with the content */
+  background-attachment: fixed;
+  /* Add some padding to the body to ensure the content doesn't overlap with the background */
+  padding: 20px;
+  /* Set a fallback background color in case the image is not available or fails to load */
+
+  /* Set the font color for the text on the page */
+  background-repeat: no-repeat;
+}
+.charactersand {
+  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691961889/charactersand_epuzoc.png");
+
+  background-size: cover;
+  /* Center the background image horizontally and vertically */
+  background-position: center bottom;
+  /* Fix the background image to prevent scrolling with the content */
+  background-attachment: fixed;
+  /* Add some padding to the body to ensure the content doesn't overlap with the background */
+  padding: 20px;
+  /* Set a fallback background color in case the image is not available or fails to load */
+
+  /* Set the font color for the text on the page */
+  background-repeat: no-repeat;
+}
 .ship {
   background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691786341/_edian__The_view_from_the_pilots_seat_looking_out_the_front_of__255c9199-b286-4b79-a4c1-519be74b4745_z4yyx9.png");
 

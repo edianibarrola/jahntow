@@ -9,7 +9,7 @@ export function RegisterUser() {
   const { store, actions } = React.useContext(Context);
 
   return (
-    <div className="container">
+    <div className="container vh-100 charactersand">
       <h3>Register User</h3>
       {store.authError && (
         <div className="alert alert-danger">Authentication Error</div>

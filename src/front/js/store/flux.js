@@ -1058,6 +1058,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           .then((response) => {
             if (response.status !== 200) {
               throw new Error("Failed to update player in database");
+              localStorage.removeItem("authToken"); // Remove the authToken from localStorage
             }
           })
           .catch((error) =>
