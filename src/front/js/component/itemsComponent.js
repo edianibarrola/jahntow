@@ -157,12 +157,10 @@ const ItemsComponent = () => {
           <button onClick={handleSell}>Sell</button>
         </div>
       </div>
+
       <div className="row">
         {Object.entries(itemsData).map(([category, items]) => (
-          <div
-            className="col-12 col-md-6 pl-5 pr-5 text-center holo"
-            key={category}
-          >
+          <div className="col-12  text-center holo" key={category}>
             <h4 className="text-center">{category}</h4>
             <ul>
               {Object.entries(items)

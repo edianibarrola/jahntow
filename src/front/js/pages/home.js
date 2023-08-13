@@ -86,7 +86,7 @@ export const Home = () => {
     <div className="mt-2 container holobg">
       <div className="row mb-2 holo ">
         <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
-          <h1>{player.name}</h1>
+          <div className="col-4">{player.name}</div>
           <LevelComponent level={player.level} />
           <ExperienceComponent experience={player.experience} />
         </div>
