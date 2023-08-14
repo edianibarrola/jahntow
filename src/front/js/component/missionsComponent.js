@@ -165,7 +165,7 @@ const MissionsComponent = () => {
       </div>
 
       <div className="row  mb-5">
-        <Accordion defaultActiveKey="0">
+        <Accordion>
           {Object.entries(missionsData)
             .filter(([, missionData]) => missionData.Rank <= player.level)
             .map(([missionName, missionData], index) => (

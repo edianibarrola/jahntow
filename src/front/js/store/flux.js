@@ -1241,14 +1241,21 @@ const getState = ({ getStore, getActions, setStore }) => {
         const store = getStore();
         const experienceNeeded = store.player.level * 100; // You can adjust this formula as per your requirement
         if (store.player.experience >= experienceNeeded) {
+          const newLevel = store.player.level + 1;
+
           const updatedPlayer = {
             ...store.player,
-            level: store.player.level + 1,
+            level: newLevel,
             experience: 0,
+            health: store.player.health + newLevel * 100,
+            energy: store.player.energy + newLevel * 100,
+            credits: store.player.credits + newLevel * 1000,
           };
+
           setStore({ ...store, player: updatedPlayer });
           updatePlayerInLocalStorage(updatedPlayer);
           getActions().updatePlayerInDatabase(updatedPlayer);
+          alert(`Congratulations! You've leveled up to Level ${newLevel}!`);
         }
       },
       startEnergyRegen: () => {

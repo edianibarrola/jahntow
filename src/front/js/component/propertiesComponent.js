@@ -90,7 +90,7 @@ const PropertiesComponent = () => {
         </div>
       </div>
       <div className="row">
-        <Accordion defaultActiveKey="0">
+        <Accordion>
           {unlockedCategories.map((categoryName, index) => (
             <Accordion.Item
               className="holo"
