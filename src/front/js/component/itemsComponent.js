@@ -139,7 +139,7 @@ const ItemsComponent = () => {
             <option value="">Select an item</option>
             {Object.entries(itemsData).map(([category, items]) =>
               Object.entries(items)
-                .filter(([, data]) => data.Rank <= maxRank)
+                .filter(([, data]) => data.Rank <= player.level)
                 .map(([itemName]) => (
                   <option key={itemName} value={itemName}>
                     {itemName}
