@@ -796,8 +796,8 @@ const healthRecoveryItems = {
   Energy: {
     "EnergyStim Injector": {
       Cost: 5000,
-      "Health Gain": 25,
-      "Energy Gain": 15,
+      "Health Gain": 0,
+      "Energy Gain": 25,
       Rank: 1,
       Cooldown: 25,
     },
