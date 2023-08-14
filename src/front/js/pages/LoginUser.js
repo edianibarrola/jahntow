@@ -15,7 +15,7 @@ export function LoginUser() {
   }, [token]);
 
   return (
-    <div className="container vh-100 characterleathers">
+    <div className="container vh-100 characterlogo">
       <h3>Login User</h3>
       {store.authError && (
         <div className="alert alert-danger">Authentication Error</div>

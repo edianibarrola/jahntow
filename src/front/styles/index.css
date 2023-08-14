@@ -18,6 +18,21 @@ body {
   /* Set the font color for the text on the page */
   color: #ffffff;
 }
+.characterlogo {
+  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1692047254/_edian__Human_surviving_on_a_dessert_alien_planet_o7ngyv.png");
+
+  background-size: contain;
+  /* Center the background image horizontally and vertically */
+  background-position: center center;
+  /* Fix the background image to prevent scrolling with the content */
+  /* background-attachment: fixed; */
+  /* Add some padding to the body to ensure the content doesn't overlap with the background */
+  padding: 20px;
+  /* Set a fallback background color in case the image is not available or fails to load */
+
+  /* Set the font color for the text on the page */
+  background-repeat: no-repeat;
+}
 .characterleathers {
   background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691961881/characterleathers_i4yke7.png");
 
