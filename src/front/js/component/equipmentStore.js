@@ -1,5 +1,8 @@
 import React, { useContext, useState } from "react";
 import { Context } from "../store/appContext";
+import HealthComponent from "./healthComponent";
+import EnergyComponent from "./energyComponent";
+import CreditsComponent from "./creditsComponent";
 
 const EquipmentShopComponent = () => {
   const { store, actions } = useContext(Context);
@@ -82,57 +85,66 @@ const EquipmentShopComponent = () => {
 
   return (
     <div className="row  mb-3">
-      <div className="col-12 text-center">
-        <h1>Equipment Shop</h1>
+      <div className="row  sticky-top holo text-center">
+        <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
+          <HealthComponent health={player.health} />
+          <EnergyComponent energy={player.energy} />
+          <CreditsComponent credits={player.credits} />
+        </div>
+        <div className="col-12 text-center">
+          <p>Equipment:</p>
+        </div>
+
+        <div className="col-12 text-center">
+          {/* Display buy menu */}
+
+          <select onChange={handleSelectChange} value={selectedItem}>
+            <option value="">Select an equipment</option>
+            {Object.entries(unlockedEquipmentItems).map(([category, items]) =>
+              Object.entries(items).map(([itemName]) => (
+                <option key={itemName} value={itemName}>
+                  {itemName}
+                </option>
+              ))
+            )}
+          </select>
+          <input
+            type="number"
+            min="1"
+            value={quantity}
+            onChange={handleQuantityChange}
+          />
+          <button onClick={handleBuyEquipment}>Buy</button>
+        </div>
       </div>
 
-      {/* Display unlocked equipment items */}
-      {Object.entries(unlockedEquipmentItems).map(([category, items]) => (
-        <div
-          className="col-12 col-md-6 pl-5 pr-5 text-center holo"
-          key={category}
-        >
-          <h4 className="text-center">{category}</h4>
-          <ul>
-            {Object.entries(items).map(([itemName, data]) => (
-              <li
-                key={itemName}
-                className="d-flex justify-content-between align-items-center"
-              >
-                <span>
-                  {itemName}: Cost: {parseFloat(data["Base Cost"]).toFixed(2)}
-                </span>
-                {player.equipment[itemName] && (
-                  <span className="ml-auto">
-                    Qty: {player.equipment[itemName].quantity}
+      <div className="row">
+        {/* Display unlocked equipment items */}
+        {Object.entries(unlockedEquipmentItems).map(([category, items]) => (
+          <div
+            className="col-12 col-md-6 pl-5 pr-5 text-center holo"
+            key={category}
+          >
+            <h4 className="text-center">{category}</h4>
+            <ul>
+              {Object.entries(items).map(([itemName, data]) => (
+                <li
+                  key={itemName}
+                  className="d-flex justify-content-between align-items-center"
+                >
+                  <span>
+                    {itemName}: Cost: {parseFloat(data["Base Cost"]).toFixed(2)}
                   </span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-
-      <div className="col-12 text-center">
-        {/* Display buy menu */}
-        <p>Buy equipment:</p>
-        <select onChange={handleSelectChange} value={selectedItem}>
-          <option value="">Select an equipment</option>
-          {Object.entries(unlockedEquipmentItems).map(([category, items]) =>
-            Object.entries(items).map(([itemName]) => (
-              <option key={itemName} value={itemName}>
-                {itemName}
-              </option>
-            ))
-          )}
-        </select>
-        <input
-          type="number"
-          min="1"
-          value={quantity}
-          onChange={handleQuantityChange}
-        />
-        <button onClick={handleBuyEquipment}>Buy</button>
+                  {player.equipment[itemName] && (
+                    <span className="ml-auto">
+                      Qty: {player.equipment[itemName].quantity}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     </div>
   );

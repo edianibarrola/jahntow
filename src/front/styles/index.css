@@ -23,9 +23,9 @@ body {
 
   background-size: cover;
   /* Center the background image horizontally and vertically */
-  background-position: bottom bottom;
+  background-position: left right;
   /* Fix the background image to prevent scrolling with the content */
-  background-attachment: fixed;
+  /* background-attachment: fixed; */
   /* Add some padding to the body to ensure the content doesn't overlap with the background */
   padding: 20px;
   /* Set a fallback background color in case the image is not available or fails to load */
@@ -38,9 +38,9 @@ body {
 
   background-size: cover;
   /* Center the background image horizontally and vertically */
-  background-position: center bottom;
+  background-position: right center;
   /* Fix the background image to prevent scrolling with the content */
-  background-attachment: fixed;
+  /* background-attachment: fixed; */
   /* Add some padding to the body to ensure the content doesn't overlap with the background */
   padding: 20px;
   /* Set a fallback background color in case the image is not available or fails to load */
@@ -53,7 +53,7 @@ body {
 
   background-size: cover;
   /* Center the background image horizontally and vertically */
-  background-position: center bottom;
+  background-position: center center;
   /* Fix the background image to prevent scrolling with the content */
   background-attachment: fixed;
   /* Add some padding to the body to ensure the content doesn't overlap with the background */

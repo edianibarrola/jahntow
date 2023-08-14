@@ -118,7 +118,7 @@ export const Home = () => {
             </div>
           </Tab>
 
-          <Tab eventKey="missions" title="Missions">
+          <Tab eventKey="missions" title="Missions" className="ship">
             <MissionsComponent />
           </Tab>
 
@@ -126,18 +126,18 @@ export const Home = () => {
             <PropertiesComponent />
           </Tab>
 
+          <Tab eventKey="equipment" title="Equipment" className="shipeqp">
+            <div className="mb-5 text-center">
+              <EquipmentStore />
+            </div>
+          </Tab>
           <Tab eventKey="health" title="Medlab" className="shipbed">
             <div className="row mb-3 text-center">
               <HealthRecoveryComponent />
             </div>
           </Tab>
 
-          <Tab eventKey="equipment" title="Equipment" className="shipeqp">
-            <div className="mb-5 text-center">
-              <EquipmentStore />
-            </div>
-          </Tab>
-          <Tab eventKey="upgrades" title="Upgrades">
+          <Tab eventKey="upgrades" title="Upgrades" className="shipinside">
             <div className="mb-5 text-center">
               <InventoryUpgradeComponent />
             </div>

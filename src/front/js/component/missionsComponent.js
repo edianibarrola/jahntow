@@ -131,9 +131,9 @@ const MissionsComponent = () => {
   };
 
   return (
-    <div className="row ship  mb-3">
+    <div className="row mb-3">
       <div className="row  sticky-top holo text-center">
-        <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
+        <div className="row pt-2 pb-1 m-0 mb-1 justify-content-around text-center">
           <HealthComponent health={player.health} />
           <EnergyComponent energy={player.energy} />
           <CreditsComponent credits={player.credits} />
@@ -164,7 +164,7 @@ const MissionsComponent = () => {
         </div>
       </div>
 
-      <div className="row">
+      <div className="row  mb-5">
         <Accordion defaultActiveKey="0">
           {Object.entries(missionsData)
             .filter(([, missionData]) => missionData.Rank <= player.level)
