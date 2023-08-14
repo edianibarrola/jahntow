@@ -967,11 +967,13 @@ const defaultPlayer = {
   experience: 0,
   health: 100,
   energy: 100,
-  credits: 1000,
+  credits: 5000,
   equipment: {},
   inventory: {},
   properties: {},
   maxInventoryCount: 10,
+  maxHealth: 100,
+  maxEnergy: 100,
 };
 
 const getState = ({ getStore, getActions, setStore }) => {
@@ -1247,8 +1249,8 @@ const getState = ({ getStore, getActions, setStore }) => {
             ...store.player,
             level: newLevel,
             experience: 0,
-            health: store.player.health + newLevel * 100,
-            energy: store.player.energy + newLevel * 100,
+            // health: store.player.health + newLevel * 100,
+            // energy: store.player.energy + newLevel * 100,
             credits: store.player.credits + newLevel * 1000,
           };
 
@@ -1261,17 +1263,29 @@ const getState = ({ getStore, getActions, setStore }) => {
       startEnergyRegen: () => {
         const interval = setInterval(() => {
           const store = getStore();
+
+          // Calculate new energy value
+          let newEnergy = store.player.energy + 1;
+
+          // Check if newEnergy is greater than or equal to maxEnergy
+          if (newEnergy >= store.player.maxEnergy) {
+            newEnergy = store.player.maxEnergy;
+          }
+
           const updatedPlayer = {
             ...store.player,
-            energy: store.player.energy + 1,
+            energy: newEnergy,
           };
+
           setStore({
             ...store,
             player: updatedPlayer,
           });
-        }, 10 * 1000); // 20 seconds
+        }, 10 * 1000); // 10 seconds
+
         return interval;
       },
+
       adjustPrices: () => {
         // Get the current store
         const store = getStore();

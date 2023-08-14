@@ -22,13 +22,28 @@ const HealthRecoveryComponent = () => {
       return;
     }
 
+    // Check if player's health is already at or above maxHealth
+    if (player.health >= player.maxHealth) {
+      alert("Your health is already at its maximum. You can't use this item.");
+      return;
+    }
+
     if (player.credits >= healthRecoveryItems[category][item].Cost) {
-      // Deduct cost from player's credits
+      // Calculate the potential new health after using the item
+      const potentialNewHealth =
+        player.health + healthRecoveryItems[category][item]["Health Gain"];
+
+      // Adjust the actual health gain to not exceed maxHealth
+      const actualHealthGain =
+        potentialNewHealth > player.maxHealth
+          ? player.maxHealth - player.health
+          : healthRecoveryItems[category][item]["Health Gain"];
+
+      // Update player's health and energy
       const updatedPlayer = {
         ...player,
         credits: player.credits - healthRecoveryItems[category][item].Cost,
-        health:
-          player.health + healthRecoveryItems[category][item]["Health Gain"],
+        health: player.health + actualHealthGain,
         energy:
           player.energy + healthRecoveryItems[category][item]["Energy Gain"],
       };
@@ -40,9 +55,17 @@ const HealthRecoveryComponent = () => {
         [item]: currentTime,
       });
 
-      alert(
-        `You used ${item}! Your health increased by ${healthRecoveryItems[category][item]["Health Gain"]} and gained: ${healthRecoveryItems[category][item]["Energy Gain"]} energy`
-      );
+      if (
+        actualHealthGain < healthRecoveryItems[category][item]["Health Gain"]
+      ) {
+        alert(
+          `You used ${item}! Your health increased by ${actualHealthGain}, reaching your maximum health. You also gained ${healthRecoveryItems[category][item]["Energy Gain"]} energy.`
+        );
+      } else {
+        alert(
+          `You used ${item}! Your health increased by ${actualHealthGain} and you gained ${healthRecoveryItems[category][item]["Energy Gain"]} energy.`
+        );
+      }
     } else {
       alert("You do not have enough credits for this item.");
     }

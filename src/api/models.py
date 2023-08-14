@@ -32,6 +32,8 @@ class Player(db.Model):
     inventory = db.Column(db.JSON, default=dict)
     properties = db.Column(db.JSON, default=dict)
     maxInventoryCount = db.Column(db.Integer, default=10)
+    maxHealth = db.Column(db.Integer, default=100)
+    maxEnergy = db.Column(db.Integer, default=100)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # linking the player to a user
     
     User.player = db.relationship("Player", uselist=False, back_populates="user")
@@ -54,6 +56,8 @@ class Player(db.Model):
             "equipment": self.equipment,
             "inventory": self.inventory,
             "properties": self.properties,
-            "maxInventoryCount": self.maxInventoryCount
+            "maxInventoryCount": self.maxInventoryCount,
+            "maxHealth": self.maxHealth,
+            "maxEnergy": self.maxEnergy
         }
 
