@@ -49,7 +49,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Heading towards the asteroid belt for mining operations.",
     successMessage:
-      "E.c.h.o.: Successfully mined precious resources from the asteroid, gaining 300 credits and 75 experience.",
+      "E.c.h.o.: Successfully mined precious resources from the asteroid, gaining 3000 credits and 75 experience.",
     failureMessage:
       "E.c.h.o.: Mining operations were not successful. Better luck next time.",
   },
@@ -65,7 +65,7 @@ const missionsData = {
     "Health Effect": 12,
     startMessage: "E.c.h.o.: Scanning space debris for valuable salvage.",
     successMessage:
-      "E.c.h.o.: Salvage successful. Recovered items translated to 450 credits and 112 experience.",
+      "E.c.h.o.: Salvage successful. Recovered items translated to 4500 credits and 112 experience.",
     failureMessage:
       "E.c.h.o.: Salvage mission was unsuccessful. Nothing of value found.",
   },
@@ -82,7 +82,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Setting coordinates to a rumored alien artifact location.",
     successMessage:
-      "E.c.h.o.: Artifact retrieved successfully, granting you 660 credits and 165 experience.",
+      "E.c.h.o.: Artifact retrieved successfully, granting you 6600 credits and 165 experience.",
     failureMessage:
       "E.c.h.o.: The mission to retrieve the alien artifact failed. It seems we were not the only ones after it.",
   },
@@ -100,7 +100,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Initiating trading protocols with neighboring galactic entities.",
     successMessage:
-      "E.c.h.o.: Trade successful. The profits earned you 900 credits and 225 experience.",
+      "E.c.h.o.: Trade successful. The profits earned you 9000 credits and 225 experience.",
     failureMessage:
       "E.c.h.o.: The trade negotiation failed. No profits this time.",
   },
@@ -117,7 +117,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Preparing for a deep-space exploration mission to uncharted territories.",
     successMessage:
-      "E.c.h.o.: Exploration successful. New regions charted and you earned 1200 credits and 300 experience.",
+      "E.c.h.o.: Exploration successful. New regions charted and you earned 12000 credits and 300 experience.",
     failureMessage:
       "E.c.h.o.: The exploration mission faced unforeseen challenges. No new data collected.",
   },
@@ -136,7 +136,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Enrolling in the intergalactic starship racing event.",
     successMessage:
-      "E.c.h.o.: You won the race! Credited 1560 credits and 390 experience for your performance.",
+      "E.c.h.o.: You won the race! Credited 15600 credits and 390 experience for your performance.",
     failureMessage:
       "E.c.h.o.: It was a tough race. Didn't make it to the top this time.",
   },
@@ -155,7 +155,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Picking up distress signals. Initiating rescue protocols.",
     successMessage:
-      "E.c.h.o.: Rescue successful! You've been credited with 1950 credits and 487 experience.",
+      "E.c.h.o.: Rescue successful! You've been credited with 19500 credits and 487 experience.",
     failureMessage:
       "E.c.h.o.: The rescue operation faced challenges. Not everyone made it back.",
   },
@@ -173,7 +173,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Approaching the event horizon for black hole research.",
     successMessage:
-      "E.c.h.o.: Data collected successfully. Your findings yielded 2400 credits and 600 experience.",
+      "E.c.h.o.: Data collected successfully. Your findings yielded 24000 credits and 600 experience.",
     failureMessage:
       "E.c.h.o.: The black hole's gravity was stronger than anticipated. Research was compromised.",
   },
@@ -191,7 +191,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Establishing communication channels for diplomatic discussions with alien civilizations.",
     successMessage:
-      "E.c.h.o.: Diplomacy successful. Established friendly relations and earned 3000 credits and 750 experience.",
+      "E.c.h.o.: Diplomacy successful. Established friendly relations and earned 30000 credits and 750 experience.",
     failureMessage:
       "E.c.h.o.: The diplomatic mission did not go as planned. The aliens were not receptive.",
   },
@@ -210,7 +210,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Alert! Hostile forces detected. Preparing for defense.",
     successMessage:
-      "E.c.h.o.: Galaxy successfully defended. Your bravery has earned you 3600 credits and 900 experience.",
+      "E.c.h.o.: Galaxy successfully defended. Your bravery has earned you 36000 credits and 900 experience.",
     failureMessage:
       "E.c.h.o.: The galaxy defense was challenging. Some areas suffered damage.",
   },
@@ -226,7 +226,7 @@ const missionsData = {
     "Health Effect": 30,
     startMessage: "E.c.h.o.: Initiating deep dive into quantum mechanics.",
     successMessage:
-      "E.c.h.o.: Successfully mastered quantum mechanics! Earned 4350 credits and 1087 experience.",
+      "E.c.h.o.: Successfully mastered quantum mechanics! Earned 43500 credits and 1087 experience.",
     failureMessage:
       "E.c.h.o.: Quantum Mechanics is perplexing. Couldn't completely grasp the concept.",
   },
@@ -245,7 +245,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Setting course for uncharted territories in the interstellar realm.",
     successMessage:
-      "E.c.h.o.: Exploration successful! Discovered new systems and earned 5250 credits and 1312 experience.",
+      "E.c.h.o.: Exploration successful! Discovered new systems and earned 52500 credits and 1312 experience.",
     failureMessage:
       "E.c.h.o.: The uncharted territories proved challenging. Exploration was not fully successful.",
   },
@@ -262,7 +262,7 @@ const missionsData = {
     "Health Effect": 34,
     startMessage: "E.c.h.o.: Detected a temporal anomaly. Commencing research.",
     successMessage:
-      "E.c.h.o.: Successfully researched the temporal anomaly! Rewarded 6300 credits and 1575 experience.",
+      "E.c.h.o.: Successfully researched the temporal anomaly! Rewarded 63000 credits and 1575 experience.",
     failureMessage:
       "E.c.h.o.: The temporal anomaly was unstable. Research faced setbacks.",
   },
@@ -281,7 +281,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Embarking on a quest to uncover the mysteries of ancient galactic civilizations.",
     successMessage:
-      "E.c.h.o.: Successful excavation! Unearthed artifacts worth 7500 credits and 1875 experience.",
+      "E.c.h.o.: Successful excavation! Unearthed artifacts worth 75000 credits and 1875 experience.",
     failureMessage:
       "E.c.h.o.: The ruins were labyrinthine and perplexing. Some artifacts remain elusive.",
   },
@@ -301,7 +301,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Launching probe to research the origins of the universe.",
     successMessage:
-      "E.c.h.o.: Significant discoveries made! Earned 9000 credits and 2250 experience.",
+      "E.c.h.o.: Significant discoveries made! Earned 90000 credits and 2250 experience.",
     failureMessage:
       "E.c.h.o.: The vastness of the universe is overwhelming. Some mysteries remain unsolved.",
   },
@@ -320,7 +320,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Preparing to venture into exodimensions. Unknown challenges await.",
     successMessage:
-      "E.c.h.o.: Successfully navigated the exodimensions! Secured 10500 credits and 2625 experience.",
+      "E.c.h.o.: Successfully navigated the exodimensions! Secured 105000 credits and 2625 experience.",
     failureMessage:
       "E.c.h.o.: The exodimensions are unpredictable. Could not complete the mission.",
   },
@@ -338,7 +338,7 @@ const missionsData = {
     "Health Effect": 42,
     startMessage: "E.c.h.o.: Initiating procedures to manipulate dark matter.",
     successMessage:
-      "E.c.h.o.: Dark matter manipulation successful! Acquired 12300 credits and 3075 experience.",
+      "E.c.h.o.: Dark matter manipulation successful! Acquired 123000 credits and 3075 experience.",
     failureMessage:
       "E.c.h.o.: Failed to control the elusive dark matter. Mission aborted.",
   },
@@ -355,7 +355,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Engaging in diplomatic talks with advanced extraterrestrial civilizations.",
     successMessage:
-      "E.c.h.o.: Diplomacy successful! Strengthened interstellar ties and earned 14400 credits and 3600 experience.",
+      "E.c.h.o.: Diplomacy successful! Strengthened interstellar ties and earned 144000 credits and 3600 experience.",
     failureMessage:
       "E.c.h.o.: Diplomatic talks were challenging. Not all objectives achieved.",
   },
@@ -373,7 +373,7 @@ const missionsData = {
     "Health Effect": 46,
     startMessage: "E.c.h.o.: Commencing analysis of mysterious void phenomena.",
     successMessage:
-      "E.c.h.o.: Analysis complete! Deciphered void secrets and obtained 16800 credits and 4200 experience.",
+      "E.c.h.o.: Analysis complete! Deciphered void secrets and obtained 168000 credits and 4200 experience.",
     failureMessage:
       "E.c.h.o.: The void remains enigmatic. Analysis was inconclusive.",
   },
@@ -393,7 +393,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Initiating protocols to activate the cosmic nexus.",
     successMessage:
-      "E.c.h.o.: Cosmic Nexus activated! Gained 19500 credits and 4875 experience.",
+      "E.c.h.o.: Cosmic Nexus activated! Gained 195000 credits and 4875 experience.",
     failureMessage:
       "E.c.h.o.: The cosmic nexus proved too complex. Activation failed.",
   },
@@ -413,7 +413,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Preparing to investigate disturbances in the temporal loop.",
     successMessage:
-      "E.c.h.o.: Temporal loop stabilized! Retrieved 22500 credits and 5625 experience.",
+      "E.c.h.o.: Temporal loop stabilized! Retrieved 225000 credits and 5625 experience.",
     failureMessage:
       "E.c.h.o.: Time anomalies detected. Investigation proved challenging.",
   },
@@ -433,7 +433,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Initiating navigation through a tumultuous nebular storm.",
     successMessage:
-      "E.c.h.o.: Successfully navigated the storm! Acquired 25800 credits and 6450 experience.",
+      "E.c.h.o.: Successfully navigated the storm! Acquired 258000 credits and 6450 experience.",
     failureMessage:
       "E.c.h.o.: Nebular turbulence too intense. Navigation unsuccessful.",
   },
@@ -453,7 +453,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Mission is to retrieve a rare celestial artifact from an ancient site.",
     successMessage:
-      "E.c.h.o.: Artifact secured! Obtained 29400 credits and 7350 experience.",
+      "E.c.h.o.: Artifact secured! Obtained 294000 credits and 7350 experience.",
     failureMessage:
       "E.c.h.o.: Artifact retrieval mission faced unforeseen challenges.",
   },
@@ -473,7 +473,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Attempting to contain the imminent supernova and harness its energy.",
     successMessage:
-      "E.c.h.o.: Supernova successfully contained! 33000 credits and 8250 experience gained.",
+      "E.c.h.o.: Supernova successfully contained! 330000 credits and 8250 experience gained.",
     failureMessage:
       "E.c.h.o.: Supernova containment measures failed. Energy release was catastrophic.",
   },
@@ -495,7 +495,7 @@ const missionsData = {
     startMessage:
       "E.c.h.o.: Launching probes to map the event horizon of a black hole.",
     successMessage:
-      "E.c.h.o.: Successful mapping! Collected valuable data and 37200 credits along with 9300 experience.",
+      "E.c.h.o.: Successful mapping! Collected valuable data and 372000 credits along with 9300 experience.",
     failureMessage:
       "E.c.h.o.: Probes lost to the gravitational pull. Black hole mapping unsuccessful.",
   },
