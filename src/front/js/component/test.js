@@ -1,371 +1,492 @@
-const missionsData = {
-  "Asteroid Mining": {
+const storyMissionsData = {
+  "Rogue Drone Takedown": {
+    species: "Aelithians",
+    "Required Credits": 600,
+    "Required Energy": 6,
+    Reward: 1300,
+    Experience: 25,
+    Rank: 1,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space.",
+    successMessage:
+      "ECHO: Drones eliminated successfully. You've earned 1300 credits and 25 experience.",
+    failureMessage:
+      "ECHO: Our attempt to neutralize the rogue drones failed. We must ensure Aelithian safety.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Cultural Espionage": {
+    species: "Aelithians",
+    "Required Credits": 800,
+    "Required Energy": 8,
+    Reward: 1800,
+    Experience: 35,
+    Rank: 3,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Jahntow, delve into the shadows of Corporation activities. Infiltrate their base and unveil their plans against Aelithians.",
+    successMessage:
+      "ECHO: Jahntow, we've successfully gathered intelligence on Corporation activities. Rewarded 1800 credits and 35 experience.",
+    failureMessage:
+      "ECHO: Our attempt to infiltrate the Corporation base failed. We must refine our approach.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Energized Negotiations": {
+    species: "Aelithians",
     "Required Credits": 1000,
     "Required Energy": 10,
-    Reward: 3000,
-    Experience: 75,
+    Reward: 2300,
+    Experience: 45,
+    Rank: 5,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: The Corporation seeks to disrupt Aelithian energy trade. Engage in negotiations to preserve your species' vitality.",
+    successMessage:
+      "ECHO: Negotiations were successful. Aelithian energy trade remains strong, earning you 2300 credits and 45 experience.",
+    failureMessage:
+      "ECHO: Our negotiation attempts faltered. We must ensure the energy trade's stability.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Celestial Harmony": {
+    species: "Aelithians",
+    "Required Credits": 1400,
+    "Required Energy": 14,
+    Reward: 3300,
+    Experience: 65,
+    Rank: 7,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Unite with Aelithian leaders in a celestial ritual. Counter the Corporation's efforts to disrupt your cosmic harmony.",
+    successMessage:
+      "ECHO: The celestial ritual was a success. Aelithian cosmic harmony remains intact, earning you 3300 credits and 65 experience.",
+    failureMessage:
+      "ECHO: Our attempt to maintain cosmic harmony faced opposition. We must continue safeguarding Aelithian traditions.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+
+  "Temporal Labyrinth": {
+    species: "Cepharians",
+    "Required Credits": 700,
+    "Required Energy": 7,
+    Reward: 1500,
+    Experience: 30,
     Rank: 2,
     requiredEquipment: {},
+    "Health Effect": 0,
     startMessage:
-      "E.c.h.o.: Heading towards the asteroid belt for mining operations.",
+      "ECHO: The Cepharians face a temporal distortion crisis. Navigate the labyrinth of time to restore their reality's stability.",
     successMessage:
-      "E.c.h.o.: Successfully mined precious resources from the asteroid, gaining 300 credits and 75 experience.",
+      "ECHO: The temporal distortion crisis has been resolved. You've earned 1500 credits and 30 experience.",
     failureMessage:
-      "E.c.h.o.: Mining operations were not successful. Better luck next time.",
+      "ECHO: Our attempt to stabilize Cepharian reality's timeline failed. We must safeguard their existence.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
   },
-  "Space Salvage": {
-    "Required Credits": 1500,
-    "Required Energy": 15,
-    Reward: 4500,
-    Experience: 112,
+  "Subterranean Reclamation": {
+    species: "Cepharians",
+    "Required Credits": 900,
+    "Required Energy": 9,
+    Reward: 2000,
+    Experience: 40,
     Rank: 4,
     requiredEquipment: {},
-    startMessage: "E.c.h.o.: Scanning space debris for valuable salvage.",
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Descend into the Cepharian subterranean depths. Reclaim their ancient technology from Corporation's clutches.",
     successMessage:
-      "E.c.h.o.: Salvage successful. Recovered items translated to 450 credits and 112 experience.",
+      "ECHO: Ancient technology retrieved successfully. You've earned 2000 credits and 40 experience.",
     failureMessage:
-      "E.c.h.o.: Salvage mission was unsuccessful. Nothing of value found.",
+      "ECHO: Our attempt to reclaim ancient technology faced obstacles. We must secure Cepharian legacy.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
   },
-  "Alien Artifact Retrieval": {
+  "Astral Harmonics": {
+    species: "Cepharians",
+    "Required Credits": 1200,
+    "Required Energy": 12,
+    Reward: 2700,
+    Experience: 50,
+    Rank: 6,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Engage in an astral harmony ceremony with Cepharian leaders. Counter the Corporation's interference in their ethereal connection.",
+    successMessage:
+      "ECHO: Astral harmony achieved. Cepharian ethereal connection restored, earning you 2700 credits and 50 experience.",
+    failureMessage:
+      "ECHO: Our attempt to restore astral harmony faced opposition. We must preserve Cepharian spiritual unity.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Nebula Odyssey": {
+    species: "Cepharians",
+    "Required Credits": 1600,
+    "Required Energy": 16,
+    Reward: 3900,
+    Experience: 75,
+    Rank: 8,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Embark on a cosmic journey through nebulas with the Cepharians. Foil the Corporation's attempt to manipulate celestial energies.",
+    successMessage:
+      "ECHO: Nebula journey completed successfully. Cepharian celestial energies secured, earning you 3900 credits and 75 experience.",
+    failureMessage:
+      "ECHO: Our attempt to navigate the nebulas faced challenges. We must ensure Cepharian cosmic balance.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+
+  "Sonic Resonance": {
+    species: "Velorans",
+    "Required Credits": 800,
+    "Required Energy": 8,
+    Reward: 1700,
+    Experience: 30,
+    Rank: 2,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: The harmonious frequencies of Veloran music are disrupted by Corporation interference. Restore their sonic resonance.",
+    successMessage:
+      "ECHO: Sonic resonance restored successfully. You've earned 1700 credits and 30 experience.",
+    failureMessage:
+      "ECHO: Our attempt to restore sonic resonance faced obstacles. We must ensure Veloran musical harmony.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Crystal Core": {
+    species: "Velorans",
+    "Required Credits": 1000,
+    "Required Energy": 10,
+    Reward: 2200,
+    Experience: 40,
+    Rank: 4,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: The Corporation exploits Veloran crystal core energy sources. Engage in a high-stakes operation to safeguard their essence.",
+    successMessage:
+      "ECHO: Crystal core safeguarded successfully. You've earned 2200 credits and 40 experience.",
+    failureMessage:
+      "ECHO: Our attempt to safeguard the crystal core faced opposition. We must protect Veloran energy legacy.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Luminous Unison": {
+    species: "Velorans",
+    "Required Credits": 1300,
+    "Required Energy": 13,
+    Reward: 3000,
+    Experience: 50,
+    Rank: 6,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Join Veloran leaders in a luminous unison ceremony. Counter the Corporation's manipulation of their collective light.",
+    successMessage:
+      "ECHO: Luminous unison achieved. Veloran collective light restored, earning you 3000 credits and 50 experience.",
+    failureMessage:
+      "ECHO: Our attempt to restore luminous unison faced challenges. We must protect Veloran shared radiance.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Celestial Nexus": {
+    species: "Velorans",
+    "Required Credits": 1800,
+    "Required Energy": 18,
+    Reward: 4500,
+    Experience: 75,
+    Rank: 8,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Embark on a celestial pilgrimage with the Velorans. Foil the Corporation's attempt to distort their connection to stars.",
+    successMessage:
+      "ECHO: Celestial pilgrimage completed successfully. Veloran stellar connection secured, earning you 4500 credits and 75 experience.",
+    failureMessage:
+      "ECHO: Our attempt to navigate the celestial pilgrimage faced challenges. We must ensure Veloran starry bonds.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+
+  "Eclipse Ritual": {
+    species: "Drakorians",
+    "Required Credits": 900,
+    "Required Energy": 9,
+    Reward: 1900,
+    Experience: 30,
+    Rank: 2,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: The Drakorian Eclipse Ritual is threatened by the Corporation's intervention. Assist in ensuring their cosmic balance.",
+    successMessage:
+      "ECHO: Eclipse Ritual protected successfully. You've earned 1900 credits and 30 experience.",
+    failureMessage:
+      "ECHO: Our attempt to protect the Eclipse Ritual faced challenges. We must ensure Drakorian cosmic equilibrium.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Flameforged Relics": {
+    species: "Drakorians",
+    "Required Credits": 1100,
+    "Required Energy": 11,
+    Reward: 2400,
+    Experience: 40,
+    Rank: 4,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Retrieve the sacred Flameforged Relics from the Corporation's grasp. Rekindle the spirit of the Drakorian ancestors.",
+    successMessage:
+      "ECHO: Flameforged Relics reclaimed successfully. You've earned 2400 credits and 40 experience.",
+    failureMessage:
+      "ECHO: Our attempt to reclaim Flameforged Relics faced opposition. We must honor Drakorian ancestral heritage.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Stellar Aegis": {
+    species: "Drakorians",
+    "Required Credits": 1400,
+    "Required Energy": 14,
+    Reward: 3200,
+    Experience: 50,
+    Rank: 6,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Engage in the creation of the Stellar Aegis, a cosmic shield to ward off the Corporation's astral intrusion.",
+    successMessage:
+      "ECHO: Stellar Aegis successfully erected. Drakorian astral domain protected, earning you 3200 credits and 50 experience.",
+    failureMessage:
+      "ECHO: Our attempt to create the Stellar Aegis faced challenges. We must defend Drakorian astral sovereignty.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Celestial Confluence": {
+    species: "Drakorians",
+    "Required Credits": 1900,
+    "Required Energy": 19,
+    Reward: 4800,
+    Experience: 75,
+    Rank: 8,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Navigate the Celestial Confluence with the Drakorians. Counter the Corporation's manipulation of their cosmic connection.",
+    successMessage:
+      "ECHO: Celestial Confluence completed successfully. Drakorian cosmic connection reinforced, earning you 4800 credits and 75 experience.",
+    failureMessage:
+      "ECHO: Our attempt to navigate the Celestial Confluence faced challenges. We must ensure Drakorian celestial ties.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Luminous Correlation": {
+    species: "Thelorians",
+    "Required Credits": 1000,
+    "Required Energy": 10,
+    Reward: 2100,
+    Experience: 30,
+    Rank: 2,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: The harmonic light patterns of the Thelorian realm are being disrupted. Restore their luminous correlation.",
+    successMessage:
+      "ECHO: Luminous correlation restored successfully. You've earned 2100 credits and 30 experience.",
+    failureMessage:
+      "ECHO: Our attempt to restore luminous correlation faced obstacles. We must ensure Thelorian radiant unity.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Ethereal Nexus": {
+    species: "Thelorians",
+    "Required Credits": 1200,
+    "Required Energy": 12,
+    Reward: 2700,
+    Experience: 40,
+    Rank: 4,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: The Corporation seeks to exploit Thelorian ethereal nexus for power. Protect their interdimensional heritage.",
+    successMessage:
+      "ECHO: Ethereal nexus protected successfully. You've earned 2700 credits and 40 experience.",
+    failureMessage:
+      "ECHO: Our attempt to protect the ethereal nexus faced opposition. We must secure Thelorian multidimensional legacy.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Harmonic Resonance": {
+    species: "Thelorians",
+    "Required Credits": 1500,
+    "Required Energy": 15,
+    Reward: 3500,
+    Experience: 50,
+    Rank: 6,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Join Thelorian leaders in a harmonic resonance ceremony. Counter the Corporation's disruption of their cosmic connection.",
+    successMessage:
+      "ECHO: Harmonic resonance achieved. Thelorian cosmic connection restored, earning you 3500 credits and 50 experience.",
+    failureMessage:
+      "ECHO: Our attempt to restore harmonic resonance faced challenges. We must protect Thelorian celestial bonds.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Astral Rhapsody": {
+    species: "Thelorians",
+    "Required Credits": 2000,
+    "Required Energy": 20,
+    Reward: 5400,
+    Experience: 75,
+    Rank: 8,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Embark on an astral rhapsody through cosmic harmonies with the Thelorians. Prevent the Corporation's cosmic disharmony.",
+    successMessage:
+      "ECHO: Astral rhapsody completed successfully. Thelorian cosmic melodies protected, earning you 5400 credits and 75 experience.",
+    failureMessage:
+      "ECHO: Our attempt to navigate the astral rhapsody faced challenges. We must ensure Thelorian cosmic harmony.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+
+  "Celestial Echo": {
+    species: "Zeraphans",
+    "Required Credits": 1100,
+    "Required Energy": 11,
+    Reward: 2300,
+    Experience: 30,
+    Rank: 2,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: The ethereal echoes of the Zeraphan realm are fading. Revive their celestial harmonies for eternal existence.",
+    successMessage:
+      "ECHO: Celestial echoes revived successfully. You've earned 2300 credits and 30 experience.",
+    failureMessage:
+      "ECHO: Our attempt to revive celestial echoes faced obstacles. We must ensure Zeraphan ethereal vitality.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Nebula Synchrony": {
+    species: "Zeraphans",
+    "Required Credits": 1300,
+    "Required Energy": 13,
+    Reward: 2900,
+    Experience: 40,
+    Rank: 4,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: The Zeraphan nebulae are being disrupted by the Corporation's intrusion. Achieve nebula synchrony to maintain cosmic order.",
+    successMessage:
+      "ECHO: Nebula synchrony achieved successfully. You've earned 2900 credits and 40 experience.",
+    failureMessage:
+      "ECHO: Our attempt to achieve nebula synchrony faced opposition. We must preserve Zeraphan cosmic balance.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Ethereal Convergence": {
+    species: "Zeraphans",
+    "Required Credits": 1600,
+    "Required Energy": 16,
+    Reward: 3800,
+    Experience: 50,
+    Rank: 6,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Join the Zeraphan council in an ethereal convergence ceremony. Counter the Corporation's disruption of their cosmic bond.",
+    successMessage:
+      "ECHO: Ethereal convergence achieved. Zeraphan cosmic bond restored, earning you 3800 credits and 50 experience.",
+    failureMessage:
+      "ECHO: Our attempt to restore ethereal convergence faced challenges. We must protect Zeraphan cosmic unity.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Cosmic Overture": {
+    species: "Zeraphans",
     "Required Credits": 2200,
     "Required Energy": 22,
-    Reward: 6600,
-    Experience: 165,
-    Rank: 6,
-    requiredEquipment: {
-      "Basic Armor": 1,
-    },
+    Reward: 6000,
+    Experience: 75,
+    Rank: 8,
+    requiredEquipment: {},
+    "Health Effect": 0,
     startMessage:
-      "E.c.h.o.: Setting coordinates to a rumored alien artifact location.",
+      "ECHO: Embark on a cosmic overture with the Zeraphans. Foil the Corporation's attempt to disrupt their cosmic symphony.",
     successMessage:
-      "E.c.h.o.: Artifact retrieved successfully, granting you 660 credits and 165 experience.",
+      "ECHO: Cosmic overture completed successfully. Zeraphan cosmic symphony safeguarded, earning you 6000 credits and 75 experience.",
     failureMessage:
-      "E.c.h.o.: The mission to retrieve the alien artifact failed. It seems we were not the only ones after it.",
+      "ECHO: Our attempt to navigate the cosmic overture faced challenges. We must ensure Zeraphan cosmic harmony.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
   },
-  "Galactic Trading": {
+
+  "Cosmic Confrontation - Part 1": {
     "Required Credits": 3000,
     "Required Energy": 30,
-    Reward: 9000,
-    Experience: 225,
-    Rank: 8,
-    requiredEquipment: {
-      "Basic Sword": 1,
-    },
+    Reward: 5000,
+    Experience: 100,
+    Rank: 10,
+    requiredEquipment: {},
+    "Health Effect": 0,
     startMessage:
-      "E.c.h.o.: Initiating trading protocols with neighboring galactic entities.",
+      "ECHO: The time has come, Jahntow. Begin the united alliance's cosmic confrontation against the Space Corporation. This is the first step towards liberation.",
     successMessage:
-      "E.c.h.o.: Trade successful. The profits earned you 900 credits and 225 experience.",
+      "ECHO: Part 1 of the cosmic confrontation completed successfully. Your alliance advances, earning you 5000 credits and 100 experience. The fight gains momentum.",
     failureMessage:
-      "E.c.h.o.: The trade negotiation failed. No profits this time.",
+      "ECHO: Our attempt to begin the cosmic confrontation faced resistance. The fight is not over; we'll keep pushing forward.",
+    currentMissionWins: 0,
+    requiredMissionWins: 8,
   },
-  "Deep Space Exploration": {
+
+  "Cosmic Confrontation - Part 2": {
     "Required Credits": 4000,
     "Required Energy": 40,
-    Reward: 12000,
-    Experience: 300,
+    Reward: 7500,
+    Experience: 125,
     Rank: 10,
-    requiredEquipment: {
-      "Basic Armor": 2,
-    },
+    requiredEquipment: {},
+    "Health Effect": 0,
     startMessage:
-      "E.c.h.o.: Preparing for a deep-space exploration mission to uncharted territories.",
+      "ECHO: Continue the cosmic confrontation, Jahntow. This is the second part of the united alliance's struggle. Together, we'll break the Corporation's grasp.",
     successMessage:
-      "E.c.h.o.: Exploration successful. New regions charted and you earned 1200 credits and 300 experience.",
+      "ECHO: Part 2 of the cosmic confrontation completed successfully. Your alliance grows stronger, earning you 7500 credits and 125 experience. The path to victory is clear.",
     failureMessage:
-      "E.c.h.o.: The exploration mission faced unforeseen challenges. No new data collected.",
+      "ECHO: Our attempt to advance the cosmic confrontation faced challenges. The united alliance remains resolute; we'll overcome.",
+    currentMissionWins: 0,
+    requiredMissionWins: 8,
   },
 
-  "Starship Racing": {
-    "Required Credits": 5200,
+  "Cosmic Confrontation - Part 3": {
+    "Required Credits": 5000,
     "Required Energy": 50,
-    Reward: 15600,
-    Experience: 390,
-    Rank: 12,
-    requiredEquipment: {
-      "Basic Tech": 1,
-      "Basic Armor": 2,
-    },
-    startMessage:
-      "E.c.h.o.: Enrolling in the intergalactic starship racing event.",
-    successMessage:
-      "E.c.h.o.: You won the race! Credited 1560 credits and 390 experience for your performance.",
-    failureMessage:
-      "E.c.h.o.: It was a tough race. Didn't make it to the top this time.",
-  },
-  "Rescue Operation": {
-    "Required Credits": 6500,
-    "Required Energy": 60,
-    Reward: 19500,
-    Experience: 487,
-    Rank: 14,
-    requiredEquipment: {
-      "Basic Sword": 20,
-    },
-    startMessage:
-      "E.c.h.o.: Picking up distress signals. Initiating rescue protocols.",
-    successMessage:
-      "E.c.h.o.: Rescue successful! You've been credited with 1950 credits and 487 experience.",
-    failureMessage:
-      "E.c.h.o.: The rescue operation faced challenges. Not everyone made it back.",
-  },
-  "Black Hole Research": {
-    "Required Credits": 8000,
-    "Required Energy": 75,
-    Reward: 24000,
-    Experience: 600,
-    Rank: 16,
-    requiredEquipment: {
-      "Basic Sword": 24,
-      "Basic Armor": 20,
-    },
-    startMessage:
-      "E.c.h.o.: Approaching the event horizon for black hole research.",
-    successMessage:
-      "E.c.h.o.: Data collected successfully. Your findings yielded 2400 credits and 600 experience.",
-    failureMessage:
-      "E.c.h.o.: The black hole's gravity was stronger than anticipated. Research was compromised.",
-  },
-  "Celestial Diplomacy": {
-    "Required Credits": 10000,
-    "Required Energy": 90,
-    Reward: 30000,
-    Experience: 750,
-    Rank: 18,
-    requiredEquipment: {
-      "Basic Tech": 40,
-      "Basic Armor": 50,
-    },
-    startMessage:
-      "E.c.h.o.: Establishing communication channels for diplomatic discussions with alien civilizations.",
-    successMessage:
-      "E.c.h.o.: Diplomacy successful. Established friendly relations and earned 3000 credits and 750 experience.",
-    failureMessage:
-      "E.c.h.o.: The diplomatic mission did not go as planned. The aliens were not receptive.",
-  },
-
-  "Galaxy Defense": {
-    "Required Credits": 12000,
-    "Required Energy": 110,
-    Reward: 36000,
-    Experience: 900,
-    Rank: 20,
-    requiredEquipment: {
-      "Basic Sword": 4,
-      "Basic Armor": 2,
-    },
-    startMessage:
-      "E.c.h.o.: Alert! Hostile forces detected. Preparing for defense.",
-    successMessage:
-      "E.c.h.o.: Galaxy successfully defended. Your bravery has earned you 3600 credits and 900 experience.",
-    failureMessage:
-      "E.c.h.o.: The galaxy defense was challenging. Some areas suffered damage.",
-  },
-  "Quantum Mechanics Mastery": {
-    "Required Credits": 14500,
-    "Required Energy": 130,
-    Reward: 43500,
-    Experience: 1087,
-    Rank: 22,
+    Reward: 10000,
+    Experience: 150,
+    Rank: 10,
     requiredEquipment: {},
-    startMessage: "E.c.h.o.: Initiating deep dive into quantum mechanics.",
-    successMessage:
-      "E.c.h.o.: Successfully mastered quantum mechanics! Earned 4350 credits and 1087 experience.",
-    failureMessage:
-      "E.c.h.o.: Quantum Mechanics is perplexing. Couldn't completely grasp the concept.",
-  },
-  "Interstellar Exploration": {
-    "Required Credits": 17500,
-    "Required Energy": 150,
-    Reward: 52500,
-    Experience: 1312,
-    Rank: 24,
-    requiredEquipment: {},
+    "Health Effect": 0,
     startMessage:
-      "E.c.h.o.: Setting course for uncharted territories in the interstellar realm.",
+      "ECHO: Jahntow, this is the final push. Lead the united alien alliance in the ultimate cosmic confrontation against the Space Corporation. The time for liberation is now.",
     successMessage:
-      "E.c.h.o.: Exploration successful! Discovered new systems and earned 5250 credits and 1312 experience.",
+      "ECHO: The cosmic confrontation is victorious. The united alien alliance triumphs, earning you 10000 credits and 150 experience. The cosmos is free once more.",
     failureMessage:
-      "E.c.h.o.: The uncharted territories proved challenging. Exploration was not fully successful.",
-  },
-  "Temporal Anomaly Research": {
-    "Required Credits": 21000,
-    "Required Energy": 175,
-    Reward: 63000,
-    Experience: 1575,
-    Rank: 26,
-    requiredEquipment: {},
-    startMessage: "E.c.h.o.: Detected a temporal anomaly. Commencing research.",
-    successMessage:
-      "E.c.h.o.: Successfully researched the temporal anomaly! Rewarded 6300 credits and 1575 experience.",
-    failureMessage:
-      "E.c.h.o.: The temporal anomaly was unstable. Research faced setbacks.",
-  },
-  "Galactic Archaeology": {
-    "Required Credits": 25000,
-    "Required Energy": 200,
-    Reward: 75000,
-    Experience: 1875,
-    Rank: 28,
-    requiredEquipment: {},
-    startMessage:
-      "E.c.h.o.: Embarking on a quest to uncover the mysteries of ancient galactic civilizations.",
-    successMessage:
-      "E.c.h.o.: Successful excavation! Unearthed artifacts worth 7500 credits and 1875 experience.",
-    failureMessage:
-      "E.c.h.o.: The ruins were labyrinthine and perplexing. Some artifacts remain elusive.",
-  },
-
-  "Universe Origins Study": {
-    "Required Credits": 30000,
-    "Required Energy": 230,
-    Reward: 90000,
-    Experience: 2250,
-    Rank: 30,
-    requiredEquipment: {},
-    startMessage:
-      "E.c.h.o.: Launching probe to research the origins of the universe.",
-    successMessage:
-      "E.c.h.o.: Significant discoveries made! Earned 9000 credits and 2250 experience.",
-    failureMessage:
-      "E.c.h.o.: The vastness of the universe is overwhelming. Some mysteries remain unsolved.",
-  },
-  "Exodimensional Expedition": {
-    "Required Credits": 35000,
-    "Required Energy": 260,
-    Reward: 105000,
-    Experience: 2625,
-    Rank: 32,
-    requiredEquipment: {},
-    startMessage:
-      "E.c.h.o.: Preparing to venture into exodimensions. Unknown challenges await.",
-    successMessage:
-      "E.c.h.o.: Successfully navigated the exodimensions! Secured 10500 credits and 2625 experience.",
-    failureMessage:
-      "E.c.h.o.: The exodimensions are unpredictable. Could not complete the mission.",
-  },
-  "Dark Matter Manipulation": {
-    "Required Credits": 41000,
-    "Required Energy": 290,
-    Reward: 123000,
-    Experience: 3075,
-    Rank: 34,
-    requiredEquipment: {},
-    startMessage: "E.c.h.o.: Initiating procedures to manipulate dark matter.",
-    successMessage:
-      "E.c.h.o.: Dark matter manipulation successful! Acquired 12300 credits and 3075 experience.",
-    failureMessage:
-      "E.c.h.o.: Failed to control the elusive dark matter. Mission aborted.",
-  },
-  "Galactic Diplomacy": {
-    "Required Credits": 48000,
-    "Required Energy": 320,
-    Reward: 144000,
-    Experience: 3600,
-    Rank: 36,
-    requiredEquipment: {},
-    startMessage:
-      "E.c.h.o.: Engaging in diplomatic talks with advanced extraterrestrial civilizations.",
-    successMessage:
-      "E.c.h.o.: Diplomacy successful! Strengthened interstellar ties and earned 14400 credits and 3600 experience.",
-    failureMessage:
-      "E.c.h.o.: Diplomatic talks were challenging. Not all objectives achieved.",
-  },
-  "Void Phenomenon Analysis": {
-    "Required Credits": 56000,
-    "Required Energy": 350,
-    Reward: 168000,
-    Experience: 4200,
-    Rank: 38,
-    requiredEquipment: {},
-    startMessage: "E.c.h.o.: Commencing analysis of mysterious void phenomena.",
-    successMessage:
-      "E.c.h.o.: Analysis complete! Deciphered void secrets and obtained 16800 credits and 4200 experience.",
-    failureMessage:
-      "E.c.h.o.: The void remains enigmatic. Analysis was inconclusive.",
-  },
-
-  "Cosmic Nexus Activation": {
-    "Required Credits": 65000,
-    "Required Energy": 385,
-    Reward: 195000,
-    Experience: 4875,
-    Rank: 40,
-    requiredEquipment: {},
-    startMessage:
-      "E.c.h.o.: Initiating protocols to activate the cosmic nexus.",
-    successMessage:
-      "E.c.h.o.: Cosmic Nexus activated! Gained 19500 credits and 4875 experience.",
-    failureMessage:
-      "E.c.h.o.: The cosmic nexus proved too complex. Activation failed.",
-  },
-  "Temporal Loop Investigation": {
-    "Required Credits": 75000,
-    "Required Energy": 420,
-    Reward: 225000,
-    Experience: 5625,
-    Rank: 42,
-    requiredEquipment: {},
-    startMessage:
-      "E.c.h.o.: Preparing to investigate disturbances in the temporal loop.",
-    successMessage:
-      "E.c.h.o.: Temporal loop stabilized! Retrieved 22500 credits and 5625 experience.",
-    failureMessage:
-      "E.c.h.o.: Time anomalies detected. Investigation proved challenging.",
-  },
-  "Nebular Storm Navigation": {
-    "Required Credits": 86000,
-    "Required Energy": 460,
-    Reward: 258000,
-    Experience: 6450,
-    Rank: 44,
-    requiredEquipment: {},
-    startMessage:
-      "E.c.h.o.: Initiating navigation through a tumultuous nebular storm.",
-    successMessage:
-      "E.c.h.o.: Successfully navigated the storm! Acquired 25800 credits and 6450 experience.",
-    failureMessage:
-      "E.c.h.o.: Nebular turbulence too intense. Navigation unsuccessful.",
-  },
-  "Celestial Artifact Retrieval": {
-    "Required Credits": 98000,
-    "Required Energy": 500,
-    Reward: 294000,
-    Experience: 7350,
-    Rank: 46,
-    requiredEquipment: {},
-    startMessage:
-      "E.c.h.o.: Mission is to retrieve a rare celestial artifact from an ancient site.",
-    successMessage:
-      "E.c.h.o.: Artifact secured! Obtained 29400 credits and 7350 experience.",
-    failureMessage:
-      "E.c.h.o.: Artifact retrieval mission faced unforeseen challenges.",
-  },
-  "Supernova Containment": {
-    "Required Credits": 110000,
-    "Required Energy": 550,
-    Reward: 330000,
-    Experience: 8250,
-    Rank: 48,
-    requiredEquipment: {},
-    startMessage:
-      "E.c.h.o.: Attempting to contain the imminent supernova and harness its energy.",
-    successMessage:
-      "E.c.h.o.: Supernova successfully contained! 33000 credits and 8250 experience gained.",
-    failureMessage:
-      "E.c.h.o.: Supernova containment measures failed. Energy release was catastrophic.",
-  },
-  "Black Hole Mapping": {
-    "Required Credits": 124000,
-    "Required Energy": 600,
-    Reward: 372000,
-    Experience: 9300,
-    Rank: 50,
-    requiredEquipment: {},
-    startMessage:
-      "E.c.h.o.: Launching probes to map the event horizon of a black hole.",
-    successMessage:
-      "E.c.h.o.: Successful mapping! Collected valuable data and 37200 credits along with 9300 experience.",
-    failureMessage:
-      "E.c.h.o.: Probes lost to the gravitational pull. Black hole mapping unsuccessful.",
+      "ECHO: Our attempt at the final cosmic confrontation faced tremendous adversity. But remember, the spirit of unity endures.",
+    currentMissionWins: 0,
+    requiredMissionWins: 9,
   },
 };

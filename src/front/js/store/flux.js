@@ -961,6 +961,64 @@ const equipmentItems = {
     },
   },
 };
+
+const storyMissionsData = {
+  "Rogue Drone Takedown": {
+    species: "Aelithians",
+    "Required Credits": 600,
+    "Required Energy": 6,
+    Reward: 1300,
+    Experience: 25,
+    Rank: 1,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space.",
+    successMessage:
+      "ECHO: Drones eliminated successfully. You've earned 1300 credits and 25 experience.",
+    failureMessage:
+      "ECHO: Our attempt to neutralize the rogue drones failed. We must ensure Aelithian safety.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Cultural Espionage": {
+    species: "Aelithians",
+    "Required Credits": 800,
+    "Required Energy": 8,
+    Reward: 1800,
+    Experience: 35,
+    Rank: 3,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: Jahntow, delve into the shadows of Corporation activities. Infiltrate their base and unveil their plans against Aelithians.",
+    successMessage:
+      "ECHO: Jahntow, we've successfully gathered intelligence on Corporation activities. Rewarded 1800 credits and 35 experience.",
+    failureMessage:
+      "ECHO: Our attempt to infiltrate the Corporation base failed. We must refine our approach.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+  "Energized Negotiations": {
+    species: "Aelithians",
+    "Required Credits": 1000,
+    "Required Energy": 10,
+    Reward: 2300,
+    Experience: 45,
+    Rank: 5,
+    requiredEquipment: {},
+    "Health Effect": 0,
+    startMessage:
+      "ECHO: The Corporation seeks to disrupt Aelithian energy trade. Engage in negotiations to preserve your species' vitality.",
+    successMessage:
+      "ECHO: Negotiations were successful. Aelithian energy trade remains strong, earning you 2300 credits and 45 experience.",
+    failureMessage:
+      "ECHO: Our negotiation attempts faltered. We must ensure the energy trade's stability.",
+    currentMissionWins: 0,
+    requiredMissionWins: 5,
+  },
+};
+
 const defaultPlayer = {
   name: "Jahntow",
   level: 1,
@@ -1034,6 +1092,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       transactions: [],
       healthRecoveryItems,
       equipmentItems: equipmentItems,
+      storyMissionsData: storyMissionsData,
     },
     actions: {
       fetchPlayerData: fetchPlayerData,

@@ -18,6 +18,8 @@ import PropertiesComponent from "../component/propertiesComponent";
 import InventoryUpgradeComponent from "../component/inventoryUpgradeComponent";
 import EquipmentStore from "../component/equipmentStore";
 
+import StoryMissions from "../component/storyMissions";
+
 import rigoImage from "../../img/rigo-baby.jpg";
 import "../../styles/home.css";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -120,6 +122,9 @@ export const Home = () => {
 
           <Tab eventKey="missions" title="Missions" className="ship">
             <MissionsComponent />
+          </Tab>
+          <Tab eventKey="storyMissions" title="Story Missions" className="ship">
+            <StoryMissions />
           </Tab>
 
           <Tab eventKey="properties" title="Properties" className="properties">
