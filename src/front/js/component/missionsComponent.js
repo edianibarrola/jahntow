@@ -21,7 +21,6 @@ const MissionsComponent = () => {
   }, []); // Empty dependency array means this effect will only run once, when the component mounts
 
   const missionsPerSet = 4;
-  const maxRank = Math.min(Math.ceil(player.level / missionsPerSet), 25);
 
   const startMission = () => {
     if (!selectedMission) {
@@ -68,10 +67,11 @@ const MissionsComponent = () => {
                 credits: player.credits + mission["Required Credits"],
                 experience: player.experience + mission["Experience"],
                 health: player.health,
-                energy:
+                energy: Math.round(
                   player.energy -
-                  mission["Required Energy"] +
-                  mission["Required Energy"] / 2, // Recover some energy
+                    mission["Required Energy"] +
+                    mission["Required Energy"] / 2
+                ), // Recover some energy
               };
               actions.updatePlayer(updatedPlayer);
               actions.updatePlayerLevel();
@@ -98,10 +98,12 @@ const MissionsComponent = () => {
                 ...player,
                 credits: player.credits - mission["Required Credits"],
                 health: player.health - mission["Health Effect"],
-                energy:
+                energy: Math.round(
                   player.energy -
-                  mission["Required Energy"] +
-                  mission["Required Energy"] / 8,
+                    mission["Required Energy"] +
+                    mission["Required Energy"] / 8
+                ),
+
                 equipment: updatedEquipment, // Update the equipment after removal
               };
 
