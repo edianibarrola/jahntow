@@ -56,6 +56,7 @@ const StoryMissions = () => {
                 credits: player.credits + storyMission["Required Credits"],
                 experience: player.experience + storyMission["Experience"],
                 health: player.health,
+                storyWins: player.storyWins + 1,
                 energy: Math.round(
                   player.energy -
                     storyMission["Required Energy"] +
@@ -123,6 +124,10 @@ const StoryMissions = () => {
     }
   };
 
+  const availableMissionIndex = Math.floor(player.storyWins / 5);
+  const availableMissionName =
+    Object.keys(storyMissionsData)[availableMissionIndex];
+
   return (
     <div className="row mb-3">
       <div className="row  sticky-top holo text-center">
@@ -131,26 +136,18 @@ const StoryMissions = () => {
           <EnergyComponent energy={player.energy} />
           <CreditsComponent credits={player.credits} />
         </div>
-
-        <div className="col-12  text-center  ">
-          <p>Story Missions:</p>
-        </div>
-        <div className="col-12  text-center">
+        <div className="col-12 text-center">
           <select
             onChange={(e) => setSelectedStoryMission(e.target.value)}
             value={selectedStoryMission}
+            disabled={isStoryMissionRunning}
           >
             <option value="">Select a story mission</option>
-            {Object.keys(storyMissionsData)
-              .filter(
-                (storyMissionName) =>
-                  storyMissionsData[storyMissionName].Rank <= player.level
-              )
-              .map((storyMissionName) => (
-                <option key={storyMissionName} value={storyMissionName}>
-                  {storyMissionName}
-                </option>
-              ))}
+            {availableMissionName && (
+              <option key={availableMissionName} value={availableMissionName}>
+                {availableMissionName}
+              </option>
+            )}
           </select>
           <button onClick={startStoryMission} disabled={isStoryMissionRunning}>
             {isStoryMissionRunning
@@ -159,49 +156,58 @@ const StoryMissions = () => {
           </button>
         </div>
       </div>
-
-      <div className="row  mb-5">
+      <div className="row mb-5">
         <Accordion>
-          {Object.entries(storyMissionsData)
-            .filter(
-              ([, storyMissionData]) => storyMissionData.Rank <= player.level
-            )
-            .map(([storyMissionName, storyMissionData], index) => (
-              <Accordion.Item
-                className="holo"
-                eventKey={index.toString()}
-                key={storyMissionName}
-              >
-                <Accordion.Header>{storyMissionName}</Accordion.Header>
-                <Accordion.Body>
-                  <div className="col-12 pl-5 pr-5 text-center">
-                    <ul className="holo">
-                      <li>Reward: {storyMissionData.Reward}</li>
-                      <li>
-                        Required Credits: {storyMissionData["Required Credits"]}
-                      </li>
-                      <li>
-                        Required Energy: {storyMissionData["Required Energy"]}
-                      </li>
-                      <li>
-                        {" "}
-                        Health Risk: -{storyMissionData["Health Effect"]}
-                      </li>
-                      <li>Required Equipment:</li>
-                      <ul>
-                        {Object.entries(storyMissionData.requiredEquipment).map(
-                          ([equipment, quantity]) => (
-                            <li key={equipment}>
-                              {equipment} x{quantity}
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    </ul>
-                  </div>
-                </Accordion.Body>
-              </Accordion.Item>
-            ))}
+          {Object.entries(storyMissionsData).map(
+            ([storyMissionName, storyMissionData], index) => {
+              const startWin = index * 5; // Calculate the start win for the mission
+
+              if (
+                player.storyWins >= startWin &&
+                player.storyWins < startWin + 5
+              ) {
+                return (
+                  <Accordion.Item
+                    className="holo"
+                    eventKey={storyMissionName} // Use storyMissionName as the eventKey
+                    key={storyMissionName}
+                  >
+                    <Accordion.Header>{storyMissionName}</Accordion.Header>
+                    <Accordion.Body>
+                      <div className="col-12 pl-5 pr-5 text-center">
+                        <ul className="holo">
+                          <li>Reward: {storyMissionData.Reward}</li>
+                          <li>
+                            Required Credits:{" "}
+                            {storyMissionData["Required Credits"]}
+                          </li>
+                          <li>
+                            Required Energy:{" "}
+                            {storyMissionData["Required Energy"]}
+                          </li>
+                          <li>
+                            Health Risk: -{storyMissionData["Health Effect"]}
+                          </li>
+                          <li>Required Equipment:</li>
+                          <ul>
+                            {Object.entries(
+                              storyMissionData.requiredEquipment
+                            ).map(([equipment, quantity]) => (
+                              <li key={equipment}>
+                                {equipment} x{quantity}
+                              </li>
+                            ))}
+                          </ul>
+                        </ul>
+                      </div>
+                    </Accordion.Body>
+                  </Accordion.Item>
+                );
+              } else {
+                return null; // Don't render the mission if not available yet
+              }
+            }
+          )}
         </Accordion>
       </div>
     </div>

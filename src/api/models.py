@@ -34,6 +34,7 @@ class Player(db.Model):
     maxInventoryCount = db.Column(db.Integer, default=10)
     maxHealth = db.Column(db.Integer, default=100)
     maxEnergy = db.Column(db.Integer, default=100)
+    storyWins = db.Column(db.Integer, default=0)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # linking the player to a user
     
     User.player = db.relationship("Player", uselist=False, back_populates="user")
@@ -58,6 +59,7 @@ class Player(db.Model):
             "properties": self.properties,
             "maxInventoryCount": self.maxInventoryCount,
             "maxHealth": self.maxHealth,
-            "maxEnergy": self.maxEnergy
+            "maxEnergy": self.maxEnergy,
+            "storyWins": self.storyWins
         }
 

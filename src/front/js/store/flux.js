@@ -995,8 +995,8 @@ const storyMissionsData = {
       "ECHO: Drones eliminated successfully. You've earned 1300 credits and 25 experience.",
     failureMessage:
       "ECHO: Our attempt to neutralize the rogue drones failed. We must ensure Aelithian safety.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 0,
   },
   "Cultural Espionage": {
     species: "Aelithians",
@@ -1005,7 +1005,9 @@ const storyMissionsData = {
     Reward: 1800,
     Experience: 35,
     Rank: 3,
-    requiredEquipment: {},
+    requiredEquipment: {
+      "Alien Ally": 1,
+    },
     "Health Effect": 0,
     startMessage:
       "ECHO: Jahntow, delve into the shadows of Corporation activities. Infiltrate their base and unveil their plans against Aelithians.",
@@ -1013,7 +1015,7 @@ const storyMissionsData = {
       "ECHO: Jahntow, we've successfully gathered intelligence on Corporation activities. Rewarded 1800 credits and 35 experience.",
     failureMessage:
       "ECHO: Our attempt to infiltrate the Corporation base failed. We must refine our approach.",
-    currentMissionWins: 0,
+
     requiredMissionWins: 5,
   },
   "Energized Negotiations": {
@@ -1031,8 +1033,8 @@ const storyMissionsData = {
       "ECHO: Negotiations were successful. Aelithian energy trade remains strong, earning you 2300 credits and 45 experience.",
     failureMessage:
       "ECHO: Our negotiation attempts faltered. We must ensure the energy trade's stability.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 10,
   },
   "Celestial Harmony": {
     species: "Aelithians",
@@ -1049,8 +1051,8 @@ const storyMissionsData = {
       "ECHO: The celestial ritual was a success. Aelithian cosmic harmony remains intact, earning you 3300 credits and 65 experience.",
     failureMessage:
       "ECHO: Our attempt to maintain cosmic harmony faced opposition. We must continue safeguarding Aelithian traditions.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 15,
   },
 
   "Temporal Labyrinth": {
@@ -1068,8 +1070,8 @@ const storyMissionsData = {
       "ECHO: The temporal distortion crisis has been resolved. You've earned 1500 credits and 30 experience.",
     failureMessage:
       "ECHO: Our attempt to stabilize Cepharian reality's timeline failed. We must safeguard their existence.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 20,
   },
   "Subterranean Reclamation": {
     species: "Cepharians",
@@ -1086,8 +1088,8 @@ const storyMissionsData = {
       "ECHO: Ancient technology retrieved successfully. You've earned 2000 credits and 40 experience.",
     failureMessage:
       "ECHO: Our attempt to reclaim ancient technology faced obstacles. We must secure Cepharian legacy.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 25,
   },
   "Astral Harmonics": {
     species: "Cepharians",
@@ -1104,8 +1106,8 @@ const storyMissionsData = {
       "ECHO: Astral harmony achieved. Cepharian ethereal connection restored, earning you 2700 credits and 50 experience.",
     failureMessage:
       "ECHO: Our attempt to restore astral harmony faced opposition. We must preserve Cepharian spiritual unity.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 30,
   },
   "Nebula Odyssey": {
     species: "Cepharians",
@@ -1122,8 +1124,8 @@ const storyMissionsData = {
       "ECHO: Nebula journey completed successfully. Cepharian celestial energies secured, earning you 3900 credits and 75 experience.",
     failureMessage:
       "ECHO: Our attempt to navigate the nebulas faced challenges. We must ensure Cepharian cosmic balance.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 35,
   },
 
   "Sonic Resonance": {
@@ -1141,8 +1143,8 @@ const storyMissionsData = {
       "ECHO: Sonic resonance restored successfully. You've earned 1700 credits and 30 experience.",
     failureMessage:
       "ECHO: Our attempt to restore sonic resonance faced obstacles. We must ensure Veloran musical harmony.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 40,
   },
   "Crystal Core": {
     species: "Velorans",
@@ -1159,8 +1161,8 @@ const storyMissionsData = {
       "ECHO: Crystal core safeguarded successfully. You've earned 2200 credits and 40 experience.",
     failureMessage:
       "ECHO: Our attempt to safeguard the crystal core faced opposition. We must protect Veloran energy legacy.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 45,
   },
   "Luminous Unison": {
     species: "Velorans",
@@ -1177,8 +1179,8 @@ const storyMissionsData = {
       "ECHO: Luminous unison achieved. Veloran collective light restored, earning you 3000 credits and 50 experience.",
     failureMessage:
       "ECHO: Our attempt to restore luminous unison faced challenges. We must protect Veloran shared radiance.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 50,
   },
   "Celestial Nexus": {
     species: "Velorans",
@@ -1195,8 +1197,8 @@ const storyMissionsData = {
       "ECHO: Celestial pilgrimage completed successfully. Veloran stellar connection secured, earning you 4500 credits and 75 experience.",
     failureMessage:
       "ECHO: Our attempt to navigate the celestial pilgrimage faced challenges. We must ensure Veloran starry bonds.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 55,
   },
 
   "Eclipse Ritual": {
@@ -1214,8 +1216,8 @@ const storyMissionsData = {
       "ECHO: Eclipse Ritual protected successfully. You've earned 1900 credits and 30 experience.",
     failureMessage:
       "ECHO: Our attempt to protect the Eclipse Ritual faced challenges. We must ensure Drakorian cosmic equilibrium.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 60,
   },
   "Flameforged Relics": {
     species: "Drakorians",
@@ -1232,8 +1234,8 @@ const storyMissionsData = {
       "ECHO: Flameforged Relics reclaimed successfully. You've earned 2400 credits and 40 experience.",
     failureMessage:
       "ECHO: Our attempt to reclaim Flameforged Relics faced opposition. We must honor Drakorian ancestral heritage.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 65,
   },
   "Stellar Aegis": {
     species: "Drakorians",
@@ -1250,8 +1252,8 @@ const storyMissionsData = {
       "ECHO: Stellar Aegis successfully erected. Drakorian astral domain protected, earning you 3200 credits and 50 experience.",
     failureMessage:
       "ECHO: Our attempt to create the Stellar Aegis faced challenges. We must defend Drakorian astral sovereignty.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 70,
   },
   "Celestial Confluence": {
     species: "Drakorians",
@@ -1268,8 +1270,8 @@ const storyMissionsData = {
       "ECHO: Celestial Confluence completed successfully. Drakorian cosmic connection reinforced, earning you 4800 credits and 75 experience.",
     failureMessage:
       "ECHO: Our attempt to navigate the Celestial Confluence faced challenges. We must ensure Drakorian celestial ties.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 75,
   },
 
   "Luminous Correlation": {
@@ -1287,8 +1289,8 @@ const storyMissionsData = {
       "ECHO: Luminous correlation restored successfully. You've earned 2100 credits and 30 experience.",
     failureMessage:
       "ECHO: Our attempt to restore luminous correlation faced obstacles. We must ensure Thelorian radiant unity.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 80,
   },
   "Ethereal Nexus": {
     species: "Thelorians",
@@ -1305,8 +1307,8 @@ const storyMissionsData = {
       "ECHO: Ethereal nexus protected successfully. You've earned 2700 credits and 40 experience.",
     failureMessage:
       "ECHO: Our attempt to protect the ethereal nexus faced opposition. We must secure Thelorian multidimensional legacy.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 85,
   },
   "Harmonic Resonance": {
     species: "Thelorians",
@@ -1323,8 +1325,8 @@ const storyMissionsData = {
       "ECHO: Harmonic resonance achieved. Thelorian cosmic connection restored, earning you 3500 credits and 50 experience.",
     failureMessage:
       "ECHO: Our attempt to restore harmonic resonance faced challenges. We must protect Thelorian celestial bonds.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 90,
   },
   "Astral Rhapsody": {
     species: "Thelorians",
@@ -1341,8 +1343,8 @@ const storyMissionsData = {
       "ECHO: Astral rhapsody completed successfully. Thelorian cosmic melodies protected, earning you 5400 credits and 75 experience.",
     failureMessage:
       "ECHO: Our attempt to navigate the astral rhapsody faced challenges. We must ensure Thelorian cosmic harmony.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 95,
   },
 
   "Celestial Echo": {
@@ -1360,8 +1362,8 @@ const storyMissionsData = {
       "ECHO: Celestial echoes revived successfully. You've earned 2300 credits and 30 experience.",
     failureMessage:
       "ECHO: Our attempt to revive celestial echoes faced obstacles. We must ensure Zeraphan ethereal vitality.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 100,
   },
   "Nebula Synchrony": {
     species: "Zeraphans",
@@ -1378,8 +1380,8 @@ const storyMissionsData = {
       "ECHO: Nebula synchrony achieved successfully. You've earned 2900 credits and 40 experience.",
     failureMessage:
       "ECHO: Our attempt to achieve nebula synchrony faced opposition. We must preserve Zeraphan cosmic balance.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 105,
   },
   "Ethereal Convergence": {
     species: "Zeraphans",
@@ -1396,8 +1398,8 @@ const storyMissionsData = {
       "ECHO: Ethereal convergence achieved. Zeraphan cosmic bond restored, earning you 3800 credits and 50 experience.",
     failureMessage:
       "ECHO: Our attempt to restore ethereal convergence faced challenges. We must protect Zeraphan cosmic unity.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 110,
   },
   "Cosmic Overture": {
     species: "Zeraphans",
@@ -1414,8 +1416,8 @@ const storyMissionsData = {
       "ECHO: Cosmic overture completed successfully. Zeraphan cosmic symphony safeguarded, earning you 6000 credits and 75 experience.",
     failureMessage:
       "ECHO: Our attempt to navigate the cosmic overture faced challenges. We must ensure Zeraphan cosmic harmony.",
-    currentMissionWins: 0,
-    requiredMissionWins: 5,
+
+    requiredMissionWins: 115,
   },
 
   "Cosmic Confrontation - Part 1": {
@@ -1432,8 +1434,8 @@ const storyMissionsData = {
       "ECHO: Part 1 of the cosmic confrontation completed successfully. Your alliance advances, earning you 5000 credits and 100 experience. The fight gains momentum.",
     failureMessage:
       "ECHO: Our attempt to begin the cosmic confrontation faced resistance. The fight is not over; we'll keep pushing forward.",
-    currentMissionWins: 0,
-    requiredMissionWins: 8,
+
+    requiredMissionWins: 120,
   },
 
   "Cosmic Confrontation - Part 2": {
@@ -1450,8 +1452,8 @@ const storyMissionsData = {
       "ECHO: Part 2 of the cosmic confrontation completed successfully. Your alliance grows stronger, earning you 7500 credits and 125 experience. The path to victory is clear.",
     failureMessage:
       "ECHO: Our attempt to advance the cosmic confrontation faced challenges. The united alliance remains resolute; we'll overcome.",
-    currentMissionWins: 0,
-    requiredMissionWins: 8,
+
+    requiredMissionWins: 125,
   },
 
   "Cosmic Confrontation - Part 3": {
@@ -1468,8 +1470,8 @@ const storyMissionsData = {
       "ECHO: The cosmic confrontation is victorious. The united alien alliance triumphs, earning you 10000 credits and 150 experience. The cosmos is free once more.",
     failureMessage:
       "ECHO: Our attempt at the final cosmic confrontation faced tremendous adversity. But remember, the spirit of unity endures.",
-    currentMissionWins: 0,
-    requiredMissionWins: 9,
+
+    requiredMissionWins: 130,
   },
 };
 
@@ -1486,6 +1488,7 @@ const defaultPlayer = {
   maxInventoryCount: 10,
   maxHealth: 100,
   maxEnergy: 100,
+  storyWins: 0,
 };
 
 const getState = ({ getStore, getActions, setStore }) => {
