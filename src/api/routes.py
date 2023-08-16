@@ -110,8 +110,13 @@ def update_player_info():
         if hasattr(player, key):
             setattr(player, key, value)
 
+    # If item_prices are provided in the request, update them
+    if 'item_prices' in data:
+        player.item_prices = data['item_prices']
+
     db.session.commit()
 
     return jsonify(player.serialize()), 200
+
 
 

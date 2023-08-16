@@ -6,7 +6,7 @@ import CreditsComponent from "./creditsComponent";
 
 const ItemsComponent = () => {
   const { store, actions } = useContext(Context);
-  const { player, itemsData, transactions } = store;
+  const { player, transactions } = store;
   const [selectedItem, setSelectedItem] = useState("");
   const [quantity, setQuantity] = useState(1);
 
@@ -16,11 +16,11 @@ const ItemsComponent = () => {
       return;
     }
 
-    const category = Object.keys(itemsData).find(
-      (key) => itemsData[key][selectedItem]
+    const category = Object.keys(player.item_prices).find(
+      (key) => player.item_prices[key][selectedItem]
     );
     if (category) {
-      const data = itemsData[category][selectedItem];
+      const data = player.item_prices[category][selectedItem];
       if (data) {
         const itemCost = data["Current Cost"];
         const currentCredits = player.credits;
@@ -71,11 +71,11 @@ const ItemsComponent = () => {
       return;
     }
 
-    const category = Object.keys(itemsData).find(
-      (key) => itemsData[key][selectedItem]
+    const category = Object.keys(player.item_prices).find(
+      (key) => player.item_prices[key][selectedItem]
     );
     if (category) {
-      const data = itemsData[category][selectedItem];
+      const data = player.item_prices[category][selectedItem];
       if (data) {
         const itemCost = data["Current Cost"];
         const currentCredits = player.credits;
@@ -137,7 +137,7 @@ const ItemsComponent = () => {
         <div className="col-12  text-center ">
           <select onChange={handleSelectChange} value={selectedItem}>
             <option value="">Select an item</option>
-            {Object.entries(itemsData).map(([category, items]) =>
+            {Object.entries(player.item_prices).map(([category, items]) =>
               Object.entries(items)
                 .filter(([, data]) => data.Rank <= player.level)
                 .map(([itemName]) => (
@@ -159,7 +159,7 @@ const ItemsComponent = () => {
       </div>
 
       <div className="row">
-        {Object.entries(itemsData).map(([category, items]) => (
+        {Object.entries(player.item_prices).map(([category, items]) => (
           <div className="col-12  text-center holo" key={category}>
             <h4 className="text-center">{category}</h4>
             <ul>

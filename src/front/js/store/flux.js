@@ -1489,12 +1489,14 @@ const defaultPlayer = {
   maxHealth: 100,
   maxEnergy: 100,
   storyWins: 0,
+  item_prices: {},
 };
 
 const getState = ({ getStore, getActions, setStore }) => {
   const playerFromLocalStorage =
     JSON.parse(localStorage.getItem("player")) || {};
   playerFromLocalStorage.inventory = playerFromLocalStorage.inventory || {};
+  playerFromLocalStorage.item_prices = playerFromLocalStorage.item_prices || {};
 
   const player = {
     ...defaultPlayer,
@@ -1637,7 +1639,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       logout: () => {
         // Set the default player data in local storage
-        localStorage.setItem("player", JSON.stringify(defaultPlayer));
+        localStorage.setItem("player", JSON.stringify(null));
         localStorage.removeItem("authToken"); // Remove the authToken from localStorage
 
         // Reset the application state's authToken
@@ -1686,7 +1688,9 @@ const getState = ({ getStore, getActions, setStore }) => {
               .then((playerData) => {
                 // Token is stored only if the above fetch was successful
                 localStorage.setItem("authToken", data.token);
+                localStorage.setItem("player", JSON.stringify(player));
                 setStore({ authError: null, player: playerData });
+
                 getActions().updatePlayerInDatabase(playerData);
               });
           })
@@ -1805,6 +1809,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       adjustPrices: () => {
         // Get the current store
         const store = getStore();
+        const token = localStorage.getItem("authToken");
 
         // Create a new object with adjusted prices
         const adjustedItemsData = {};
@@ -1841,8 +1846,40 @@ const getState = ({ getStore, getActions, setStore }) => {
           }
         }
 
+        // After adjusting all the prices, save them to the backend
+        fetch(process.env.BACKEND_URL + "/api/player", {
+          method: "PUT",
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token, // Added Authorization header
+          },
+          body: JSON.stringify({
+            item_prices: adjustedItemsData,
+          }),
+        })
+          .then((response) => {
+            if (response.status === 200) {
+              // Added status check
+              return response.json();
+            } else {
+              throw new Error("Error updating item prices");
+            }
+          })
+          .then((data) => {
+            // Handle the response if necessary
+            // For example, you might want to update the frontend with the saved prices
+          })
+          .catch((error) => {
+            console.error("Error saving adjusted prices:", error);
+          });
+
         // Update the store
         setStore({
+          player: {
+            ...store.player,
+            item_prices: adjustedItemsData,
+          },
           itemsData: adjustedItemsData,
           notifications: [...newNotifications, ...store.notifications].slice(
             0,
@@ -1850,6 +1887,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           ), // Keep only the 4 most recent notifications
         });
       },
+
       updateTransactions: (transaction) => {
         const store = getStore();
 

@@ -46,10 +46,10 @@ export const Home = () => {
 
     function runAdjustPrices() {
       if (!isMounted) return;
-      if (adjustCount < 4) {
+      if (adjustCount < 3) {
         actions.adjustPrices();
         adjustCount++;
-        setTimeout(runAdjustPrices, 5000); // Run adjustPrices every 5 seconds until it has run 4 times
+        setTimeout(runAdjustPrices, 10000); // Run adjustPrices every 5 seconds until it has run 4 times
       } else {
         adjustCount = 0; // Reset the count
         setTimeout(runUpdateInventory, 15000); // Delayed by 15 seconds after adjustPrices has run 4 times
