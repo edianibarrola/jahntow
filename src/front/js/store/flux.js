@@ -1476,7 +1476,7 @@ const storyMissionsData = {
 };
 const storyMissionArc = {
   "Mission 0": {
-    Characters: ["echo", "zuark"],
+    Characters: ["echo"],
     Title: "story mission arc title.",
     Message:
       "story 0. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space.",
@@ -1492,7 +1492,7 @@ const storyMissionArc = {
     requiredMissionWins: 1,
   },
   "Mission 2": {
-    Characters: ["echo", "zuark"],
+    Characters: ["echo", "zuark", "ava"],
     Title: "story mission arc title.",
     Message:
       "story 2. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space.",
@@ -1500,7 +1500,7 @@ const storyMissionArc = {
     requiredMissionWins: 2,
   },
   "Mission 3": {
-    Characters: ["echo", "zuark"],
+    Characters: ["echo", "zuark", "ava", "robot"],
     Title: "story mission arc title.",
     Message:
       "story 3. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space.",
@@ -1517,7 +1517,7 @@ const storyMissionArc = {
   },
 };
 const charactersImages = {
-  echo: "https://res.cloudinary.com/petrep/image/upload/v1692802929/ava_zm3nck.png",
+  echo: "https://res.cloudinary.com/petrep/image/upload/v1692831347/echo_cwn4qu.png",
   zuark:
     "https://res.cloudinary.com/petrep/image/upload/v1692802930/zuark_razx6x.png",
   zhenwu:

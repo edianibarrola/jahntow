@@ -297,3 +297,9 @@ button {
 input.form-control {
   color: #000000 !important;
 }
+
+.flex-row-custom {
+  display: flex;
+  flex-wrap: nowrap; /* Prevents wrapping */
+  overflow: auto; /* Allows scrolling if elements exceed container width */
+}
