@@ -1474,6 +1474,74 @@ const storyMissionsData = {
     requiredMissionWins: 130,
   },
 };
+const storyMissionArc = {
+  "Mission 0": {
+    Characters: ["echo", "zuark"],
+    Title: "story mission arc title.",
+    Message:
+      "story 0. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space.",
+
+    requiredMissionWins: 0,
+  },
+  "Mission 1": {
+    Characters: ["echo", "zuark"],
+    Title: "story mission arc title.",
+    Message:
+      "story 1. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space.",
+
+    requiredMissionWins: 1,
+  },
+  "Mission 2": {
+    Characters: ["echo", "zuark"],
+    Title: "story mission arc title.",
+    Message:
+      "story 2. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space.",
+
+    requiredMissionWins: 2,
+  },
+  "Mission 3": {
+    Characters: ["echo", "zuark"],
+    Title: "story mission arc title.",
+    Message:
+      "story 3. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space.",
+
+    requiredMissionWins: 3,
+  },
+  "Mission 4": {
+    Characters: ["echo", "zuark"],
+    Title: "story mission arc title.",
+    Message:
+      "story 4. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space. ECHO: Elevate your vigilance, Jahntow. Rogue drones sent by the Corporation threaten the harmony of Aelithian space.",
+
+    requiredMissionWins: 4,
+  },
+};
+const charactersImages = {
+  echo: "https://res.cloudinary.com/petrep/image/upload/v1692802929/ava_zm3nck.png",
+  zuark:
+    "https://res.cloudinary.com/petrep/image/upload/v1692802930/zuark_razx6x.png",
+  zhenwu:
+    "https://res.cloudinary.com/petrep/image/upload/v1692802925/zhenwu_m81rlr.png",
+  ava: "https://res.cloudinary.com/petrep/image/upload/v1692802929/ava_zm3nck.png",
+  axenthon:
+    "https://res.cloudinary.com/petrep/image/upload/v1692802925/axenthon_fssnf5.png",
+  robot:
+    "https://res.cloudinary.com/petrep/image/upload/v1692802926/robotdog_ohsubw.png",
+  zhalia:
+    "https://res.cloudinary.com/petrep/image/upload/v1692802925/zhalia_nimfel.png",
+  veran:
+    "https://res.cloudinary.com/petrep/image/upload/v1692804287/veran_nfkb74.png",
+  sekhmet:
+    "https://res.cloudinary.com/petrep/image/upload/v1692802925/sekhmet_vnaslu.png",
+  binru:
+    "https://res.cloudinary.com/petrep/image/upload/v1692802927/binru_uzkwsp.png",
+  kazon:
+    "https://res.cloudinary.com/petrep/image/upload/v1692802923/kazon_vpiakd.png",
+  zerrok:
+    "https://res.cloudinary.com/petrep/image/upload/v1692802930/zerrok_rkw5d9.png",
+  xaezor:
+    "https://res.cloudinary.com/petrep/image/upload/v1692828125/xaezor_teppem.png",
+};
 
 const defaultPlayer = {
   name: "Jahntow",
@@ -1552,6 +1620,8 @@ const getState = ({ getStore, getActions, setStore }) => {
       healthRecoveryItems,
       equipmentItems: equipmentItems,
       storyMissionsData: storyMissionsData,
+      charactersImages: charactersImages,
+      storyMissionArc: storyMissionArc,
     },
     actions: {
       fetchPlayerData: fetchPlayerData,
@@ -1652,6 +1722,9 @@ const getState = ({ getStore, getActions, setStore }) => {
           transactions: [],
           healthRecoveryItems,
           equipmentItems: equipmentItems,
+          storyMissionsData: storyMissionsData,
+          charactersImages: charactersImages,
+          storyMissionArc: storyMissionArc,
         });
       },
       loginUser: (email, password) => {

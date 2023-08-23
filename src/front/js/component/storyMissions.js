@@ -4,6 +4,7 @@ import { Accordion } from "react-bootstrap";
 import HealthComponent from "./healthComponent";
 import EnergyComponent from "./energyComponent";
 import CreditsComponent from "./creditsComponent";
+import StoryMissionDetailsComponent from "./storyMissionDetailsComponent";
 
 const StoryMissions = () => {
   const { store, actions } = useContext(Context);
@@ -210,6 +211,7 @@ const StoryMissions = () => {
           )}
         </Accordion>
       </div>
+      <StoryMissionDetailsComponent />
     </div>
   );
 };

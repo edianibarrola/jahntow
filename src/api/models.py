@@ -27,7 +27,7 @@ class Player(db.Model):
     experience = db.Column(db.Integer, default=0)
     health = db.Column(db.Integer, default=100)
     energy = db.Column(db.Integer, default=100)
-    credits = db.Column(db.Integer, default=1000)
+    credits = db.Column(db.Integer, default=5000)
     equipment = db.Column(db.JSON, default=dict)
     inventory = db.Column(db.JSON, default=dict)
     properties = db.Column(db.JSON, default=dict)
