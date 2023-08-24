@@ -64,6 +64,7 @@ const StoryMissions = () => {
                     storyMission["Required Energy"] / 2
                 ), // Recover some energy
               };
+              setSelectedStoryMission("");
               actions.updatePlayer(updatedPlayer);
               actions.updatePlayerLevel();
             } else {

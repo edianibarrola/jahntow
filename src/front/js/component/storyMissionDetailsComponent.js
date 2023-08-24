@@ -17,7 +17,7 @@ const StoryMissionDetailsComponent = () => {
 
           <div className="flex-row-custom m-0">
             {mission.Characters.map((character) => (
-              <div className="m-0 p-0">
+              <div className="m-0 p-0" key={character}>
                 <img
                   key={character}
                   src={charactersImages[character]}
