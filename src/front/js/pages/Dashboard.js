@@ -23,7 +23,30 @@ export function Dashboard() {
     };
     actions.updatePlayer(updatedPlayer);
   };
-
+  const handleHealthUp = () => {
+    const updatedPlayer = {
+      ...player,
+      
+      health: player.health + 100,
+    };
+    actions.updatePlayer(updatedPlayer);
+  };
+  const handleCreditsUp = () => {
+    const updatedPlayer = {
+      ...player,
+      
+      credits: player.credits + 1000,
+    };
+    actions.updatePlayer(updatedPlayer);
+  };
+  const handleEnergyUp = () => {
+    const updatedPlayer = {
+      ...player,
+      
+      energy: player.energy + 100,
+    };
+    actions.updatePlayer(updatedPlayer);
+  };
   const handleChangeName = () => {
     // 3. Handler for changing name
     const updatedPlayer = { ...store.player, name: newName };
@@ -57,6 +80,21 @@ export function Dashboard() {
         <div className="col-12 mb-5">
           <button onClick={handleLevelUp}>
             Gain a Level, 1000 Credits and 100 Health/Energy.
+          </button>
+        </div>
+        <div className="col-12 mb-5">
+          <button onClick={handleEnergyUp}>
+            Gain 100 Energy.
+          </button>
+        </div>
+        <div className="col-12 mb-5">
+          <button onClick={handleCreditsUp}>
+            Gain 100 Credits.
+          </button>
+        </div>
+        <div className="col-12 mb-5">
+          <button onClick={handleHealthUp}>
+            Gain 100 health.
           </button>
         </div>
         <div className="col-12 mb-5">
