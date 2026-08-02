@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState } from "react";
 import { Context } from "../store/appContext";
 import { Accordion } from "react-bootstrap";
 import HealthComponent from "./healthComponent";
@@ -8,7 +8,8 @@ import StoryMissionDetailsComponent from "./storyMissionDetailsComponent";
 
 const StoryMissions = () => {
   const { store, actions } = useContext(Context);
-  const { player, storyMissionsData } = store;
+  const { player, gameData } = store;
+  const storyMissionsData = gameData.storyMissions || {};
   const [selectedStoryMission, setSelectedStoryMission] = useState("");
   const [isStoryMissionRunning, setStoryMissionRunning] = useState(false);
 
@@ -18,112 +19,23 @@ const StoryMissions = () => {
       return;
     }
 
-    const storyMission = storyMissionsData[selectedStoryMission];
-    if (storyMission) {
-      // Check if the player meets the required credits and energy for the storyMission
-      if (
-        player.credits >= storyMission["Required Credits"] &&
-        player.energy >= storyMission["Required Energy"]
-      ) {
-        // Check if the storyMission has required equipment
-        const requiredEquipment = storyMission.requiredEquipment;
-        const hasRequiredEquipment = Object.keys(requiredEquipment).every(
-          (equipment) =>
-            player.equipment[equipment]?.quantity >=
-            requiredEquipment[equipment]
-        );
-
-        if (hasRequiredEquipment) {
-          // Continue with the mission
-          setStoryMissionRunning(true);
-
-          const updatedPlayer = {
-            ...player,
-            credits: player.credits - storyMission["Required Credits"],
-            energy: player.energy - storyMission["Required Energy"],
-          };
-          actions.updatePlayer(updatedPlayer);
-          actions.updatePlayerLevel();
-
-          alert(storyMission.startMessage); // Display the storyMission start message
-
-          setTimeout(() => {
-            const success = Math.random() > 0.5;
-
-            if (success) {
-              alert(storyMission.successMessage); // Display the storyMission success message
-              const updatedPlayer = {
-                ...player,
-                credits: player.credits + storyMission["Required Credits"],
-                experience: player.experience + storyMission["Experience"],
-                health: player.health,
-                storyWins: player.storyWins + 1,
-                energy: Math.round(
-                  player.energy -
-                    storyMission["Required Energy"] +
-                    storyMission["Required Energy"] / 2
-                ), // Recover some energy
-              };
-              setSelectedStoryMission("");
-              actions.updatePlayer(updatedPlayer);
-              actions.updatePlayerLevel();
-            } else {
-              alert(storyMission.failureMessage); // Display the storyMission failure message
-
-              // Calculate the updated equipment quantities after removing required items
-              const updatedEquipment = { ...player.equipment };
-              const requiredEquipment = storyMission.requiredEquipment;
-              console.log("Required Equipment:", requiredEquipment); // Add this line
-              Object.keys(requiredEquipment).forEach((equipment) => {
-                const requiredQuantity = requiredEquipment[equipment];
-                if (updatedEquipment[equipment]?.quantity >= requiredQuantity) {
-                  updatedEquipment[equipment].quantity -= requiredQuantity;
-                  console.log(
-                    "Equipment Removed:",
-                    equipment,
-                    requiredQuantity
-                  ); // Add this line
-                }
-              });
-
-              const updatedPlayer = {
-                ...player,
-                credits: player.credits - storyMission["Required Credits"],
-                health: player.health - storyMission["Health Effect"],
-                energy: Math.round(
-                  player.energy -
-                    storyMission["Required Energy"] +
-                    storyMission["Required Energy"] / 8
-                ),
-
-                equipment: updatedEquipment, // Update the equipment after removal
-              };
-
-              console.log("Updated Equipment:", updatedEquipment); // Add this line
-              console.log("Updated Player:", updatedPlayer); // Add this line
-              if (updatedPlayer.health <= 0) {
-                alert("Game Over");
-                actions.resetPlayer();
-              } else {
-                actions.updatePlayer(updatedPlayer);
-                actions.updatePlayerLevel();
-              }
-            }
-
-            setStoryMissionRunning(false);
-          }, (10 + Math.random() * 20) * 100);
-        } else {
-          // The player doesn't have the required equipment for the mission
-          alert("You don't have the required equipment for this storyMission.");
+    setStoryMissionRunning(true);
+    actions
+      .startStoryMission(selectedStoryMission)
+      .then((data) => {
+        alert(data.message);
+        if (data.died) {
+          alert("Game Over - your progress has been reset.");
+        } else if (data.success) {
+          setSelectedStoryMission("");
         }
-      } else {
-        alert(
-          "You do not have enough credits or energy for this storyMission."
-        );
-      }
-    } else {
-      alert("Invalid storyMission selected!");
-    }
+      })
+      .catch((error) => {
+        alert(error.message || "Failed to start story mission");
+      })
+      .finally(() => {
+        setStoryMissionRunning(false);
+      });
   };
 
   const availableMissionIndex = Math.floor(player.storyWins / 5);

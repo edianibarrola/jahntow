@@ -6,63 +6,33 @@ import CreditsComponent from "./creditsComponent";
 
 const ItemsComponent = () => {
   const { store, actions } = useContext(Context);
-  const { player, transactions } = store;
+  const { player, marketPrices, gameData } = store;
   const [selectedItem, setSelectedItem] = useState("");
   const [quantity, setQuantity] = useState(1);
+
+  const rankByItem = {};
+  Object.values(gameData.items || {}).forEach((items) => {
+    Object.entries(items).forEach(([itemName, data]) => {
+      rankByItem[itemName] = data.Rank;
+    });
+  });
+
+  const pricesByCategory = {};
+  (marketPrices || []).forEach((price) => {
+    if (!pricesByCategory[price.category]) {
+      pricesByCategory[price.category] = [];
+    }
+    pricesByCategory[price.category].push(price);
+  });
 
   const handleBuy = () => {
     if (!selectedItem) {
       alert("Please select an item!");
       return;
     }
-
-    const category = Object.keys(player.item_prices).find(
-      (key) => player.item_prices[key][selectedItem]
-    );
-    if (category) {
-      const data = player.item_prices[category][selectedItem];
-      if (data) {
-        const itemCost = data["Current Cost"];
-        const currentCredits = player.credits;
-        const totalCost = itemCost * quantity;
-        const itemQuantity = player.inventory[selectedItem]?.quantity || 0;
-        const newTotalQuantity = itemQuantity + quantity;
-
-        // Check for maxInventoryCount
-        if (newTotalQuantity > player.maxInventoryCount) {
-          alert(
-            `You cannot have more than ${player.maxInventoryCount} of this item.`
-          );
-          return;
-        }
-
-        if (currentCredits >= totalCost) {
-          const newTransaction = `You bought ${quantity} ${selectedItem} at ${data[
-            "Current Cost"
-          ].toFixed(2)}`;
-
-          const updatedPlayer = {
-            ...player,
-            credits: currentCredits - totalCost,
-            inventory: {
-              ...player.inventory,
-              [selectedItem]: {
-                ...data,
-                quantity: newTotalQuantity,
-              },
-            },
-          };
-          actions.updatePlayer(updatedPlayer);
-          actions.updateTransactions(newTransaction);
-        } else {
-          alert("Insufficient credits to buy this item!");
-        }
-      } else {
-        alert("Invalid item selected!");
-      }
-    } else {
-      alert("Invalid item selected!");
-    }
+    actions.buyItem(selectedItem, quantity).catch((error) => {
+      alert(error.message || "Failed to buy item");
+    });
   };
 
   const handleSell = () => {
@@ -70,46 +40,9 @@ const ItemsComponent = () => {
       alert("Please select an item!");
       return;
     }
-
-    const category = Object.keys(player.item_prices).find(
-      (key) => player.item_prices[key][selectedItem]
-    );
-    if (category) {
-      const data = player.item_prices[category][selectedItem];
-      if (data) {
-        const itemCost = data["Current Cost"];
-        const currentCredits = player.credits;
-        const itemQuantity = player.inventory[selectedItem]?.quantity || 0;
-        const totalCost = itemCost * quantity;
-
-        const newTransaction = `You sold ${quantity} ${selectedItem} at ${data[
-          "Current Cost"
-        ].toFixed(2)} each`;
-
-        if (itemQuantity >= quantity) {
-          const updatedPlayer = {
-            ...player,
-            // transactions: [...player.transactions, newTransaction],
-            credits: currentCredits + totalCost,
-            inventory: {
-              ...player.inventory,
-              [selectedItem]: {
-                ...data,
-                quantity: itemQuantity - quantity,
-              },
-            },
-          };
-          actions.updatePlayer(updatedPlayer);
-          actions.updateTransactions(newTransaction);
-        } else {
-          alert("Insufficient quantity to sell!");
-        }
-      } else {
-        alert("Invalid item selected!");
-      }
-    } else {
-      alert("Invalid item selected!");
-    }
+    actions.sellItem(selectedItem, quantity).catch((error) => {
+      alert(error.message || "Failed to sell item");
+    });
   };
 
   const handleSelectChange = (e) => {
@@ -119,8 +52,6 @@ const ItemsComponent = () => {
   const handleQuantityChange = (e) => {
     setQuantity(parseInt(e.target.value, 10));
   };
-
-  const maxRank = player.level < 10 ? 1 : player.level < 20 ? 2 : 3;
 
   return (
     <div className="row  mb-3">
@@ -137,12 +68,12 @@ const ItemsComponent = () => {
         <div className="col-12  text-center ">
           <select onChange={handleSelectChange} value={selectedItem}>
             <option value="">Select an item</option>
-            {Object.entries(player.item_prices).map(([category, items]) =>
-              Object.entries(items)
-                .filter(([, data]) => data.Rank <= player.level)
-                .map(([itemName]) => (
-                  <option key={itemName} value={itemName}>
-                    {itemName}
+            {Object.entries(pricesByCategory).map(([category, items]) =>
+              items
+                .filter((item) => rankByItem[item.item_name] <= player.level)
+                .map((item) => (
+                  <option key={item.item_name} value={item.item_name}>
+                    {item.item_name}
                   </option>
                 ))
             )}
@@ -159,24 +90,24 @@ const ItemsComponent = () => {
       </div>
 
       <div className="row">
-        {Object.entries(player.item_prices).map(([category, items]) => (
+        {Object.entries(pricesByCategory).map(([category, items]) => (
           <div className="col-12  text-center holo" key={category}>
             <h4 className="text-center">{category}</h4>
             <ul>
-              {Object.entries(items)
-                .filter(([, data]) => data.Rank <= player.level)
-                .map(([itemName, data]) => (
+              {items
+                .filter((item) => rankByItem[item.item_name] <= player.level)
+                .map((item) => (
                   <li
-                    key={itemName}
+                    key={item.item_name}
                     className="d-flex justify-content-between align-items-center"
                   >
                     <span>
-                      {itemName}: Base: {data["Base Cost"].toFixed(0)}, Current
-                      Cost: {data["Current Cost"].toFixed(1)}
+                      {item.item_name}: Base: {item.base_cost.toFixed(0)},
+                      Current Cost: {item.current_cost.toFixed(1)}
                     </span>
-                    {player.inventory[itemName] && (
+                    {player.inventory[item.item_name] && (
                       <span className="ml-auto">
-                        Qty: {player.inventory[itemName].quantity.toFixed(2)}
+                        Qty: {player.inventory[item.item_name].quantity}
                       </span>
                     )}
                   </li>
@@ -185,8 +116,6 @@ const ItemsComponent = () => {
           </div>
         ))}
       </div>
-
-      {/* ... remaining code ... */}
     </div>
   );
 };

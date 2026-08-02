@@ -91,7 +91,7 @@ def market_buy():
     if not price_row:
         return jsonify({"message": "unknown item"}), 404
 
-    total_cost = round(price_row.current_cost * quantity, 2)
+    total_cost = int(price_row.current_cost * quantity)
     current_qty = _inventory_qty(player, item_name)
 
     if current_qty + quantity > player.maxInventoryCount:
@@ -131,7 +131,7 @@ def market_sell():
     if not price_row:
         return jsonify({"message": "unknown item"}), 404
 
-    total_value = round(price_row.current_cost * quantity, 2)
+    total_value = int(price_row.current_cost * quantity)
 
     player.credits += total_value
     inventory = dict(player.inventory or {})

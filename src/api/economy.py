@@ -63,7 +63,11 @@ def _tick_price(price_row, now):
     if price_row.base_cost > 0 and abs(new_cost - price_row.base_cost) / price_row.base_cost > PRICE_REVERT_THRESHOLD_PCT:
         new_cost = price_row.base_cost
 
-    price_row.current_cost = round(new_cost, 2)
+    # Credits are a whole-number currency (Player.credits is an Integer
+    # column), so prices stay whole numbers too rather than drifting into
+    # fractional cents that would fail to persist on a strict Postgres
+    # integer column.
+    price_row.current_cost = max(1, round(new_cost))
     price_row.updated_at = now
     return True
 

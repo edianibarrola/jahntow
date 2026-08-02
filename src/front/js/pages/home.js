@@ -35,54 +35,32 @@ import { Navigate, useNavigate } from "react-router-dom";
 // Given the game's theme of restarting civilization after Earth's ruin,
 // E.C.H.O. could be an AI focused on sustainable practices and optimizing habitability.
 
+// Market prices and passive effects (energy regen, property production)
+// are computed server-side now. This just refreshes the client's view of
+// them periodically, instead of the old client-side price-randomization
+// and inventory-generation loop.
+const POLL_INTERVAL_MS = 20000;
+
 export const Home = () => {
   const { store, actions } = useContext(Context);
-  const { player, itemsData } = store;
+  const { player } = store;
   const navigate = useNavigate();
 
   useEffect(() => {
-    let isMounted = true;
-    let adjustCount = 0; // Track the number of times adjustPrices has run
+    actions.fetchGameData();
+    actions.fetchMarketPrices();
 
-    function runAdjustPrices() {
-      if (!isMounted) return;
-      if (adjustCount < 3) {
-        actions.adjustPrices();
-        adjustCount++;
-        setTimeout(runAdjustPrices, 10000); // Run adjustPrices every 5 seconds until it has run 4 times
-      } else {
-        adjustCount = 0; // Reset the count
-        setTimeout(runUpdateInventory, 15000); // Delayed by 15 seconds after adjustPrices has run 4 times
-      }
-    }
+    const intervalId = setInterval(() => {
+      actions.fetchMarketPrices();
+      actions.fetchPlayerData();
+    }, POLL_INTERVAL_MS);
 
-    function runUpdateInventory() {
-      if (!isMounted) return;
-      actions.updateInventory();
-      setTimeout(runAdjustPrices, 5000); // Adjusted to 5 seconds
-    }
-
-    const initialTimeoutId = setTimeout(runAdjustPrices, 5000);
-
-    return () => {
-      isMounted = false;
-      clearTimeout(initialTimeoutId);
-    };
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleNavigate = () => {
-    // 2. Create an event handler function
-    navigate("/dashboard"); // 3. Inside this function, call the navigate function
+    navigate("/dashboard");
   };
-
-  // const handleLevelUp = () => {
-  //   const updatedPlayer = {
-  //     ...player,
-  //     level: player.level + 1,
-  //     credits: player.credits + 1000,
-  //   };
-  //   actions.updatePlayer(updatedPlayer);
-  // };
 
   return (
     <div className="mt-2 container holobg">
@@ -104,10 +82,7 @@ export const Home = () => {
       <div className="row  ">
         <Tabs defaultActiveKey="items" id="game-tabs">
           <Tab eventKey="items" title="Market" className="marketplace ">
-            <ItemsComponent
-              itemData={itemsData["Energy Cores"]}
-              selectedItem="Alpha Core"
-            />
+            <ItemsComponent />
 
             <div className="row heightControl">
               <div className="col-12 col-md-6">

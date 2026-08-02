@@ -159,7 +159,7 @@ def update_player_info():
 
     db.session.commit()
 
-    response_body = player.serialize()
+    response_body = {"player": player.serialize()}
     if rejected:
         response_body["_rejected_fields"] = rejected
     return jsonify(response_body), 200
