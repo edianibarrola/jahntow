@@ -6,7 +6,8 @@ import CreditsComponent from "./creditsComponent";
 
 const EquipmentShopComponent = () => {
   const { store, actions } = useContext(Context);
-  const { player, equipmentItems } = store;
+  const { player, gameData } = store;
+  const equipmentItems = gameData.equipment || {};
   const [selectedItem, setSelectedItem] = useState("");
   const [quantity, setQuantity] = useState(1);
 
@@ -16,49 +17,9 @@ const EquipmentShopComponent = () => {
       return;
     }
 
-    const category = Object.keys(equipmentItems).find(
-      (key) => equipmentItems[key][selectedItem]
-    );
-    if (category) {
-      const data = equipmentItems[category][selectedItem];
-      if (data) {
-        // Check if the player's level is greater than or equal to the required level for the equipment
-        if (player.level >= data["Required Level"]) {
-          const equipmentCost = data["Current Cost"];
-          const currentCredits = player.credits;
-          const totalCost = equipmentCost * quantity;
-
-          if (currentCredits >= totalCost) {
-            const itemQuantity = player.equipment[selectedItem]?.quantity || 0;
-            const newTransaction = `You bought ${quantity} ${selectedItem} at ${data[
-              "Current Cost"
-            ].toFixed(2)}`;
-
-            const updatedPlayer = {
-              ...player,
-              credits: currentCredits - totalCost,
-              equipment: {
-                ...player.equipment,
-                [selectedItem]: {
-                  ...data,
-                  quantity: itemQuantity + quantity,
-                },
-              },
-            };
-            actions.updatePlayer(updatedPlayer);
-            actions.updateTransactions(newTransaction);
-          } else {
-            alert("Insufficient credits to buy this equipment!");
-          }
-        } else {
-          alert("You need a higher level to purchase this equipment!");
-        }
-      } else {
-        alert("Invalid equipment selected!");
-      }
-    } else {
-      alert("Invalid equipment selected!");
-    }
+    actions.buyEquipment(selectedItem, quantity).catch((error) => {
+      alert(error.message || "Failed to buy equipment");
+    });
   };
 
   // Filter the equipment items based on the player's level
@@ -133,7 +94,8 @@ const EquipmentShopComponent = () => {
                   className="d-flex justify-content-between align-items-center"
                 >
                   <span>
-                    {itemName}: Cost: {parseFloat(data["Base Cost"]).toFixed(2)}
+                    {itemName}: Cost:{" "}
+                    {parseFloat(data["Base Cost"]).toFixed(2)}
                   </span>
                   {player.equipment[itemName] && (
                     <span className="ml-auto">

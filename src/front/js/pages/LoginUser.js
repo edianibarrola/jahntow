@@ -42,7 +42,11 @@ export function LoginUser() {
 
       <button
         className="btn btn-primary mt-3"
-        onClick={() => actions.loginUser(email, password)}
+        onClick={() =>
+          actions.loginUser(email, password, () => {
+            navigate("/");
+          })
+        }
       >
         Login
       </button>

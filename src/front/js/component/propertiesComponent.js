@@ -19,12 +19,12 @@ const PropertiesComponent = () => {
 
   const calculateGenerationRates = () => {
     let generationRates = {};
-    for (let category in store.propertiesData) {
-      for (let property in store.propertiesData[category]) {
+    for (let category in store.gameData.properties) {
+      for (let property in store.gameData.properties[category]) {
         let itemGenerated =
-          store.propertiesData[category][property]["Item Generated"];
+          store.gameData.properties[category][property]["Item Generated"];
         let generationRate =
-          store.propertiesData[category][property]["Generation Rate"];
+          store.gameData.properties[category][property]["Generation Rate"];
         let rate = (player.properties[property] || 0) * generationRate;
         if (rate > 0) {
           if (generationRates[itemGenerated]) {
@@ -41,37 +41,25 @@ const PropertiesComponent = () => {
   const generationRates = calculateGenerationRates();
 
   const handlePurchase = (categoryName, propertyName) => {
-    const property = store.propertiesData[categoryName][propertyName];
-
     // Check if the player already owns this property
     if (player.properties[propertyName] > 0) {
       alert("You already own this property!");
       return;
     }
 
-    if (player.credits >= property["Current Cost"]) {
-      const updatedPlayer = {
-        ...player,
-        credits: player.credits - property["Current Cost"],
-        properties: {
-          ...player.properties,
-          [propertyName]: (player.properties[propertyName] || 0) + 1,
-        },
-      };
-      actions.updatePlayer(updatedPlayer);
-    } else {
-      alert("You do not have enough credits to purchase this property.");
-    }
+    actions.buyProperty(propertyName).catch((error) => {
+      alert(error.message || "Failed to purchase property");
+    });
   };
 
   // Filter the categories based on maxRank
-  const unlockedCategories = Object.keys(store.propertiesData).filter(
+  const unlockedCategories = Object.keys(store.gameData.properties).filter(
     (categoryName) => {
       const unlockedProperties = Object.keys(
-        store.propertiesData[categoryName]
+        store.gameData.properties[categoryName]
       ).filter(
         (propertyName) =>
-          store.propertiesData[categoryName][propertyName].Rank <= player.level // Use player's level to filter properties
+          store.gameData.properties[categoryName][propertyName].Rank <= player.level // Use player's level to filter properties
       );
       return unlockedProperties.length > 0;
     }
@@ -102,15 +90,15 @@ const PropertiesComponent = () => {
               </Accordion.Header>
               <Accordion.Body>
                 <div className="col-12 pl-5 pr-5 text-center">
-                  {Object.keys(store.propertiesData[categoryName])
+                  {Object.keys(store.gameData.properties[categoryName])
                     .filter(
                       (propertyName) =>
-                        store.propertiesData[categoryName][propertyName].Rank <=
+                        store.gameData.properties[categoryName][propertyName].Rank <=
                         player.level
                     )
                     .map((propertyName) => {
                       const property =
-                        store.propertiesData[categoryName][propertyName];
+                        store.gameData.properties[categoryName][propertyName];
                       return (
                         <div key={propertyName} className="property-container">
                           <button
