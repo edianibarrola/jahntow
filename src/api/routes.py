@@ -11,6 +11,7 @@ from argon2 import PasswordHasher
 from sqlalchemy.exc import IntegrityError
 
 from api.extensions import limiter
+from api import economy
 
 ph = PasswordHasher()
 
@@ -121,6 +122,9 @@ def get_player_info():
 
     if not player:
         return jsonify({"message": "Player not found"}), 404
+
+    economy.apply_passive_tick(player)
+    db.session.commit()
 
     return jsonify(player.serialize()), 200
 

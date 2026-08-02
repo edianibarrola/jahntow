@@ -11,6 +11,7 @@ from api.extensions import limiter
 from api.utils import APIException, generate_sitemap
 from api.models import db, User, Player
 from api.routes import api
+from api.game_routes import game_api
 from api.admin import setup_admin
 from api.commands import setup_commands
 
@@ -70,6 +71,7 @@ setup_commands(app)
 
 # Add all endpoints form the API with a "api" prefix
 app.register_blueprint(api, url_prefix='/api')
+app.register_blueprint(game_api, url_prefix='/api')
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)

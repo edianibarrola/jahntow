@@ -1,6 +1,19 @@
+from datetime import datetime, timezone
+
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+
+
+def utcnow():
+    # Naive UTC on purpose: SQLite (used in dev) silently drops tzinfo on
+    # round-trip even for DateTime(timezone=True) columns, which would
+    # otherwise cause "can't subtract offset-naive and offset-aware
+    # datetimes" once a value is read back from the DB. Keeping everything
+    # naive-but-always-UTC avoids that class of bug across both SQLite and
+    # Postgres.
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -35,9 +48,23 @@ class Player(db.Model):
     maxHealth = db.Column(db.Integer, default=100)
     maxEnergy = db.Column(db.Integer, default=100)
     storyWins = db.Column(db.Integer, default=0)
-    item_prices = db.Column(db.JSON, default=dict)
+
+    # Per-item cooldown tracking for Medlab recovery items, e.g.
+    # {"HealPulse Emitter": "2026-08-02T12:34:56"} (naive UTC ISO string).
+    # Enforced
+    # server-side now instead of trusting client React state (which reset
+    # on every page refresh).
+    item_cooldowns = db.Column(db.JSON, default=dict)
+
+    # Last time passive effects (energy regen, property item generation)
+    # were applied to this player. Passive gains are computed lazily from
+    # elapsed wall-clock time whenever the player is loaded/acted on,
+    # rather than relying on a client-side setInterval that only ran while
+    # a particular tab/component was open.
+    last_tick_at = db.Column(db.DateTime(), default=utcnow)
+
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # linking the player to a user
-    
+
     User.player = db.relationship("Player", uselist=False, back_populates="user")
 
     # Relationship to link a User to a Player
@@ -62,6 +89,26 @@ class Player(db.Model):
             "maxHealth": self.maxHealth,
             "maxEnergy": self.maxEnergy,
             "storyWins": self.storyWins,
-            "item_prices": self.item_prices
         }
 
+
+class MarketPrice(db.Model):
+    """
+    Single shared price per item, the same for every player. Replaces the
+    old per-player Player.item_prices JSON blob, which let every browser
+    tab independently randomize and persist its own divergent prices.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    item_name = db.Column(db.String(80), unique=True, nullable=False)
+    category = db.Column(db.String(80), nullable=False)
+    base_cost = db.Column(db.Float, nullable=False)
+    current_cost = db.Column(db.Float, nullable=False)
+    updated_at = db.Column(db.DateTime(), default=utcnow, onupdate=utcnow)
+
+    def serialize(self):
+        return {
+            "item_name": self.item_name,
+            "category": self.category,
+            "base_cost": self.base_cost,
+            "current_cost": self.current_cost,
+        }
