@@ -15,10 +15,19 @@ services:
         value: /
       - key: FLASK_APP # Imported from Heroku app
         value: src/app.py
-      - key: FLASK_DEBUG # Imported from Heroku app
-        value: 0
-      - key: FLASK_APP_KEY # Imported from Heroku app
-        value: "any key works"
+      - key: FLASK_ENV
+        value: production
+      # Secrets below must be set in the Render dashboard, not committed here.
+      - key: FLASK_APP_KEY
+        sync: false
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
       - key: PYTHON_VERSION
         value: 3.10.6
       - key: DATABASE_URL # Render PostgreSQL database
