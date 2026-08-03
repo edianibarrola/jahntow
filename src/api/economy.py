@@ -7,7 +7,7 @@ of trusting values sent by the client.
 import random
 from datetime import timedelta
 
-from api.models import db, MarketPrice, GameEvent, utcnow
+from api.models import db, MarketPrice, GameEvent, ActivityLogEntry, utcnow
 from api import game_data
 
 # How often shared market prices are allowed to drift, and by how much.
@@ -76,6 +76,18 @@ EVENT_DURATION_MAX = timedelta(minutes=15)
 EVENT_MAGNITUDE_MIN = 0.20
 EVENT_MAGNITUDE_MAX = 0.40
 
+# Server-side activity log / notification feed. Player history is capped
+# at ACTIVITY_LOG_CAP entries (only ever trimmed on read, rows aren't
+# deleted), global price-notification feed at NOTIFICATION_LOG_CAP.
+ACTIVITY_LOG_CAP = 50
+NOTIFICATION_LOG_CAP = 30
+# Minimum cumulative price drift (since the last notification for that
+# item) before a "price changed" notification fires.
+PRICE_NOTIFY_THRESHOLD = 0.08
+# A mission result appends a low-health warning once the player's health
+# drops to/below this fraction of their max.
+LOW_HEALTH_RATIO = 0.25
+
 
 def _all_catalog_items():
     for category, items in game_data.ITEMS.items():
@@ -118,6 +130,22 @@ def _tick_price(price_row, now):
     # integer column.
     price_row.current_cost = max(1, round(new_cost))
     price_row.updated_at = now
+
+    # Post a global "price changed" notification once cumulative drift
+    # since the last one crosses the threshold - server-side equivalent
+    # of what used to be a client-only, page-load-reset baseline dict.
+    baseline = price_row.last_notified_cost or price_row.base_cost
+    if baseline > 0:
+        change = (price_row.current_cost - baseline) / baseline
+        if abs(change) >= PRICE_NOTIFY_THRESHOLD:
+            pct = round(abs(change) * 100)
+            arrow = "▲" if change > 0 else "▼"
+            log_notification(
+                f"{price_row.item_name} {arrow} {pct}% (now {price_row.current_cost:.1f})",
+                "price-up" if change > 0 else "price-down",
+            )
+            price_row.last_notified_cost = price_row.current_cost
+
     return True
 
 
@@ -197,6 +225,43 @@ def get_effective_price(price_row):
     cleanup when it expires - the multiplier just stops applying.
     """
     return price_row.current_cost * get_event_multiplier(price_row.category)
+
+
+def log_activity(player, message, type_="info"):
+    """
+    Record a player-scoped activity entry - rides along in whatever
+    transaction the caller is already about to commit (no commit here).
+    """
+    entry = ActivityLogEntry(player_id=player.id, message=message, type=type_)
+    db.session.add(entry)
+    return entry
+
+
+def log_notification(message, type_):
+    """Global entry (player_id=None) - a market-wide event, not tied to any one player."""
+    entry = ActivityLogEntry(player_id=None, message=message, type=type_)
+    db.session.add(entry)
+    return entry
+
+
+def get_player_activity(player, limit=ACTIVITY_LOG_CAP):
+    return (
+        ActivityLogEntry.query
+        .filter_by(player_id=player.id)
+        .order_by(ActivityLogEntry.id.desc())
+        .limit(limit)
+        .all()
+    )
+
+
+def get_global_notifications(limit=NOTIFICATION_LOG_CAP):
+    return (
+        ActivityLogEntry.query
+        .filter_by(player_id=None)
+        .order_by(ActivityLogEntry.id.desc())
+        .limit(limit)
+        .all()
+    )
 
 
 def get_market_prices():
@@ -473,5 +538,12 @@ def resolve_mission(player, mission):
 
     player.energy = max(0, player.energy)
     apply_level_ups(player)
+
+    # Appended here (rather than client-side after the fact) since health
+    # only ever drops from this one source - the server already knows the
+    # real post-mutation value, so the stored/toasted message is complete
+    # and correct without a separate client-side text transform.
+    if player.maxHealth and player.health / player.maxHealth <= LOW_HEALTH_RATIO:
+        message = f"{message} ⚠ Health critically low ({player.health}/{player.maxHealth})."
 
     return success, message

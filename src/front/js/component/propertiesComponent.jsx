@@ -41,12 +41,9 @@ const PropertiesComponent = () => {
   const generationRates = calculateGenerationRates();
 
   const handlePurchase = (categoryName, propertyName) => {
-    // Check if the player already owns this property
-    if (player.properties[propertyName] > 0) {
-      actions.updateTransactions("You already own this property.", "info");
-      return;
-    }
-
+    // The backend already rejects buying an already-owned property (and
+    // that error surfaces via the normal activity-log/toast path), so no
+    // client-side pre-check is needed here.
     actions.buyProperty(propertyName).catch(() => {});
   };
 

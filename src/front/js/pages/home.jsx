@@ -48,12 +48,16 @@ export const Home = () => {
     actions.fetchMarketPrices();
     actions.fetchLeaderboard();
     actions.fetchActiveEvent();
+    actions.fetchActivityLog();
+    actions.fetchNotifications();
 
     const intervalId = setInterval(() => {
       actions.fetchMarketPrices();
       actions.fetchPlayerData();
       actions.fetchLeaderboard();
       actions.fetchActiveEvent();
+      actions.fetchActivityLog();
+      actions.fetchNotifications();
     }, POLL_INTERVAL_MS);
 
     return () => clearInterval(intervalId);
