@@ -9,9 +9,11 @@ const TransactionsComponent = () => {
     <div className="scrolldiv holo">
       <div>
         <h2>Recent Activity:</h2>
-        <ul>
+        <ul className="activity-list">
           {transactions.map((transaction) => (
-            <li key={transaction.id}>{transaction.message}</li>
+            <li key={transaction.id} className={`tx-${transaction.type || "info"}`}>
+              {transaction.message}
+            </li>
           ))}
         </ul>
       </div>

@@ -43,7 +43,7 @@ const PropertiesComponent = () => {
   const handlePurchase = (categoryName, propertyName) => {
     // Check if the player already owns this property
     if (player.properties[propertyName] > 0) {
-      actions.updateTransactions("You already own this property.");
+      actions.updateTransactions("You already own this property.", "info");
       return;
     }
 

@@ -19,11 +19,6 @@ const RouteManager = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("authToken");
 
-  // Clear authToken from localStorage on page reload
-  window.addEventListener("beforeunload", () => {
-    localStorage.removeItem("authToken");
-  });
-
   useEffect(() => {
     const currentPath = window.location.pathname;
 

@@ -342,3 +342,65 @@ input.form-control {
 .nav-tabs .nav-link.active {
   color: #fff;
 }
+
+/* Recent Activity / Recent Price Changes: a divider between each entry and
+   a type-based color makes the feed scannable at a glance instead of a
+   wall of identically-styled lines. */
+.activity-list li {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 6px 4px;
+  text-align: left;
+}
+
+.activity-list li:last-child {
+  border-bottom: none;
+}
+
+.tx-buy {
+  color: #7ec8ff;
+}
+
+.tx-sell {
+  color: #8aff8a;
+}
+
+.tx-property {
+  color: #c299ff;
+}
+
+.tx-upgrade {
+  color: #ffd27a;
+}
+
+.tx-recovery {
+  color: #7affe0;
+}
+
+.tx-mission-success {
+  color: #8aff8a;
+}
+
+.tx-mission-fail {
+  color: #ffb84d;
+}
+
+.tx-death {
+  color: #ff4d4d;
+  font-weight: bold;
+}
+
+.tx-error {
+  color: #ff8a8a;
+}
+
+.tx-info {
+  color: #ffffff;
+}
+
+.tx-price-up {
+  color: #ffb84d;
+}
+
+.tx-price-down {
+  color: #7affe0;
+}

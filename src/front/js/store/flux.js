@@ -1452,6 +1452,22 @@ const getState = ({ getStore, getActions, setStore }) => {
     }
   };
 
+  // The activity log and price-change feed are worth keeping across a
+  // reload/re-login just like the player itself - logging back in to a
+  // blank "Recent Activity" panel loses the record of what you just did.
+  const transactionsFromLocalStorage =
+    JSON.parse(localStorage.getItem("transactions")) || [];
+  const notificationsFromLocalStorage =
+    JSON.parse(localStorage.getItem("notifications")) || [];
+
+  const saveListToLocalStorage = (key, list) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(list));
+    } catch (error) {
+      console.error(`Failed to save ${key} in local storage`, error);
+    }
+  };
+
   // All game state (prices, mission outcomes, costs, rewards) is computed
   // server-side. This client only ever sends an intent ("buy 2 Alpha
   // Cores") and applies whatever player object the backend returns -
@@ -1509,7 +1525,22 @@ const getState = ({ getStore, getActions, setStore }) => {
     return `${message} ⚠ Health critically low (${player.health}/${player.maxHealth}).`;
   };
 
-  let transactionIdCounter = 0;
+  // Seed the id counter above any id already persisted from a previous
+  // session, otherwise a freshly-created entry after a reload can collide
+  // with a persisted one's id (both starting back at 1) - which breaks
+  // React's key uniqueness and, worse, silently defeats the toast's
+  // `latest?.id` change-detection for that entry.
+  let transactionIdCounter = [
+    ...transactionsFromLocalStorage,
+    ...notificationsFromLocalStorage,
+  ].reduce((max, entry) => Math.max(max, entry.id || 0), 0);
+
+  // Tracks the price each item had the last time we posted a "price
+  // changed" notification for it, so the feed only fires on a genuine
+  // move (>= PRICE_NOTIFY_THRESHOLD cumulative drift since that baseline)
+  // instead of on every ~20s poll for every item in the catalog.
+  const lastNotifiedPrices = {};
+  const PRICE_NOTIFY_THRESHOLD = 0.08;
 
   // Every mutating action funnels its failures through here instead of a
   // blocking alert() - "not enough energy", "on cooldown", "insufficient
@@ -1523,7 +1554,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         error.data.retry_after_seconds
       )}s.`;
     }
-    getActions().updateTransactions(`Error: ${message}`);
+    getActions().updateTransactions(`Error: ${message}`, "error");
     throw error;
   };
 
@@ -1538,8 +1569,8 @@ const getState = ({ getStore, getActions, setStore }) => {
       player: player,
       gameData: defaultGameData,
       marketPrices: [],
-      notifications: [],
-      transactions: [],
+      notifications: notificationsFromLocalStorage,
+      transactions: transactionsFromLocalStorage,
       charactersImages: charactersImages,
       storyMissionArc: storyMissionArc,
     },
@@ -1558,8 +1589,27 @@ const getState = ({ getStore, getActions, setStore }) => {
       fetchMarketPrices: () => {
         return apiRequest("/api/market/prices", { auth: false })
           .then((data) => {
-            setStore({ marketPrices: data.prices || [] });
-            return data.prices;
+            const prices = data.prices || [];
+            prices.forEach((price) => {
+              const baseline = lastNotifiedPrices[price.item_name];
+              if (baseline == null) {
+                lastNotifiedPrices[price.item_name] = price.current_cost;
+                return;
+              }
+              const change = (price.current_cost - baseline) / baseline;
+              if (Math.abs(change) < PRICE_NOTIFY_THRESHOLD) return;
+              const pct = Math.abs(change * 100).toFixed(0);
+              const arrow = change > 0 ? "▲" : "▼";
+              getActions().updateNotifications(
+                `${price.item_name} ${arrow} ${pct}% (now ${price.current_cost.toFixed(
+                  1
+                )})`,
+                change > 0 ? "price-up" : "price-down"
+              );
+              lastNotifiedPrices[price.item_name] = price.current_cost;
+            });
+            setStore({ marketPrices: prices });
+            return prices;
           })
           .catch((error) => {
             console.error("Error fetching market prices:", error);
@@ -1631,6 +1681,8 @@ const getState = ({ getStore, getActions, setStore }) => {
       logout: () => {
         localStorage.setItem("player", JSON.stringify(null));
         localStorage.removeItem("authToken");
+        localStorage.removeItem("transactions");
+        localStorage.removeItem("notifications");
 
         setStore({
           player: defaultPlayer,
@@ -1660,6 +1712,8 @@ const getState = ({ getStore, getActions, setStore }) => {
           .then((data) => {
             applyPlayerResult(data);
             setStore({ transactions: [], notifications: [] });
+            saveListToLocalStorage("transactions", []);
+            saveListToLocalStorage("notifications", []);
           })
           .catch((error) => {
             console.error("Error resetting player:", error);
@@ -1674,7 +1728,8 @@ const getState = ({ getStore, getActions, setStore }) => {
           .then((data) => {
             applyPlayerResult(data);
             getActions().updateTransactions(
-              `Bought ${quantity}x ${itemName} for ${data.total_cost} credits.`
+              `Bought ${quantity}x ${itemName} for ${data.total_cost} credits.`,
+              "buy"
             );
             return data;
           })
@@ -1696,7 +1751,8 @@ const getState = ({ getStore, getActions, setStore }) => {
                 ? ` (${profit} loss)`
                 : "";
             getActions().updateTransactions(
-              `Sold ${quantity}x ${itemName} for ${data.total_value} credits${profitText}.`
+              `Sold ${quantity}x ${itemName} for ${data.total_value} credits${profitText}.`,
+              "sell"
             );
             return data;
           })
@@ -1711,7 +1767,8 @@ const getState = ({ getStore, getActions, setStore }) => {
           .then((data) => {
             applyPlayerResult(data);
             getActions().updateTransactions(
-              `Bought ${quantity}x ${itemName} for ${data.total_cost} credits.`
+              `Bought ${quantity}x ${itemName} for ${data.total_cost} credits.`,
+              "buy"
             );
             return data;
           })
@@ -1726,7 +1783,8 @@ const getState = ({ getStore, getActions, setStore }) => {
           .then((data) => {
             applyPlayerResult(data);
             getActions().updateTransactions(
-              `Purchased ${propertyName} for ${data.total_cost} credits.`
+              `Purchased ${propertyName} for ${data.total_cost} credits.`,
+              "property"
             );
             return data;
           })
@@ -1743,7 +1801,12 @@ const getState = ({ getStore, getActions, setStore }) => {
             const message = data.died
               ? data.message
               : withLowHealthWarning(data.message, data.player);
-            getActions().updateTransactions(message);
+            const type = data.died
+              ? "death"
+              : data.success
+              ? "mission-success"
+              : "mission-fail";
+            getActions().updateTransactions(message, type);
             return data;
           })
           .catch((error) => reportError(error, "Failed to start mission"));
@@ -1759,7 +1822,12 @@ const getState = ({ getStore, getActions, setStore }) => {
             const message = data.died
               ? data.message
               : withLowHealthWarning(data.message, data.player);
-            getActions().updateTransactions(message);
+            const type = data.died
+              ? "death"
+              : data.success
+              ? "mission-success"
+              : "mission-fail";
+            getActions().updateTransactions(message, type);
             return data;
           })
           .catch((error) =>
@@ -1775,7 +1843,8 @@ const getState = ({ getStore, getActions, setStore }) => {
           .then((data) => {
             applyPlayerResult(data);
             getActions().updateTransactions(
-              `Used ${itemName}: +${data.health_gained} health, +${data.energy_gained} energy.`
+              `Used ${itemName}: +${data.health_gained} health, +${data.energy_gained} energy.`,
+              "recovery"
             );
             return data;
           })
@@ -1790,26 +1859,39 @@ const getState = ({ getStore, getActions, setStore }) => {
           .then((data) => {
             applyPlayerResult(data);
             getActions().updateTransactions(
-              `Upgraded ${stat} for ${data.cost} credits.`
+              `Upgraded ${stat} for ${data.cost} credits.`,
+              "upgrade"
             );
             return data;
           })
           .catch((error) => reportError(error, "Failed to upgrade"));
       },
 
-      updateTransactions: (transaction) => {
+      updateTransactions: (transaction, type = "info") => {
         const store = getStore();
         // Give every entry a unique id, not just its text, so two
         // consecutive actions that happen to produce the exact same
         // message (e.g. failing the same mission twice in a row) each
         // still count as a distinct event for anything watching
         // transactions[0] - text-only equality would look unchanged.
-        const entry = { id: ++transactionIdCounter, message: transaction };
+        const entry = { id: ++transactionIdCounter, message: transaction, type };
         const newTransactions = [entry, ...store.transactions];
         if (newTransactions.length > 50) {
           newTransactions.length = 50;
         }
         setStore({ transactions: newTransactions });
+        saveListToLocalStorage("transactions", newTransactions);
+      },
+
+      updateNotifications: (notification, type = "info") => {
+        const store = getStore();
+        const entry = { id: ++transactionIdCounter, message: notification, type };
+        const newNotifications = [entry, ...store.notifications];
+        if (newNotifications.length > 30) {
+          newNotifications.length = 30;
+        }
+        setStore({ notifications: newNotifications });
+        saveListToLocalStorage("notifications", newNotifications);
       },
     },
   };

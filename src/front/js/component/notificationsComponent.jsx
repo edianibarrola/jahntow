@@ -8,9 +8,14 @@ const NotificationsComponent = () => {
   return (
     <div className="holo">
       <h2>Recent Price Changes:</h2>
-      <ul>
-        {notifications.map((notification, i) => (
-          <li key={i}>{notification}</li>
+      <ul className="activity-list">
+        {notifications.length === 0 && (
+          <li className="tx-info">No notable price moves yet.</li>
+        )}
+        {notifications.map((notification) => (
+          <li key={notification.id} className={`tx-${notification.type || "info"}`}>
+            {notification.message}
+          </li>
         ))}
       </ul>
     </div>
