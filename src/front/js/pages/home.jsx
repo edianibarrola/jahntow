@@ -5,6 +5,7 @@ import { Tabs, Tab } from "react-bootstrap";
 
 import LevelComponent from "../component/levelComponent";
 import ExperienceComponent from "../component/experienceComponent";
+import LoginStreakComponent from "../component/loginStreakComponent";
 import HealthComponent from "../component/healthComponent";
 import EnergyComponent from "../component/energyComponent";
 import CreditsComponent from "../component/creditsComponent";
@@ -64,6 +65,7 @@ export const Home = () => {
           <div className="col-4">{player.name}</div>
           <LevelComponent level={player.level} />
           <ExperienceComponent experience={player.experience} />
+          <LoginStreakComponent streak={player.loginStreak} />
         </div>
       </div>
       {/* <div className="row mb-2 holo sticky-top">

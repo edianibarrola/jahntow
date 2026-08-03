@@ -123,10 +123,15 @@ def get_player_info():
     if not player:
         return jsonify({"message": "Player not found"}), 404
 
-    economy.apply_passive_tick(player)
+    tick_summary = economy.apply_passive_tick(player)
+    streak_bonus = economy.apply_login_streak(player)
     db.session.commit()
 
-    return jsonify(player.serialize()), 200
+    return jsonify({
+        **player.serialize(),
+        "offline_credits": tick_summary["offline_credits"],
+        "login_streak_bonus": streak_bonus,
+    }), 200
 
 @api.route('/player', methods=['PUT'])
 @jwt_required()

@@ -1420,6 +1420,7 @@ const defaultPlayer = {
   maxHealth: 100,
   maxEnergy: 100,
   storyWins: 0,
+  loginStreak: 0,
 };
 
 const defaultGameData = {
@@ -1618,9 +1619,25 @@ const getState = ({ getStore, getActions, setStore }) => {
 
       fetchPlayerData: () => {
         return apiRequest("/api/player")
-          .then((player) => {
+          .then((data) => {
+            const { offline_credits, login_streak_bonus, ...player } = data;
             setStore({ player });
             updatePlayerInLocalStorage(player);
+            if (login_streak_bonus > 0) {
+              getActions().updateTransactions(
+                `Day ${player.loginStreak} streak! +${login_streak_bonus} credits.`,
+                "streak"
+              );
+            }
+            // Only toast offline trickle once it's a meaningful amount -
+            // during continuous play the 20s poll would otherwise surface
+            // a "+0" or "+1" toast almost every cycle.
+            if (offline_credits > 10) {
+              getActions().updateTransactions(
+                `Welcome back - earned ${offline_credits} credits while away.`,
+                "info"
+              );
+            }
             return player;
           })
           .catch((error) => {

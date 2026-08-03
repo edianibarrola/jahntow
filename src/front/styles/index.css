@@ -411,3 +411,7 @@ input.form-control {
 .tx-price-down {
   color: #7affe0;
 }
+
+.tx-streak {
+  color: #ffcc33;
+}
