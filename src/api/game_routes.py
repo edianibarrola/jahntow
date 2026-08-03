@@ -31,9 +31,12 @@ UPGRADABLE_STATS = {
 EQUIPMENT_SELL_REFUND_PCT = 0.5
 
 # Wins needed on the current story mission before the next one unlocks.
-# Was 5, which meant replaying the same mission 5 times for each of 42
-# chapters - 210 identical repetitions to see the whole story.
-STORY_WINS_PER_UNLOCK = 2
+# Deliberately equal to the number of narrative beats authored per chapter
+# in storyMissionArc (flux.js): each win reveals the next part of that
+# mission's story, so the two must stay in step. Lowering this without
+# also changing how the arc is authored means beats get skipped or the
+# text stops matching the mission being played.
+STORY_WINS_PER_UNLOCK = 5
 
 
 def _current_player():
