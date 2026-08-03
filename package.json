@@ -1,7 +1,7 @@
 {
 	"name": "jahntow",
 	"engines": {
-		"node": "20.x"
+		"node": ">=20"
 	},
 	"version": "1.0.0",
 	"description": "Jahntow - a browser-based space trading/mission game",
