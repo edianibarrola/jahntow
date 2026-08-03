@@ -68,7 +68,7 @@ export const Home = () => {
       </div>
       {/* <div className="row mb-2 holo sticky-top">
         <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
-          <HealthComponent health={player.health} />
+          <HealthComponent health={player.health} maxHealth={player.maxHealth} />
           <EnergyComponent energy={player.energy} />
           <CreditsComponent credits={player.credits} />
         </div>

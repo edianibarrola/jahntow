@@ -25,9 +25,7 @@ const EquipmentShopComponent = () => {
     setBuyingItem(itemName);
     actions
       .buyEquipment(itemName, quantity)
-      .catch((error) => {
-        alert(error.message || "Failed to buy equipment");
-      })
+      .catch(() => {})
       .finally(() => setBuyingItem(null));
   };
 
@@ -49,7 +47,7 @@ const EquipmentShopComponent = () => {
     <div className="row  mb-3">
       <div className="row  sticky-top holo text-center">
         <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
-          <HealthComponent health={player.health} />
+          <HealthComponent health={player.health} maxHealth={player.maxHealth} />
           <EnergyComponent energy={player.energy} />
           <CreditsComponent credits={player.credits} />
         </div>

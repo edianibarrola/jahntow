@@ -39,9 +39,7 @@ const ItemsComponent = () => {
     setPendingItem(itemName);
     actions
       .buyItem(itemName, quantity)
-      .catch((error) => {
-        alert(error.message || "Failed to buy item");
-      })
+      .catch(() => {})
       .finally(() => setPendingItem(null));
   };
 
@@ -50,9 +48,7 @@ const ItemsComponent = () => {
     setPendingItem(itemName);
     actions
       .sellItem(itemName, quantity)
-      .catch((error) => {
-        alert(error.message || "Failed to sell item");
-      })
+      .catch(() => {})
       .finally(() => setPendingItem(null));
   };
 
@@ -60,7 +56,7 @@ const ItemsComponent = () => {
     <div className="row  mb-3">
       <div className="row mb-2 holo sticky-top">
         <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
-          <HealthComponent health={player.health} />
+          <HealthComponent health={player.health} maxHealth={player.maxHealth} />
           <EnergyComponent energy={player.energy} />
           <CreditsComponent credits={player.credits} />
         </div>
