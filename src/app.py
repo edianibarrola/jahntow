@@ -41,9 +41,11 @@ jwt = JWTManager(app)
 limiter.init_app(app)
 
 
-# database condiguration
+# database configuration - falls back to local SQLite if DATABASE_URL is
+# unset OR empty (an empty string in .env is `""`, not None, so this must
+# check truthiness, not just `is not None`).
 db_url = os.getenv("DATABASE_URL")
-if db_url is not None:
+if db_url:
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
