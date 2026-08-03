@@ -78,8 +78,15 @@ const ItemsComponent = () => {
               {items
                 .filter((item) => rankByItem[item.item_name] <= player.level)
                 .map((item) => {
-                  const owned =
-                    player.inventory[item.item_name]?.quantity || 0;
+                  const holding = player.inventory[item.item_name];
+                  const owned = holding?.quantity || 0;
+                  const avgCost = holding?.avg_cost || 0;
+                  const unrealizedPl =
+                    owned > 0
+                      ? Math.round(
+                          (item.current_cost - avgCost) * owned * 100
+                        ) / 100
+                      : 0;
                   const quantity = getQuantity(item.item_name);
                   return (
                     <li
@@ -89,7 +96,26 @@ const ItemsComponent = () => {
                       <span>
                         {item.item_name}: Base: {item.base_cost.toFixed(0)},
                         Current Cost: {item.current_cost.toFixed(1)}
-                        {owned > 0 && <> (Owned: {owned})</>}
+                        {owned > 0 && (
+                          <>
+                            {" "}
+                            (Owned: {owned}, Avg Cost: {avgCost.toFixed(2)},{" "}
+                            <span
+                              style={{
+                                color:
+                                  unrealizedPl > 0
+                                    ? "#8aff8a"
+                                    : unrealizedPl < 0
+                                    ? "#ff8a8a"
+                                    : undefined,
+                              }}
+                            >
+                              {unrealizedPl >= 0 ? "+" : ""}
+                              {unrealizedPl.toFixed(2)}
+                            </span>
+                            )
+                          </>
+                        )}
                       </span>
                       <span className="d-flex align-items-center">
                         <button

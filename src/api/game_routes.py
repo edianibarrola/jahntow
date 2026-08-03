@@ -92,7 +92,9 @@ def market_buy():
         return jsonify({"message": "unknown item"}), 404
 
     total_cost = int(price_row.current_cost * quantity)
-    current_qty = _inventory_qty(player, item_name)
+    existing = (player.inventory or {}).get(item_name, {})
+    current_qty = existing.get("quantity", 0)
+    current_avg_cost = existing.get("avg_cost", 0)
 
     if current_qty + quantity > player.maxInventoryCount:
         return jsonify({"message": "not enough inventory space"}), 400
@@ -100,8 +102,16 @@ def market_buy():
         return jsonify({"message": "insufficient credits"}), 400
 
     player.credits -= total_cost
+    new_qty = current_qty + quantity
+    # Moving average cost basis: weight the existing holdings' average cost
+    # against this purchase's actual price, so a player who bought some
+    # stock cheap and some expensive sees one blended number, not just the
+    # latest price.
+    new_avg_cost = round(
+        ((current_avg_cost * current_qty) + total_cost) / new_qty, 2
+    )
     inventory = dict(player.inventory or {})
-    inventory[item_name] = {"quantity": current_qty + quantity}
+    inventory[item_name] = {"quantity": new_qty, "avg_cost": new_avg_cost}
     player.inventory = inventory
 
     db.session.commit()
@@ -123,7 +133,8 @@ def market_sell():
     if not isinstance(quantity, int) or quantity <= 0:
         return jsonify({"message": "quantity must be a positive integer"}), 400
 
-    current_qty = _inventory_qty(player, item_name)
+    existing = (player.inventory or {}).get(item_name, {})
+    current_qty = existing.get("quantity", 0)
     if current_qty < quantity:
         return jsonify({"message": "insufficient quantity"}), 400
 
@@ -131,19 +142,25 @@ def market_sell():
     if not price_row:
         return jsonify({"message": "unknown item"}), 404
 
+    avg_cost = existing.get("avg_cost", 0)
     total_value = int(price_row.current_cost * quantity)
+    realized_profit = round(total_value - (avg_cost * quantity), 2)
 
     player.credits += total_value
     inventory = dict(player.inventory or {})
     remaining = current_qty - quantity
     if remaining > 0:
-        inventory[item_name] = {"quantity": remaining}
+        inventory[item_name] = {"quantity": remaining, "avg_cost": avg_cost}
     else:
         inventory.pop(item_name, None)
     player.inventory = inventory
 
     db.session.commit()
-    return jsonify({"player": player.serialize(), "total_value": total_value}), 200
+    return jsonify({
+        "player": player.serialize(),
+        "total_value": total_value,
+        "realized_profit": realized_profit,
+    }), 200
 
 
 @game_api.route('/equipment/buy', methods=['POST'])

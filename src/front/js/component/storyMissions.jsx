@@ -87,11 +87,21 @@ const StoryMissions = () => {
                           <ul>
                             {Object.entries(
                               storyMissionData.requiredEquipment
-                            ).map(([equipment, quantity]) => (
-                              <li key={equipment}>
-                                {equipment} x{quantity}
-                              </li>
-                            ))}
+                            ).map(([equipment, quantity]) => {
+                              const owned =
+                                player.equipment[equipment]?.quantity || 0;
+                              const met = owned >= quantity;
+                              return (
+                                <li
+                                  key={equipment}
+                                  style={{
+                                    color: met ? "#8aff8a" : "#ff8a8a",
+                                  }}
+                                >
+                                  {equipment} x{quantity} (Owned: {owned})
+                                </li>
+                              );
+                            })}
                           </ul>
                         </ul>
                         {isRunnable ? (
