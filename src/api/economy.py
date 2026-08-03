@@ -717,6 +717,16 @@ def resolve_mission_equipment_loss(player, required_equipment):
 
 
 def player_meets_requirements(player, mission):
+    # A bailout mission is only offered while the player is actually short
+    # on funds. Without this, a zero-cost guaranteed-payout mission is an
+    # unlimited risk-free income source that dominates everything else -
+    # it exists to stop a broke player being stuck, not to be farmed.
+    ceiling = mission.get("AvailableBelowCredits")
+    if ceiling is not None and player.credits >= ceiling:
+        return False, (
+            f"Only available when you're below {ceiling} credits - "
+            "you've got enough to take on real work."
+        )
     if player.credits < mission["Required Credits"]:
         return False, "Not enough credits for this mission."
     if player.energy < mission["Required Energy"]:
