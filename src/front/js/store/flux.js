@@ -1421,6 +1421,7 @@ const defaultPlayer = {
   maxEnergy: 100,
   storyWins: 0,
   loginStreak: 0,
+  prestigeLevel: 0,
 };
 
 const defaultGameData = {
@@ -1722,6 +1723,19 @@ const getState = ({ getStore, getActions, setStore }) => {
               // otherwise surface as an unhandled promise rejection.
             }
           });
+      },
+
+      prestige: () => {
+        return apiRequest("/api/prestige", { method: "POST" })
+          .then((data) => {
+            applyPlayerResult(data);
+            getActions().updateTransactions(
+              `Prestiged to level ${data.player.prestigeLevel}! Stats reset, but your max Health/Energy/Inventory floor is now permanently higher.`,
+              "prestige"
+            );
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to prestige"));
       },
 
       resetPlayer: () => {

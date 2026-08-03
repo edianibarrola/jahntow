@@ -35,6 +35,20 @@ OFFLINE_TRICKLE_CAP_HOURS = 8
 STREAK_BONUS_PER_DAY = 50
 STREAK_BONUS_CAP_DAYS = 10
 
+# Highest "Rank"/"Required Level" that appears anywhere in the catalog
+# (items, missions, story missions) - the level at which a player has
+# reached the top of everything the game currently offers, and the gate
+# for prestiging.
+MAX_LEVEL = 50
+
+# Permanent, additive stat bump per prestige level, applied on top of the
+# base 100/100/10 floor. Deliberately bigger than a single upgrade
+# purchase (UPGRADE_STAT_STEP = 5) so a rebirth feels like a real
+# milestone, not just one more upgrade click.
+PRESTIGE_MAX_HEALTH_BONUS = 20
+PRESTIGE_MAX_ENERGY_BONUS = 20
+PRESTIGE_MAX_INVENTORY_BONUS = 5
+
 # Mission success chance scales with how prepared the player actually is,
 # instead of being a flat coin flip regardless of level or gear:
 #   - BASE_SUCCESS_CHANCE is what you get right at a mission's own rank

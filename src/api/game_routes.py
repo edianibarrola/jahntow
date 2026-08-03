@@ -418,3 +418,41 @@ def reset_player():
     _reset_player(player)
     db.session.commit()
     return jsonify({"player": player.serialize()}), 200
+
+
+def _prestige_player(player):
+    """
+    Like _reset_player, but deliberately different in two ways: storyWins
+    is preserved (narrative/story-mission unlock progress is a different
+    axis from the economy and shouldn't be lost on rebirth), and the
+    max-stat floor scales up with prestige_level instead of resetting to
+    the flat base - each rebirth permanently raises the ceiling.
+    """
+    player.prestige_level += 1
+    player.level = 1
+    player.experience = 0
+    player.credits = 5000
+    player.equipment = {}
+    player.inventory = {}
+    player.properties = {}
+    player.maxInventoryCount = 10 + player.prestige_level * economy.PRESTIGE_MAX_INVENTORY_BONUS
+    player.maxHealth = 100 + player.prestige_level * economy.PRESTIGE_MAX_HEALTH_BONUS
+    player.maxEnergy = 100 + player.prestige_level * economy.PRESTIGE_MAX_ENERGY_BONUS
+    player.health = player.maxHealth
+    player.energy = player.maxEnergy
+    player.item_cooldowns = {}
+    player.last_tick_at = utcnow()
+
+
+@game_api.route('/prestige', methods=['POST'])
+@jwt_required()
+def prestige():
+    player, err = _player_or_404()
+    if err:
+        return err
+    economy.apply_passive_tick(player)
+    if player.level < economy.MAX_LEVEL:
+        return jsonify({"message": f"Reach level {economy.MAX_LEVEL} to prestige"}), 400
+    _prestige_player(player)
+    db.session.commit()
+    return jsonify({"player": player.serialize()}), 200
