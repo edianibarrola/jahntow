@@ -1419,9 +1419,13 @@ const defaultPlayer = {
   maxInventoryCount: 10,
   maxHealth: 100,
   maxEnergy: 100,
+  maxEquipmentCount: 20,
   storyWins: 0,
   loginStreak: 0,
   prestigeLevel: 0,
+  xpForNextLevel: 100,
+  itemCooldowns: {},
+  upgradeSteps: {},
 };
 
 const defaultGameData = {
@@ -1544,8 +1548,11 @@ const getState = ({ getStore, getActions, setStore }) => {
       player: player,
       gameData: defaultGameData,
       marketPrices: [],
+      priceHistory: {},
       leaderboard: [],
-      activeEvent: null,
+      // Several category price events can be live at once now - the old
+      // singular key could only ever show the newest.
+      activeEvents: [],
       // Both server-authoritative now (ActivityLogEntry), fetched fresh on
       // load/poll rather than seeded from localStorage - so the log
       // follows the account across devices/browsers, not just this one.
@@ -1566,14 +1573,25 @@ const getState = ({ getStore, getActions, setStore }) => {
           });
       },
 
-      fetchActiveEvent: () => {
+      fetchActiveEvents: () => {
         return apiRequest("/api/events/active", { auth: false })
           .then((data) => {
-            setStore({ activeEvent: data.event });
-            return data.event;
+            setStore({ activeEvents: data.events || [] });
+            return data.events;
           })
           .catch((error) => {
-            console.error("Error fetching active event:", error);
+            console.error("Error fetching active events:", error);
+          });
+      },
+
+      fetchPriceHistory: () => {
+        return apiRequest("/api/market/history", { auth: false })
+          .then((data) => {
+            setStore({ priceHistory: data.history || {} });
+            return data.history;
+          })
+          .catch((error) => {
+            console.error("Error fetching price history:", error);
           });
       },
 
@@ -1716,6 +1734,12 @@ const getState = ({ getStore, getActions, setStore }) => {
           player: defaultPlayer,
           gameData: defaultGameData,
           marketPrices: [],
+          priceHistory: {},
+          // These two were previously left stale across logout, so a
+          // signed-out session kept showing the last player's leaderboard
+          // and whatever event was live at the time.
+          leaderboard: [],
+          activeEvents: [],
           notifications: [],
           transactions: [],
         });
@@ -1796,6 +1820,19 @@ const getState = ({ getStore, getActions, setStore }) => {
             return data;
           })
           .catch((error) => reportError(error, "Failed to buy equipment"));
+      },
+
+      sellEquipment: (itemName, quantity) => {
+        return apiRequest("/api/equipment/sell", {
+          method: "POST",
+          body: { item_name: itemName, quantity },
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            appendActivityEntry(data.activity);
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to sell equipment"));
       },
 
       buyProperty: (propertyName) => {

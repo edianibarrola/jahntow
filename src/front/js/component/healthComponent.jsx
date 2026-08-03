@@ -15,7 +15,11 @@ const HealthComponent = ({ health, maxHealth }) => {
       style={isLow ? { color: "#ff4d4d", fontWeight: "bold" } : undefined}
     >
       Health: {health}
+      {maxHealth ? ` / ${maxHealth}` : ""}
       {isLow && " ⚠"}
+      {maxHealth && health < maxHealth ? (
+        <div className="regen-hint">regenerating…</div>
+      ) : null}
     </div>
   );
 };

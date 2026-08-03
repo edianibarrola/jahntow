@@ -4,6 +4,11 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+# XP needed to reach the next level = level * XP_PER_LEVEL. Lives here
+# rather than in economy.py so Player.serialize() can report the threshold
+# to the client without importing economy (which imports models).
+XP_PER_LEVEL = 100
+
 
 def utcnow():
     # Naive UTC on purpose: SQLite (used in dev) silently drops tzinfo on
@@ -47,7 +52,18 @@ class Player(db.Model):
     maxInventoryCount = db.Column(db.Integer, default=10)
     maxHealth = db.Column(db.Integer, default=100)
     maxEnergy = db.Column(db.Integer, default=100)
+    # Total equipment units the player can hold across all equipment types
+    # (a shared "locker"), upgradable like the other maxima. Previously
+    # equipment was the only uncapped resource in the game.
+    maxEquipmentCount = db.Column(db.Integer, default=20)
     storyWins = db.Column(db.Integer, default=0)
+
+    # How many upgrade steps have been purchased per stat. Upgrade cost
+    # keys off this rather than the raw stat value, so stats that start at
+    # different bases (inventory 10 vs health/energy 100) price
+    # comparably - and so prestige raising a stat's floor doesn't
+    # retroactively make the next upgrade more expensive.
+    upgrade_steps = db.Column(db.JSON, default=dict)
 
     # Per-item cooldown tracking for Medlab recovery items, e.g.
     # {"HealPulse Emitter": "2026-08-02T12:34:56"} (naive UTC ISO string).
@@ -56,12 +72,25 @@ class Player(db.Model):
     # on every page refresh).
     item_cooldowns = db.Column(db.JSON, default=dict)
 
-    # Last time passive effects (energy regen, property item generation,
-    # offline credit trickle) were applied to this player. Passive gains
+    # Last time passive effects were applied to this player. Passive gains
     # are computed lazily from elapsed wall-clock time whenever the player
     # is loaded/acted on, rather than relying on a client-side setInterval
     # that only ran while a particular tab/component was open.
     last_tick_at = db.Column(db.DateTime(), default=utcnow)
+
+    # Each passive resource ticks on its own interval (energy 10s,
+    # production 30s, credit trickle 144s), so each needs its own
+    # last-applied timestamp. Sharing one clock meant the shortest
+    # interval's remainder reset the others: with the frontend polling
+    # every 20s, int(20s / 30s) == 0 production ticks, the leftover 20s was
+    # discarded, and properties produced *nothing at all* while a tab was
+    # open. These advance by exactly the time consumed, so sub-tick
+    # remainders carry forward. Nullable so existing rows fall back to
+    # last_tick_at on first use rather than needing a data migration.
+    last_energy_tick_at = db.Column(db.DateTime(), nullable=True)
+    last_health_tick_at = db.Column(db.DateTime(), nullable=True)
+    last_production_tick_at = db.Column(db.DateTime(), nullable=True)
+    last_trickle_at = db.Column(db.DateTime(), nullable=True)
 
     # Daily login streak. last_login_at is compared by UTC calendar date
     # (not a rolling 24h window) each time GET /player runs, so it's
@@ -101,9 +130,17 @@ class Player(db.Model):
             "maxInventoryCount": self.maxInventoryCount,
             "maxHealth": self.maxHealth,
             "maxEnergy": self.maxEnergy,
+            "maxEquipmentCount": self.maxEquipmentCount,
             "storyWins": self.storyWins,
             "loginStreak": self.login_streak,
             "prestigeLevel": self.prestige_level,
+            # The level-up threshold lives server-side; without sending it
+            # the client literally cannot show progress toward the next level.
+            "xpForNextLevel": self.level * XP_PER_LEVEL,
+            # Needed to render Medlab cooldown countdowns instead of only
+            # surfacing a 429 error after the player clicks.
+            "itemCooldowns": self.item_cooldowns or {},
+            "upgradeSteps": self.upgrade_steps or {},
         }
 
     def serialize_public(self):
@@ -145,7 +182,21 @@ class MarketPrice(db.Model):
             "category": self.category,
             "base_cost": self.base_cost,
             "current_cost": self.current_cost,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+
+
+class MarketPriceHistory(db.Model):
+    """
+    Rolling price series per item, appended by the same tick that advances
+    current_cost - so it needs no separate mechanism. Trimmed on write to
+    the most recent economy.PRICE_HISTORY_POINTS per item, which bounds
+    the table without a background job.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    item_name = db.Column(db.String(80), nullable=False, index=True)
+    cost = db.Column(db.Float, nullable=False)
+    recorded_at = db.Column(db.DateTime(), default=utcnow)
 
 
 class GameEvent(db.Model):
@@ -166,9 +217,13 @@ class GameEvent(db.Model):
 
     def serialize(self):
         return {
+            # id is needed as a stable React key now that several events
+            # can be live and rendered at once.
+            "id": self.id,
             "kind": self.kind,
             "category": self.category,
             "multiplier": self.multiplier,
+            "starts_at": self.starts_at.isoformat() if self.starts_at else None,
             "ends_at": self.ends_at.isoformat(),
         }
 

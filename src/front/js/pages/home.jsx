@@ -18,6 +18,7 @@ import HealthRecoveryComponent from "../component/healthRecoveryComponent";
 import PropertiesComponent from "../component/propertiesComponent";
 import InventoryUpgradeComponent from "../component/inventoryUpgradeComponent";
 import EquipmentStore from "../component/equipmentStore";
+import InventoryComponent from "../component/inventoryComponent";
 import LeaderboardComponent from "../component/leaderboardComponent";
 import ActiveEventBanner from "../component/activeEventBanner";
 import ActivityToast from "../component/ActivityToast";
@@ -47,7 +48,8 @@ export const Home = () => {
     actions.fetchGameData();
     actions.fetchMarketPrices();
     actions.fetchLeaderboard();
-    actions.fetchActiveEvent();
+    actions.fetchActiveEvents();
+    actions.fetchPriceHistory();
     actions.fetchActivityLog();
     actions.fetchNotifications();
 
@@ -55,7 +57,8 @@ export const Home = () => {
       actions.fetchMarketPrices();
       actions.fetchPlayerData();
       actions.fetchLeaderboard();
-      actions.fetchActiveEvent();
+      actions.fetchActiveEvents();
+    actions.fetchPriceHistory();
       actions.fetchActivityLog();
       actions.fetchNotifications();
     }, POLL_INTERVAL_MS);
@@ -74,17 +77,17 @@ export const Home = () => {
         <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
           <div className="col-4">{player.name}</div>
           <LevelComponent level={player.level} />
-          <ExperienceComponent experience={player.experience} />
+          <ExperienceComponent experience={player.experience} xpForNextLevel={player.xpForNextLevel} />
           <LoginStreakComponent streak={player.loginStreak} />
         </div>
         <div className="row pb-2 m-0 justify-content-around text-center">
-          <ActiveEventBanner event={store.activeEvent} />
+          <ActiveEventBanner events={store.activeEvents} />
         </div>
       </div>
       {/* <div className="row mb-2 holo sticky-top">
         <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
           <HealthComponent health={player.health} maxHealth={player.maxHealth} />
-          <EnergyComponent energy={player.energy} />
+          <EnergyComponent energy={player.energy} maxEnergy={player.maxEnergy} />
           <CreditsComponent credits={player.credits} />
         </div>
       </div> */}
@@ -93,6 +96,10 @@ export const Home = () => {
         <Tabs defaultActiveKey="items" id="game-tabs">
           <Tab eventKey="items" title="Market" className="marketplace ">
             <ItemsComponent />
+          </Tab>
+
+          <Tab eventKey="inventory" title="Inventory" className="shipinside">
+            <InventoryComponent />
           </Tab>
 
           <Tab eventKey="missions" title="Missions" className="ship">

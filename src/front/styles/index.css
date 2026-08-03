@@ -419,3 +419,42 @@ input.form-control {
 .tx-prestige {
   color: #ff66ff;
 }
+
+/* Inline price sparkline in the market list. */
+.sparkline-wrap {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 0;
+}
+
+.sparkline {
+  display: block;
+}
+
+.sparkline-empty {
+  display: inline-block;
+  width: 120px;
+  text-align: center;
+  opacity: 0.4;
+  vertical-align: middle;
+}
+
+/* XP progress toward the next level. */
+.xp-bar {
+  height: 4px;
+  margin-top: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.xp-bar-fill {
+  height: 100%;
+  background: #7ec8ff;
+  transition: width 0.4s ease;
+}
+
+.regen-hint {
+  font-size: 0.7em;
+  opacity: 0.6;
+}

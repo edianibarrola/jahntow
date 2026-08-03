@@ -7,29 +7,67 @@ of trusting values sent by the client.
 import random
 from datetime import timedelta
 
-from api.models import db, MarketPrice, GameEvent, ActivityLogEntry, utcnow
+from api.models import (
+    db, MarketPrice, MarketPriceHistory, GameEvent, ActivityLogEntry,
+    XP_PER_LEVEL, utcnow,
+)
 from api import game_data
 
 # How often shared market prices are allowed to drift, and by how much.
 PRICE_TICK_INTERVAL = timedelta(seconds=30)
 PRICE_DRIFT_PCT = 0.10          # +/-10% random walk per tick
 PRICE_REVERT_THRESHOLD_PCT = 0.50  # snap back to base once drifted this far
+# Buy above mid, sell below it. Without a spread, buy and sell used the
+# identical price, so a round trip was free and "buy under base, sell over
+# base" was risk-free money against a bounded mean-reverting price the
+# server also broadcasts moves for. The spread makes a position cost
+# something to be wrong about.
+MARKET_SPREAD_PCT = 0.05
 
-# Passive regen/production tick, applied lazily based on elapsed time.
+# Passive regen/production ticks, applied lazily based on elapsed time.
+# Each has its own last-applied timestamp on Player so sub-tick remainders
+# carry forward instead of being discarded (see _consume_ticks).
 ENERGY_REGEN_INTERVAL = timedelta(seconds=10)
 ENERGY_REGEN_AMOUNT = 1
+# Health regenerates far slower than energy: it's the resource that gates
+# risk-taking, so recovering it should cost real time (or credits, via
+# Medlab) rather than being free.
+HEALTH_REGEN_INTERVAL = timedelta(seconds=45)
+HEALTH_REGEN_AMOUNT = 1
 PROPERTY_PRODUCTION_INTERVAL = timedelta(seconds=30)
+# Properties keep producing past maxInventoryCount up to this multiple of
+# it, so a high-rate property isn't throttled to near-zero output the
+# moment its stock fills. Bounded so it can't accumulate without limit.
+PRODUCTION_OVERFLOW_MULTIPLE = 5
+# Longest absence that still accrues production, so returning after a week
+# doesn't dump an unsellable mountain of stock.
+PRODUCTION_CAP_HOURS = 8
 
-# Base XP required to reach the next level = level * XP_PER_LEVEL.
-XP_PER_LEVEL = 100
+# XP_PER_LEVEL is imported from models (Player.serialize needs it too).
 # Credits granted per level gained.
 LEVEL_UP_CREDIT_BONUS = 1000
+# Max health/energy also grow with level, so session length doesn't
+# collapse as mission energy costs scale up with rank.
+MAX_ENERGY_PER_LEVEL = 5
+MAX_HEALTH_PER_LEVEL = 3
+# Experience falls off for missions well below the player's level, so
+# grinding out-levelled content stops being the optimal way to level.
+XP_FALLOFF_PER_LEVEL = 0.12
+XP_FALLOFF_FLOOR = 0.15
 
 # Credits trickle in while offline (or just idle), same elapsed-time-based
 # mechanism as energy regen/property production, capped so leaving the game
-# open for days doesn't accrue an unbounded amount.
+# open for days doesn't accrue an unbounded amount. Expressed as an
+# interval-per-credit so it uses the same whole-ticks-with-carry machinery
+# as the other resources - the old int(hours * rate) form floored to zero
+# on every poll shorter than the per-credit interval, i.e. always.
 OFFLINE_TRICKLE_CREDITS_PER_HOUR = 25
+OFFLINE_TRICKLE_INTERVAL = timedelta(seconds=3600 / OFFLINE_TRICKLE_CREDITS_PER_HOUR)
 OFFLINE_TRICKLE_CAP_HOURS = 8
+
+# How many price points to retain per item for the market chart. At one
+# tick per PRICE_TICK_INTERVAL (30s) this is ~30 minutes of history.
+PRICE_HISTORY_POINTS = 60
 
 # Daily login streak bonus, capped so it plateaus instead of growing forever.
 STREAK_BONUS_PER_DAY = 50
@@ -48,6 +86,7 @@ MAX_LEVEL = 50
 PRESTIGE_MAX_HEALTH_BONUS = 20
 PRESTIGE_MAX_ENERGY_BONUS = 20
 PRESTIGE_MAX_INVENTORY_BONUS = 5
+PRESTIGE_MAX_EQUIPMENT_BONUS = 10
 
 # Mission success chance scales with how prepared the player actually is,
 # instead of being a flat coin flip regardless of level or gear:
@@ -58,11 +97,22 @@ PRESTIGE_MAX_INVENTORY_BONUS = 5
 #     worsens them.
 #   - Owning more than the bare minimum of required equipment also helps,
 #     capped so gear alone can't trivialize a mission.
-BASE_SUCCESS_CHANCE = 0.5
-SUCCESS_PER_LEVEL_ADVANTAGE = 0.03
+#   - Attempting a mission at its own rank is now a genuine coin-flip-ish
+#     gamble rather than a comfortable win. Combined with the reward curve
+#     below, running *at* your level is the risky-but-lucrative play and
+#     dropping a few ranks is the safe-but-slower one - which is the
+#     decision the loop previously didn't have, since every mission used to
+#     be safely +EV and higher ranks were paradoxically *safer* bets.
+BASE_SUCCESS_CHANCE = 0.42
+SUCCESS_PER_LEVEL_ADVANTAGE = 0.035
 SUCCESS_PER_EXTRA_EQUIPMENT = 0.02
 MAX_EQUIPMENT_BONUS = 0.10
-MIN_SUCCESS_CHANCE = 0.15
+# Out-levelling a mission helps, but only so far - every mission keeps an
+# irreducible risk. Uncapped, a level-50 player farming rank-36 content sat
+# at a 0.91 success rate, which made trivial content the best credits per
+# energy in the game and the capstone mission pointless.
+MAX_LEVEL_ADVANTAGE_BONUS = 0.22
+MIN_SUCCESS_CHANCE = 0.10
 MAX_SUCCESS_CHANCE = 0.92
 
 # Random, temporary category-wide price events, layered on top of the
@@ -71,6 +121,8 @@ MAX_SUCCESS_CHANCE = 0.92
 # by a cooldown so events don't chain back to back.
 EVENT_CHECK_COOLDOWN = timedelta(minutes=10)
 EVENT_SPAWN_CHANCE = 0.15
+# Several events can run at once, but only one per category.
+MAX_CONCURRENT_EVENTS = 3
 EVENT_DURATION_MIN = timedelta(minutes=5)
 EVENT_DURATION_MAX = timedelta(minutes=15)
 EVENT_MAGNITUDE_MIN = 0.20
@@ -113,6 +165,46 @@ def ensure_market_seeded():
         db.session.commit()
 
 
+def _record_price_point(price_row, now):
+    """
+    Append this tick's price to the item's rolling history and trim to the
+    most recent PRICE_HISTORY_POINTS. Riding the existing tick means the
+    chart needs no separate mechanism, and trimming on write bounds the
+    table without a background job.
+    """
+    db.session.add(MarketPriceHistory(
+        item_name=price_row.item_name,
+        cost=price_row.current_cost,
+        recorded_at=now,
+    ))
+
+    stale_ids = [
+        row.id for row in
+        MarketPriceHistory.query
+        .filter_by(item_name=price_row.item_name)
+        .order_by(MarketPriceHistory.id.desc())
+        .offset(PRICE_HISTORY_POINTS)
+        .all()
+    ]
+    if stale_ids:
+        (MarketPriceHistory.query
+         .filter(MarketPriceHistory.id.in_(stale_ids))
+         .delete(synchronize_session=False))
+
+
+def get_price_history():
+    """Rolling price series per item, oldest first, for the market chart."""
+    rows = (
+        MarketPriceHistory.query
+        .order_by(MarketPriceHistory.item_name, MarketPriceHistory.id.asc())
+        .all()
+    )
+    series = {}
+    for row in rows:
+        series.setdefault(row.item_name, []).append(row.cost)
+    return series
+
+
 def _tick_price(price_row, now):
     elapsed = now - (price_row.updated_at or now)
     if elapsed < PRICE_TICK_INTERVAL:
@@ -130,6 +222,8 @@ def _tick_price(price_row, now):
     # integer column.
     price_row.current_cost = max(1, round(new_cost))
     price_row.updated_at = now
+
+    _record_price_point(price_row, now)
 
     # Post a global "price changed" notification once cumulative drift
     # since the last one crosses the threshold - server-side equivalent
@@ -163,25 +257,46 @@ def apply_price_ticks():
 
 def apply_event_ticks():
     """
-    Roll a new category-wide price event into existence if none is
-    currently active and the cooldown since the last one ended has
-    elapsed. Same lazy, request-driven pattern as apply_price_ticks -
-    called wherever prices are read, no scheduler. Returns the active
-    event (existing or freshly rolled), or None.
+    Maybe roll a new category-wide price event into existence. Same lazy,
+    request-driven pattern as apply_price_ticks - called wherever prices
+    are read, no scheduler. Returns the full list of currently active
+    events.
+
+    Events are now scoped per category: several can run at once on
+    *different* categories (up to MAX_CONCURRENT_EVENTS), but never two on
+    the same one. Previously a single global event was allowed, and
+    get_active_event() returned only the newest row - so if a second event
+    ever did exist (the admin panel can create them freely, and there's an
+    unlocked read-then-write race here), the older one silently stopped
+    applying to prices and vanished from the banner.
     """
     now = utcnow()
-    active = get_active_event()
-    if active:
+    active = get_active_events()
+
+    if len(active) >= MAX_CONCURRENT_EVENTS:
         return active
 
-    last = GameEvent.query.order_by(GameEvent.id.desc()).first()
-    if last and (now - last.ends_at) < EVENT_CHECK_COOLDOWN:
-        return None
+    busy_categories = {event.category for event in active}
+    candidates = [c for c in game_data.ITEMS.keys() if c not in busy_categories]
+    if not candidates:
+        return active
+
+    # Cooldown is per-category too: a category that just finished an event
+    # shouldn't immediately start another, but an untouched category
+    # shouldn't be blocked by an unrelated one.
+    recent_cutoff = now - EVENT_CHECK_COOLDOWN
+    cooling = {
+        row.category for row in
+        GameEvent.query.filter(GameEvent.ends_at > recent_cutoff).all()
+    }
+    candidates = [c for c in candidates if c not in cooling]
+    if not candidates:
+        return active
 
     if random.random() > EVENT_SPAWN_CHANCE:
-        return None
+        return active
 
-    category = random.choice(list(game_data.ITEMS.keys()))
+    category = random.choice(candidates)
     kind = random.choice(["price_spike", "price_crash"])
     magnitude = random.uniform(EVENT_MAGNITUDE_MIN, EVENT_MAGNITUDE_MAX)
     multiplier = 1 + magnitude if kind == "price_spike" else 1 - magnitude
@@ -198,33 +313,57 @@ def apply_event_ticks():
     )
     db.session.add(event)
     db.session.commit()
-    return event
+    return active + [event]
 
 
-def get_active_event():
+def get_active_events():
+    """
+    Every event live right now. Also filters on starts_at, which the old
+    single-event lookup never checked - so an admin-scheduled future event
+    used to take effect immediately.
+    """
+    now = utcnow()
     return (
         GameEvent.query
-        .filter(GameEvent.ends_at > utcnow())
-        .order_by(GameEvent.id.desc())
-        .first()
+        .filter(GameEvent.ends_at > now, GameEvent.starts_at <= now)
+        .order_by(GameEvent.id.asc())
+        .all()
     )
 
 
-def get_event_multiplier(category):
-    event = get_active_event()
-    if event and event.category == category:
-        return event.multiplier
-    return 1.0
+def get_event_multiplier(category, events=None):
+    """
+    Combined multiplier for a category. `events` should be a prefetched
+    list from get_active_events() - passing it avoids re-querying once per
+    market row, which is what the old per-row get_active_event() call did.
+    """
+    if events is None:
+        events = get_active_events()
+    multiplier = 1.0
+    for event in events:
+        if event.category == category:
+            multiplier *= event.multiplier
+    return multiplier
 
 
-def get_effective_price(price_row):
+def get_effective_price(price_row, events=None):
     """
-    The price actually charged/credited right now: the stored current_cost
-    adjusted by any active category-wide event. Computed at read time
-    rather than persisted into current_cost itself, so an event needs no
-    cleanup when it expires - the multiplier just stops applying.
+    The mid price right now: the stored current_cost adjusted by any active
+    category-wide events. Computed at read time rather than persisted into
+    current_cost itself, so an event needs no cleanup when it expires - the
+    multiplier just stops applying.
     """
-    return price_row.current_cost * get_event_multiplier(price_row.category)
+    return price_row.current_cost * get_event_multiplier(price_row.category, events)
+
+
+def get_buy_price(price_row, events=None):
+    """What the player pays per unit - mid plus half the spread."""
+    return get_effective_price(price_row, events) * (1 + MARKET_SPREAD_PCT / 2)
+
+
+def get_sell_price(price_row, events=None):
+    """What the player receives per unit - mid minus half the spread."""
+    return get_effective_price(price_row, events) * (1 - MARKET_SPREAD_PCT / 2)
 
 
 def log_activity(player, message, type_="info"):
@@ -266,12 +405,17 @@ def get_global_notifications(limit=NOTIFICATION_LOG_CAP):
 
 def get_market_prices():
     apply_price_ticks()
-    apply_event_ticks()
+    # Fetch the active events once and reuse them for every row - this used
+    # to re-query per row (one SELECT per catalog item, per request).
+    events = apply_event_ticks()
     rows = MarketPrice.query.order_by(MarketPrice.category, MarketPrice.item_name).all()
     results = []
     for row in rows:
         serialized = row.serialize()
-        serialized["current_cost"] = round(get_effective_price(row), 2)
+        serialized["current_cost"] = round(get_effective_price(row, events), 2)
+        # Let the UI mark which items are under an active event rather than
+        # silently baking the multiplier into the price with no cue.
+        serialized["event_multiplier"] = round(get_event_multiplier(row.category, events), 4)
         results.append(serialized)
     return results
 
@@ -310,43 +454,103 @@ def find_recovery_item(item_name):
     return None, None
 
 
-def apply_passive_tick(player):
+def _consume_ticks(player, field, interval, now, cap=None):
     """
-    Apply energy regen, property-based item production, and offline credit
-    trickle for whatever wall-clock time has passed since the player was
-    last ticked. Called at the top of every authenticated player action so
-    state stays correct even if the player was offline (no client-side
-    interval required). Returns a summary dict; most callers ignore it,
-    GET /player surfaces "offline_credits" so the frontend can toast it.
+    How many whole `interval`s have elapsed for one passive resource,
+    advancing that resource's own timestamp by exactly the time consumed.
+
+    The remainder carrying forward is the whole point. Previously every
+    resource shared one `last_tick_at` that was reset to `now` regardless
+    of how much time was actually used, so any resource whose interval was
+    longer than the caller's polling cadence never accumulated anything:
+    the frontend polls every 20s, `int(20s / 30s)` is 0 production ticks,
+    and the unused 20s was thrown away every single poll. Properties
+    produced nothing at all while a tab was open.
+
+    Seeds from the legacy `last_tick_at` the first time a per-resource
+    timestamp is NULL (so existing rows work without a data migration) -
+    and writes it back immediately. Leaving it NULL to re-derive next time
+    would reintroduce the very bug this fixes, because `last_tick_at` is
+    itself refreshed on every call: the fallback would always look ~0
+    seconds old and no resource would ever accumulate a whole tick.
     """
-    now = utcnow()
-    last = player.last_tick_at or now
+    last = getattr(player, field, None)
+    if last is None:
+        last = player.last_tick_at or now
+        setattr(player, field, last)
+
     elapsed = now - last
     if elapsed <= timedelta(0):
-        return {"offline_credits": 0}
+        return 0
 
+    if cap is not None and elapsed > cap:
+        # Skip over the un-earnable excess (so a week away doesn't bank a
+        # week of gains) while still consuming it, rather than letting the
+        # overflow sit and re-trigger on the next call.
+        last = now - cap
+        elapsed = cap
+
+    ticks = int(elapsed / interval)
+    if ticks > 0:
+        setattr(player, field, last + ticks * interval)
+    return ticks
+
+
+def apply_passive_tick(player):
+    """
+    Apply energy regen, health regen, property-based item production, and
+    the idle credit trickle for whatever wall-clock time has passed. Called
+    at the top of every authenticated player action so state stays correct
+    even if the player was away (no client-side interval required).
+
+    Each resource ticks on its own clock via _consume_ticks - see that
+    function for why sharing one clock silently broke passive production.
+
+    Returns a summary dict; most callers ignore it, GET /player surfaces
+    the fields it wants to narrate to the player.
+    """
+    now = utcnow()
     changed = False
 
-    # Offline credit trickle: capped elapsed time so leaving the game open
-    # (or just not visiting) for days doesn't accrue an unbounded amount.
-    trickle_hours = min(elapsed.total_seconds() / 3600, OFFLINE_TRICKLE_CAP_HOURS)
-    offline_credits = int(trickle_hours * OFFLINE_TRICKLE_CREDITS_PER_HOUR)
-    if offline_credits > 0:
-        player.credits += offline_credits
+    # Idle credit trickle, expressed as one credit per interval so it uses
+    # the same whole-ticks-with-carry mechanism as everything else. The old
+    # int(hours * rate) form floored to zero on every sub-144s poll.
+    trickle_ticks = _consume_ticks(
+        player, "last_trickle_at", OFFLINE_TRICKLE_INTERVAL, now,
+        cap=timedelta(hours=OFFLINE_TRICKLE_CAP_HOURS),
+    )
+    if trickle_ticks > 0:
+        player.credits += trickle_ticks
         changed = True
 
-    # Energy regen: +1 per ENERGY_REGEN_INTERVAL, capped at maxEnergy.
-    if player.energy < player.maxEnergy:
-        ticks = int(elapsed / ENERGY_REGEN_INTERVAL)
-        if ticks > 0:
-            player.energy = min(player.maxEnergy, player.energy + ticks * ENERGY_REGEN_AMOUNT)
-            changed = True
+    # Energy regen: +ENERGY_REGEN_AMOUNT per interval, capped at maxEnergy.
+    # Ticks are consumed whether or not the player is already full, so
+    # sitting at max doesn't bank time that would instantly refill later.
+    energy_ticks = _consume_ticks(player, "last_energy_tick_at", ENERGY_REGEN_INTERVAL, now)
+    if energy_ticks > 0 and player.energy < player.maxEnergy:
+        player.energy = min(player.maxEnergy, player.energy + energy_ticks * ENERGY_REGEN_AMOUNT)
+        changed = True
+
+    # Health regen. Health used to have no passive recovery at all, which
+    # made the only rank-1 mission negative-EV once healing was priced in
+    # and hard-locked players out of every regular mission after a run of
+    # failures (player_meets_requirements refuses a mission that could take
+    # you to 0). Slow on purpose - Medlab items are still worth buying to
+    # skip the wait, they're just no longer mandatory.
+    health_ticks = _consume_ticks(player, "last_health_tick_at", HEALTH_REGEN_INTERVAL, now)
+    health_gained = 0
+    if health_ticks > 0 and player.health < player.maxHealth:
+        before = player.health
+        player.health = min(player.maxHealth, player.health + health_ticks * HEALTH_REGEN_AMOUNT)
+        health_gained = player.health - before
+        changed = True
 
     # Property production: each owned property generates its item at its
-    # configured rate per PROPERTY_PRODUCTION_INTERVAL, capped at
-    # maxInventoryCount per item (unowned/zero-quantity properties produce
-    # nothing).
-    production_ticks = int(elapsed / PROPERTY_PRODUCTION_INTERVAL)
+    # configured rate per PROPERTY_PRODUCTION_INTERVAL.
+    production_ticks = _consume_ticks(
+        player, "last_production_tick_at", PROPERTY_PRODUCTION_INTERVAL, now,
+        cap=timedelta(hours=PRODUCTION_CAP_HOURS),
+    )
     if production_ticks > 0 and player.properties:
         inventory = dict(player.inventory or {})
         for property_name, owned_qty in (player.properties or {}).items():
@@ -360,10 +564,21 @@ def apply_passive_tick(player):
             existing_entry = inventory.get(generated_item, {})
             current_qty = existing_entry.get("quantity", 0)
             current_avg_cost = existing_entry.get("avg_cost", 0)
-            if current_qty >= player.maxInventoryCount:
+            # Production is allowed to overfill past maxInventoryCount, up
+            # to a generous multiple. Hard-stopping at the cap meant a
+            # high-rate property filled its 10 slots in under a minute and
+            # then idled for the rest of the hour - up to a 65x shortfall
+            # against the payback period its cost was solved for. The
+            # player still has to sell it down; they just stop losing the
+            # output while they're away.
+            ceiling = player.maxInventoryCount * PRODUCTION_OVERFLOW_MULTIPLE
+            if current_qty >= ceiling:
                 continue
             gained = owned_qty * rate * production_ticks
-            new_qty = min(player.maxInventoryCount, current_qty + gained)
+            new_qty = min(ceiling, current_qty + gained)
+            # Round to avoid inventory accumulating values like 0.001 from
+            # the fractional generation rates of high-value items.
+            new_qty = round(new_qty, 2)
             if new_qty != current_qty:
                 # Passively generated units are free (already paid for via
                 # the property itself) - blend them into the average cost
@@ -387,7 +602,7 @@ def apply_passive_tick(player):
     if changed:
         db.session.add(player)
 
-    return {"offline_credits": offline_credits}
+    return {"offline_credits": trickle_ticks, "health_regenerated": health_gained}
 
 
 def apply_login_streak(player):
@@ -421,6 +636,12 @@ def apply_level_ups(player):
     Grant every level the player's current experience qualifies for (fixes
     the old client logic, which only ever granted one level per call and
     discarded any XP above the threshold instead of carrying it forward).
+
+    Levelling also raises the max health/energy floor. Without this,
+    maxEnergy stayed flat at 100 while mission energy cost scaled with rank
+    (8 + rank*1.6), so a level-50 player got ~1.7 actions per full bar
+    against a level-1 player's ~15 - the game let you play *less* the more
+    you invested in it.
     """
     leveled_up = False
     while True:
@@ -430,8 +651,24 @@ def apply_level_ups(player):
         player.experience -= xp_needed
         player.level += 1
         player.credits += player.level * LEVEL_UP_CREDIT_BONUS
+        player.maxEnergy += MAX_ENERGY_PER_LEVEL
+        player.maxHealth += MAX_HEALTH_PER_LEVEL
         leveled_up = True
     return leveled_up
+
+
+def mission_xp_award(player, mission):
+    """
+    Experience actually granted, with a falloff for badly over-levelled
+    content. Flat XP made grinding a mission far below your level strictly
+    the fastest way to level, because low rank means a high success chance
+    and failures refund far less energy than successes - so easy content
+    won on both throughput axes at once. The falloff is the standard RPG
+    answer: out-levelled missions stop being worth grinding.
+    """
+    over = max(0, player.level - mission["Rank"])
+    multiplier = max(XP_FALLOFF_FLOOR, 1 - XP_FALLOFF_PER_LEVEL * over)
+    return max(1, round(mission["Experience"] * multiplier))
 
 
 def resolve_mission_equipment_loss(player, required_equipment):
@@ -483,7 +720,12 @@ def mission_success_chance(player, mission):
     server-side detail.
     """
     level_advantage = player.level - mission["Rank"]
-    chance = BASE_SUCCESS_CHANCE + level_advantage * SUCCESS_PER_LEVEL_ADVANTAGE
+    advantage_bonus = level_advantage * SUCCESS_PER_LEVEL_ADVANTAGE
+    # Only the upside is capped: being under-levelled should still hurt
+    # without limit (story missions aren't level-gated), but grinding
+    # far-below-level content shouldn't approach a guaranteed win.
+    advantage_bonus = min(advantage_bonus, MAX_LEVEL_ADVANTAGE_BONUS)
+    chance = BASE_SUCCESS_CHANCE + advantage_bonus
 
     equipment = player.equipment or {}
     equipment_bonus = 0
@@ -520,16 +762,20 @@ def resolve_mission(player, mission):
     success = random.random() < mission_success_chance(player, mission)
 
     if success:
+        xp_awarded = mission_xp_award(player, mission)
         player.credits += mission["Reward"]
-        player.experience += mission["Experience"]
+        player.experience += xp_awarded
         player.energy = min(player.maxEnergy, player.energy + mission["Required Energy"] // 2)
         # successMessage is a template ("...gaining {reward} credits and
         # {experience} experience.") formatted from the mission's own live
         # values, so the flavor text can never drift out of sync with what
-        # was actually awarded - including after any future rebalance.
+        # was actually awarded - including after any future rebalance, and
+        # including the over-levelled XP falloff.
         message = mission["successMessage"].format(
-            reward=mission["Reward"], experience=mission["Experience"]
+            reward=mission["Reward"], experience=xp_awarded
         )
+        if xp_awarded < mission["Experience"]:
+            message = f"{message} (XP reduced - this mission is below your level.)"
     else:
         player.health -= mission["Health Effect"]
         player.energy = min(player.maxEnergy, player.energy + mission["Required Energy"] // 8)

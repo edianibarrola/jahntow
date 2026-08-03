@@ -29,6 +29,24 @@ const EquipmentShopComponent = () => {
       .finally(() => setBuyingItem(null));
   };
 
+  const handleSellEquipment = (itemName) => {
+    const quantity = getQuantity(itemName);
+    setBuyingItem(itemName);
+    actions
+      .sellEquipment(itemName, quantity)
+      .catch(() => {})
+      .finally(() => setBuyingItem(null));
+  };
+
+  // Storage is a shared locker across all equipment types, so the player
+  // needs to see the total, not just per-item counts.
+  const heldTotal = Object.values(player.equipment || {}).reduce(
+    (sum, entry) => sum + (entry.quantity || 0),
+    0
+  );
+  const capacity = player.maxEquipmentCount || 0;
+  const spaceLeft = capacity - heldTotal;
+
   // Filter the equipment items based on the player's level
   const unlockedEquipmentItems = Object.entries(equipmentItems).reduce(
     (result, [category, items]) => {
@@ -48,11 +66,17 @@ const EquipmentShopComponent = () => {
       <div className="row  sticky-top holo text-center">
         <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
           <HealthComponent health={player.health} maxHealth={player.maxHealth} />
-          <EnergyComponent energy={player.energy} />
+          <EnergyComponent energy={player.energy} maxEnergy={player.maxEnergy} />
           <CreditsComponent credits={player.credits} />
         </div>
         <div className="col-12 text-center">
-          <p>Equipment:</p>
+          <p>
+            Equipment — Storage:{" "}
+            <span className={spaceLeft <= 0 ? "tx-error" : undefined}>
+              {heldTotal}/{capacity}
+            </span>{" "}
+            <span className="tx-info">(upgrade capacity on the Upgrades tab)</span>
+          </p>
         </div>
       </div>
 
@@ -64,7 +88,10 @@ const EquipmentShopComponent = () => {
           >
             <h4 className="text-center">{category}</h4>
             <ul>
-              {Object.entries(items).map(([itemName, data]) => (
+              {Object.entries(items).map(([itemName, data]) => {
+                const owned = player.equipment[itemName]?.quantity || 0;
+                const qty = getQuantity(itemName);
+                return (
                 <li
                   key={itemName}
                   className="d-flex justify-content-between align-items-center flex-wrap"
@@ -72,9 +99,7 @@ const EquipmentShopComponent = () => {
                   <span>
                     {itemName}: Cost:{" "}
                     {parseFloat(data["Base Cost"]).toFixed(2)}
-                    {player.equipment[itemName] && (
-                      <> (Owned: {player.equipment[itemName].quantity})</>
-                    )}
+                    {owned > 0 && <> (Owned: {owned})</>}
                   </span>
                   <span className="d-flex align-items-center">
                     <button
@@ -83,7 +108,7 @@ const EquipmentShopComponent = () => {
                     >
                       -
                     </button>
-                    <span className="mx-2">{getQuantity(itemName)}</span>
+                    <span className="mx-2">{qty}</span>
                     <button
                       onClick={() => adjustQuantity(itemName, 1)}
                       disabled={buyingItem === itemName}
@@ -93,13 +118,22 @@ const EquipmentShopComponent = () => {
                     <button
                       className="ms-2"
                       onClick={() => handleBuyEquipment(itemName)}
-                      disabled={buyingItem !== null}
+                      disabled={buyingItem !== null || qty > spaceLeft}
+                      title={qty > spaceLeft ? "Not enough equipment storage" : undefined}
                     >
                       {buyingItem === itemName ? "Buying..." : "Buy"}
                     </button>
+                    <button
+                      className="ms-1"
+                      onClick={() => handleSellEquipment(itemName)}
+                      disabled={buyingItem !== null || owned < qty}
+                    >
+                      Sell
+                    </button>
                   </span>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </div>
         ))}
