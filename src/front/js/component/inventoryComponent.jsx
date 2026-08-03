@@ -3,6 +3,7 @@ import { Context } from "../store/appContext";
 import HealthComponent from "./healthComponent";
 import EnergyComponent from "./energyComponent";
 import CreditsComponent from "./creditsComponent";
+import { activePerks } from "../equipmentPerks";
 
 // There was previously no way to see what you actually own. Holdings were
 // only visible item-by-item inside the Market list, and that list filtered
@@ -95,6 +96,14 @@ const InventoryComponent = () => {
         <h4 className="text-center">
           Equipment ({equipmentTotal}/{player.maxEquipmentCount})
         </h4>
+        {activePerks(player, gameData.equipment).length > 0 && (
+          <p className="text-center tx-info">
+            Active perks:{" "}
+            {activePerks(player, gameData.equipment)
+              .map((p) => `${p.sign}${p.pct}% ${p.effect}`)
+              .join(" · ")}
+          </p>
+        )}
         {equipmentHeld.length === 0 ? (
           <p className="text-center tx-info">No equipment owned.</p>
         ) : (

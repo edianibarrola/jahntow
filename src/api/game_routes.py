@@ -30,6 +30,13 @@ UPGRADABLE_STATS = {
 # Refund fraction when selling equipment back.
 EQUIPMENT_SELL_REFUND_PCT = 0.5
 
+# Properties can be upgraded past level 1: the stored value in
+# player.properties is the level, and the passive tick already computes
+# owned_qty * rate, so a level-2 property produces double with zero tick
+# changes. Upgrade cost escalates from the property's own Base Cost.
+PROPERTY_MAX_LEVEL = 3
+PROPERTY_UPGRADE_COST_MULTIPLIER = 1.25
+
 # Wins needed on the current story mission before the next one unlocks.
 # Deliberately equal to the number of narrative beats authored per chapter
 # in storyMissionArc (flux.js): each win reveals the next part of that
@@ -398,20 +405,32 @@ def properties_buy():
         return jsonify({"message": "unknown property"}), 404
     if player.level < property_data["Rank"]:
         return jsonify({"message": "your level is too low for this property"}), 403
-    if (player.properties or {}).get(property_name, 0) > 0:
-        return jsonify({"message": "you already own this property"}), 400
 
-    cost = property_data["Base Cost"]
+    # The stored value is the property's level: first purchase sets it to
+    # 1, repeat purchases upgrade it (cost escalating per level) up to
+    # PROPERTY_MAX_LEVEL. Output scales with level automatically since the
+    # passive tick multiplies rate by this value.
+    properties = dict(player.properties or {})
+    current_level = properties.get(property_name, 0)
+    if current_level >= PROPERTY_MAX_LEVEL:
+        return jsonify({"message": "this property is already at max level"}), 400
+
+    if current_level > 0:
+        cost = int(property_data["Base Cost"] * PROPERTY_UPGRADE_COST_MULTIPLIER ** current_level)
+        action_text = f"Upgraded {property_name} to level {current_level + 1}"
+    else:
+        cost = property_data["Base Cost"]
+        action_text = f"Purchased {property_name}"
+
     if player.credits < cost:
         return jsonify({"message": "insufficient credits"}), 400
 
     player.credits -= cost
-    properties = dict(player.properties or {})
-    properties[property_name] = 1
+    properties[property_name] = current_level + 1
     player.properties = properties
 
     activity = economy.log_activity(
-        player, f"Purchased {property_name} for {cost} credits.", "property"
+        player, f"{action_text} for {cost} credits.", "property"
     )
     # No stat counter moves on a property buy, but properties_owned
     # achievements need a check right when the count changes.

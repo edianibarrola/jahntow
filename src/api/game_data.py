@@ -46,11 +46,11 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                  'startMessage': 'E.c.h.o.: Running the scrap lanes. It '
                                  'barely pays, but it will keep us flying '
                                  'until we can afford real work.',
-                 'successMessage': 'E.c.h.o.: Debris collected and sold on. '
-                                   '{reward} credits and {experience} '
+                 'successMessage': 'E.c.h.o.: Debris collected and sold '
+                                   'on. {reward} credits and {experience} '
                                    'experience.',
-                 'failureMessage': 'E.c.h.o.: Nothing salvageable out there '
-                                   'this pass.',
+                 'failureMessage': 'E.c.h.o.: Nothing salvageable out '
+                                   'there this pass.',
                  'Guaranteed': True,
                  'AvailableBelowCredits': 2000},
  'Asteroid Mining': {'Required Credits': 1000,
@@ -60,14 +60,15 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                      'Rank': 1,
                      'requiredEquipment': {'Spectral Analyzer': 1},
                      'Health Effect': 10,
-                     'startMessage': 'E.c.h.o.: Heading towards the asteroid '
-                                     'belt for mining operations.',
+                     'startMessage': 'E.c.h.o.: Heading towards the '
+                                     'asteroid belt for mining operations.',
                      'successMessage': 'E.c.h.o.: Successfully mined '
                                        'precious resources from the '
                                        'asteroid, gaining {reward} credits '
                                        'and {experience} experience.',
-                     'failureMessage': 'E.c.h.o.: Mining operations were not '
-                                       'successful. Better luck next time.'},
+                     'failureMessage': 'E.c.h.o.: Mining operations were '
+                                       'not successful. Better luck next '
+                                       'time.'},
  'Space Salvage': {'Required Credits': 1500,
                    'Required Energy': 13,
                    'Reward': 5124,
@@ -78,10 +79,12 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                    'startMessage': 'E.c.h.o.: Scanning space debris for '
                                    'valuable salvage.',
                    'successMessage': 'E.c.h.o.: Salvage successful. '
-                                     'Recovered items translated to {reward} '
-                                     'credits and {experience} experience.',
+                                     'Recovered items translated to '
+                                     '{reward} credits and {experience} '
+                                     'experience.',
                    'failureMessage': 'E.c.h.o.: Salvage mission was '
-                                     'unsuccessful. Nothing of value found.'},
+                                     'unsuccessful. Nothing of value '
+                                     'found.'},
  'Alien Artifact Retrieval': {'Required Credits': 2200,
                               'Required Energy': 18,
                               'Reward': 8230,
@@ -89,19 +92,19 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                               'Rank': 6,
                               'requiredEquipment': {'Alien Skin Armor': 1},
                               'Health Effect': 14,
-                              'startMessage': 'E.c.h.o.: Setting coordinates '
-                                              'to a rumored alien artifact '
-                                              'location.',
+                              'startMessage': 'E.c.h.o.: Setting '
+                                              'coordinates to a rumored '
+                                              'alien artifact location.',
                               'successMessage': 'E.c.h.o.: Artifact '
                                                 'retrieved successfully, '
                                                 'granting you {reward} '
                                                 'credits and {experience} '
                                                 'experience.',
                               'failureMessage': 'E.c.h.o.: The mission to '
-                                                'retrieve the alien artifact '
-                                                'failed. It seems we were '
-                                                'not the only ones after '
-                                                'it.'},
+                                                'retrieve the alien '
+                                                'artifact failed. It seems '
+                                                'we were not the only ones '
+                                                'after it.'},
  'Galactic Trading': {'Required Credits': 3000,
                       'Required Energy': 21,
                       'Reward': 11871,
@@ -109,13 +112,15 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                       'Rank': 8,
                       'requiredEquipment': {'Hover Board': 1,
                                             'Spectral Analyzer': 1},
+                      'requiredSupplies': {'NeuroLink': 1},
                       'Health Effect': 16,
                       'startMessage': 'E.c.h.o.: Initiating trading '
                                       'protocols with neighboring galactic '
                                       'entities.',
                       'successMessage': 'E.c.h.o.: Trade successful. The '
-                                        'profits earned you {reward} credits '
-                                        'and {experience} experience.',
+                                        'profits earned you {reward} '
+                                        'credits and {experience} '
+                                        'experience.',
                       'failureMessage': 'E.c.h.o.: The trade negotiation '
                                         'failed. No profits this time.'},
  'Deep Space Exploration': {'Required Credits': 4000,
@@ -124,10 +129,13 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                             'Experience': 400,
                             'Rank': 10,
                             'requiredEquipment': {'Basic Ship': 2},
+                            'requiredSupplies': {'NanoMesh': 1,
+                                                 'Alpha Core': 3},
                             'Health Effect': 18,
                             'startMessage': 'E.c.h.o.: Preparing for a '
-                                            'deep-space exploration mission '
-                                            'to uncharted territories.',
+                                            'deep-space exploration '
+                                            'mission to uncharted '
+                                            'territories.',
                             'successMessage': 'E.c.h.o.: Exploration '
                                               'successful. New regions '
                                               'charted and you earned '
@@ -144,12 +152,14 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                      'Rank': 12,
                      'requiredEquipment': {'Star Ship': 1,
                                            'Environmental Suit': 1},
+                     'requiredSupplies': {'Data Shard': 2},
                      'Health Effect': 20,
                      'startMessage': 'E.c.h.o.: Enrolling in the '
                                      'intergalactic starship racing event.',
-                     'successMessage': 'E.c.h.o.: You won the race! Credited '
-                                       '{reward} credits and {experience} '
-                                       'experience for your performance.',
+                     'successMessage': 'E.c.h.o.: You won the race! '
+                                       'Credited {reward} credits and '
+                                       '{experience} experience for your '
+                                       'performance.',
                      'failureMessage': 'E.c.h.o.: It was a tough race. '
                                        "Didn't make it to the top this "
                                        'time.'},
@@ -161,15 +171,19 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                       'requiredEquipment': {'Scout Drone': 2,
                                             'Environmental Suit': 2,
                                             'Oxygen Rebreather': 2},
+                      'requiredSupplies': {'HyperWeave': 1,
+                                           'Data Shard': 1},
                       'Health Effect': 22,
                       'startMessage': 'E.c.h.o.: Picking up distress '
-                                      'signals. Initiating rescue protocols.',
-                      'successMessage': "E.c.h.o.: Rescue successful! You've "
-                                        'been credited with {reward} credits '
-                                        'and {experience} experience.',
+                                      'signals. Initiating rescue '
+                                      'protocols.',
+                      'successMessage': 'E.c.h.o.: Rescue successful! '
+                                        "You've been credited with "
+                                        '{reward} credits and {experience} '
+                                        'experience.',
                       'failureMessage': 'E.c.h.o.: The rescue operation '
-                                        'faced challenges. Not everyone made '
-                                        'it back.'},
+                                        'faced challenges. Not everyone '
+                                        'made it back.'},
  'Black Hole Research': {'Required Credits': 8000,
                          'Required Energy': 34,
                          'Reward': 38580,
@@ -177,6 +191,8 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                          'Rank': 16,
                          'requiredEquipment': {'Star Ship': 2,
                                                'Spectral Analyzer': 2},
+                         'requiredSupplies': {'HyperWeave': 1,
+                                              'NeuroLink': 2},
                          'Health Effect': 24,
                          'startMessage': 'E.c.h.o.: Approaching the event '
                                          'horizon for black hole research.',
@@ -195,18 +211,22 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                          'Rank': 18,
                          'requiredEquipment': {'Holo Clone': 2,
                                                'Invisi Veil': 2},
+                         'requiredSupplies': {'Data Shard': 1,
+                                              'HyperWeave': 1},
                          'Health Effect': 26,
                          'startMessage': 'E.c.h.o.: Establishing '
                                          'communication channels for '
-                                         'diplomatic discussions with alien '
-                                         'civilizations.',
-                         'successMessage': 'E.c.h.o.: Diplomacy successful. '
-                                           'Established friendly relations '
-                                           'and earned {reward} credits and '
+                                         'diplomatic discussions with '
+                                         'alien civilizations.',
+                         'successMessage': 'E.c.h.o.: Diplomacy '
+                                           'successful. Established '
+                                           'friendly relations and earned '
+                                           '{reward} credits and '
                                            '{experience} experience.',
-                         'failureMessage': 'E.c.h.o.: The diplomatic mission '
-                                           'did not go as planned. The '
-                                           'aliens were not receptive.'},
+                         'failureMessage': 'E.c.h.o.: The diplomatic '
+                                           'mission did not go as planned. '
+                                           'The aliens were not '
+                                           'receptive.'},
  'Galaxy Defense': {'Required Credits': 12000,
                     'Required Energy': 40,
                     'Reward': 63061,
@@ -214,13 +234,14 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                     'Rank': 20,
                     'requiredEquipment': {'Cyber Armor': 3,
                                           'Interdimensional Cruiser': 2},
+                    'requiredSupplies': {'HyperWeave': 2, 'NeuroLink': 2},
                     'Health Effect': 28,
                     'startMessage': 'E.c.h.o.: Alert! Hostile forces '
                                     'detected. Preparing for defense.',
                     'successMessage': 'E.c.h.o.: Galaxy successfully '
-                                      'defended. Your bravery has earned you '
-                                      '{reward} credits and {experience} '
-                                      'experience.',
+                                      'defended. Your bravery has earned '
+                                      'you {reward} credits and '
+                                      '{experience} experience.',
                     'failureMessage': 'E.c.h.o.: The galaxy defense was '
                                       'challenging. Some areas suffered '
                                       'damage.'},
@@ -230,18 +251,20 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                                'Experience': 880,
                                'Rank': 22,
                                'requiredEquipment': {'Teleporter Beacon': 3},
+                               'requiredSupplies': {'BioPatch': 2},
                                'Health Effect': 30,
                                'startMessage': 'E.c.h.o.: Initiating deep '
-                                               'dive into quantum mechanics.',
+                                               'dive into quantum '
+                                               'mechanics.',
                                'successMessage': 'E.c.h.o.: Successfully '
                                                  'mastered quantum '
-                                                 'mechanics! Earned {reward} '
-                                                 'credits and {experience} '
-                                                 'experience.',
+                                                 'mechanics! Earned '
+                                                 '{reward} credits and '
+                                                 '{experience} experience.',
                                'failureMessage': 'E.c.h.o.: Quantum '
                                                  'Mechanics is perplexing. '
-                                                 "Couldn't completely grasp "
-                                                 'the concept.'},
+                                                 "Couldn't completely "
+                                                 'grasp the concept.'},
  'Interstellar Exploration': {'Required Credits': 17500,
                               'Required Energy': 46,
                               'Reward': 99536,
@@ -250,19 +273,21 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                               'requiredEquipment': {'Cyber Armor': 3,
                                                     'Porta Lab': 3,
                                                     'Plasma Blade': 2},
+                              'requiredSupplies': {'Cryptex': 3},
                               'Health Effect': 32,
-                              'startMessage': 'E.c.h.o.: Setting course for '
-                                              'uncharted territories in the '
-                                              'interstellar realm.',
+                              'startMessage': 'E.c.h.o.: Setting course '
+                                              'for uncharted territories '
+                                              'in the interstellar realm.',
                               'successMessage': 'E.c.h.o.: Exploration '
-                                                'successful! Discovered new '
-                                                'systems and earned {reward} '
-                                                'credits and {experience} '
-                                                'experience.',
+                                                'successful! Discovered '
+                                                'new systems and earned '
+                                                '{reward} credits and '
+                                                '{experience} experience.',
                               'failureMessage': 'E.c.h.o.: The uncharted '
                                                 'territories proved '
                                                 'challenging. Exploration '
-                                                'was not fully successful.'},
+                                                'was not fully '
+                                                'successful.'},
  'Temporal Anomaly Research': {'Required Credits': 21000,
                                'Required Energy': 50,
                                'Reward': 123986,
@@ -270,18 +295,21 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                                'Rank': 26,
                                'requiredEquipment': {'Porta Lab': 3,
                                                      'Terrain Scanner': 3},
+                               'requiredSupplies': {'Cryptex': 2,
+                                                    'Data Shard': 3},
                                'Health Effect': 34,
                                'startMessage': 'E.c.h.o.: Detected a '
-                                               'temporal anomaly. Commencing '
-                                               'research.',
+                                               'temporal anomaly. '
+                                               'Commencing research.',
                                'successMessage': 'E.c.h.o.: Successfully '
                                                  'researched the temporal '
-                                                 'anomaly! Rewarded {reward} '
-                                                 'credits and {experience} '
-                                                 'experience.',
+                                                 'anomaly! Rewarded '
+                                                 '{reward} credits and '
+                                                 '{experience} experience.',
                                'failureMessage': 'E.c.h.o.: The temporal '
                                                  'anomaly was unstable. '
-                                                 'Research faced setbacks.'},
+                                                 'Research faced '
+                                                 'setbacks.'},
  'Galactic Archaeology': {'Required Credits': 25000,
                           'Required Energy': 53,
                           'Reward': 153010,
@@ -290,17 +318,21 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                           'requiredEquipment': {'Porta Lab': 3,
                                                 'Terrain Scanner': 3,
                                                 'Bio Collector': 3},
+                          'requiredSupplies': {'BioPatch': 2,
+                                               'Data Shard': 3},
                           'Health Effect': 36,
-                          'startMessage': 'E.c.h.o.: Embarking on a quest to '
-                                          'uncover the mysteries of ancient '
-                                          'galactic civilizations.',
+                          'startMessage': 'E.c.h.o.: Embarking on a quest '
+                                          'to uncover the mysteries of '
+                                          'ancient galactic civilizations.',
                           'successMessage': 'E.c.h.o.: Successful '
-                                            'excavation! Unearthed artifacts '
-                                            'worth {reward} credits and '
-                                            '{experience} experience.',
+                                            'excavation! Unearthed '
+                                            'artifacts worth {reward} '
+                                            'credits and {experience} '
+                                            'experience.',
                           'failureMessage': 'E.c.h.o.: The ruins were '
                                             'labyrinthine and perplexing. '
-                                            'Some artifacts remain elusive.'},
+                                            'Some artifacts remain '
+                                            'elusive.'},
  'Universe Origins Study': {'Required Credits': 30000,
                             'Required Energy': 56,
                             'Reward': 190102,
@@ -309,6 +341,8 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                             'requiredEquipment': {'Cyber Armor': 4,
                                                   'Plasma Blade': 4,
                                                   'Interdimensional Cruiser': 4},
+                            'requiredSupplies': {'Cryptex': 3,
+                                                 'SynthArm': 1},
                             'Health Effect': 38,
                             'startMessage': 'E.c.h.o.: Launching probe to '
                                             'research the origins of the '
@@ -317,10 +351,10 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                                               'discoveries made! Earned '
                                               '{reward} credits and '
                                               '{experience} experience.',
-                            'failureMessage': 'E.c.h.o.: The vastness of the '
-                                              'universe is overwhelming. '
-                                              'Some mysteries remain '
-                                              'unsolved.'},
+                            'failureMessage': 'E.c.h.o.: The vastness of '
+                                              'the universe is '
+                                              'overwhelming. Some '
+                                              'mysteries remain unsolved.'},
  'Exodimensional Expedition': {'Required Credits': 35000,
                                'Required Energy': 59,
                                'Reward': 229357,
@@ -329,10 +363,12 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                                'requiredEquipment': {'Invisi Veil': 4,
                                                      'Teleporter Beacon': 4,
                                                      'Terrain Scanner': 2},
+                               'requiredSupplies': {'Cryptex': 3},
                                'Health Effect': 40,
                                'startMessage': 'E.c.h.o.: Preparing to '
-                                               'venture into exodimensions. '
-                                               'Unknown challenges await.',
+                                               'venture into '
+                                               'exodimensions. Unknown '
+                                               'challenges await.',
                                'successMessage': 'E.c.h.o.: Successfully '
                                                  'navigated the '
                                                  'exodimensions! Secured '
@@ -350,24 +386,26 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                               'requiredEquipment': {'Teleporter Beacon': 4,
                                                     'Interdimensional Cruiser': 4,
                                                     'Porta Lab': 3},
+                              'requiredSupplies': {'SynthArm': 3},
                               'Health Effect': 42,
                               'startMessage': 'E.c.h.o.: Initiating '
-                                              'procedures to manipulate dark '
-                                              'matter.',
+                                              'procedures to manipulate '
+                                              'dark matter.',
                               'successMessage': 'E.c.h.o.: Dark matter '
                                                 'manipulation successful! '
                                                 'Acquired {reward} credits '
                                                 'and {experience} '
                                                 'experience.',
-                              'failureMessage': 'E.c.h.o.: Failed to control '
-                                                'the elusive dark matter. '
-                                                'Mission aborted.'},
+                              'failureMessage': 'E.c.h.o.: Failed to '
+                                                'control the elusive dark '
+                                                'matter. Mission aborted.'},
  'Galactic Diplomacy': {'Required Credits': 48000,
                         'Required Energy': 66,
                         'Reward': 335314,
                         'Experience': 1440,
                         'Rank': 36,
                         'requiredEquipment': {'Invisi Veil': 4},
+                        'requiredSupplies': {'NanoSyringe': 1},
                         'Health Effect': 44,
                         'startMessage': 'E.c.h.o.: Engaging in diplomatic '
                                         'talks with advanced '
@@ -387,16 +425,20 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                               'requiredEquipment': {'Porta Lab': 4,
                                                     'Cyber Armor': 3,
                                                     'Teleporter Beacon': 4},
+                              'requiredSupplies': {'BioPatch': 3,
+                                                   'Cryptex': 3},
                               'Health Effect': 46,
-                              'startMessage': 'E.c.h.o.: Commencing analysis '
-                                              'of mysterious void phenomena.',
+                              'startMessage': 'E.c.h.o.: Commencing '
+                                              'analysis of mysterious void '
+                                              'phenomena.',
                               'successMessage': 'E.c.h.o.: Analysis '
                                                 'complete! Deciphered void '
                                                 'secrets and obtained '
                                                 '{reward} credits and '
                                                 '{experience} experience.',
-                              'failureMessage': 'E.c.h.o.: The void remains '
-                                                'enigmatic. Analysis was '
+                              'failureMessage': 'E.c.h.o.: The void '
+                                                'remains enigmatic. '
+                                                'Analysis was '
                                                 'inconclusive.'},
  'Cosmic Nexus Activation': {'Required Credits': 65000,
                              'Required Energy': 72,
@@ -406,9 +448,12 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                              'requiredEquipment': {'Teleporter Beacon': 4,
                                                    'Bio Collector': 5,
                                                    'Cyber Armor': 4},
+                             'requiredSupplies': {'SynthArm': 2,
+                                                  'BioPatch': 3},
                              'Health Effect': 48,
-                             'startMessage': 'E.c.h.o.: Initiating protocols '
-                                             'to activate the cosmic nexus.',
+                             'startMessage': 'E.c.h.o.: Initiating '
+                                             'protocols to activate the '
+                                             'cosmic nexus.',
                              'successMessage': 'E.c.h.o.: Cosmic Nexus '
                                                'activated! Gained {reward} '
                                                'credits and {experience} '
@@ -425,17 +470,22 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                                                        'Invisi Veil': 5,
                                                        'Alien Skin Armor': 5,
                                                        'Basic Ship': 5},
+                                 'requiredSupplies': {'SynthArm': 2,
+                                                      'BioPatch': 3},
                                  'Health Effect': 50,
                                  'startMessage': 'E.c.h.o.: Preparing to '
                                                  'investigate disturbances '
                                                  'in the temporal loop.',
-                                 'successMessage': 'E.c.h.o.: Temporal loop '
-                                                   'stabilized! Retrieved '
-                                                   '{reward} credits and '
-                                                   '{experience} experience.',
-                                 'failureMessage': 'E.c.h.o.: Time anomalies '
-                                                   'detected. Investigation '
-                                                   'proved challenging.'},
+                                 'successMessage': 'E.c.h.o.: Temporal '
+                                                   'loop stabilized! '
+                                                   'Retrieved {reward} '
+                                                   'credits and '
+                                                   '{experience} '
+                                                   'experience.',
+                                 'failureMessage': 'E.c.h.o.: Time '
+                                                   'anomalies detected. '
+                                                   'Investigation proved '
+                                                   'challenging.'},
  'Nebular Storm Navigation': {'Required Credits': 86000,
                               'Required Energy': 78,
                               'Reward': 675188,
@@ -445,6 +495,7 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                                                     'Steel Machete': 5,
                                                     'Basic Ship': 5,
                                                     'Oxygen Rebreather': 5},
+                              'requiredSupplies': {'NanoSyringe': 2},
                               'Health Effect': 52,
                               'startMessage': 'E.c.h.o.: Initiating '
                                               'navigation through a '
@@ -466,19 +517,22 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                                                         'Jet Pack': 5,
                                                         'Plasma Blade': 5,
                                                         'Environmental Suit': 5},
+                                  'requiredSupplies': {'SynthArm': 3,
+                                                       'NanoSyringe': 1},
                                   'Health Effect': 54,
                                   'startMessage': 'E.c.h.o.: Mission is to '
-                                                  'retrieve a rare celestial '
-                                                  'artifact from an ancient '
-                                                  'site.',
+                                                  'retrieve a rare '
+                                                  'celestial artifact from '
+                                                  'an ancient site.',
                                   'successMessage': 'E.c.h.o.: Artifact '
                                                     'secured! Obtained '
                                                     '{reward} credits and '
                                                     '{experience} '
                                                     'experience.',
                                   'failureMessage': 'E.c.h.o.: Artifact '
-                                                    'retrieval mission faced '
-                                                    'unforeseen challenges.'},
+                                                    'retrieval mission '
+                                                    'faced unforeseen '
+                                                    'challenges.'},
  'Supernova Containment': {'Required Credits': 110000,
                            'Required Energy': 85,
                            'Reward': 911204,
@@ -488,10 +542,12 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                                                  'Interdimensional Cruiser': 5,
                                                  'Teleporter Beacon': 5,
                                                  'Spectral Analyzer': 5},
+                           'requiredSupplies': {'NanoSyringe': 1,
+                                                'SynthArm': 3},
                            'Health Effect': 56,
-                           'startMessage': 'E.c.h.o.: Attempting to contain '
-                                           'the imminent supernova and '
-                                           'harness its energy.',
+                           'startMessage': 'E.c.h.o.: Attempting to '
+                                           'contain the imminent supernova '
+                                           'and harness its energy.',
                            'successMessage': 'E.c.h.o.: Supernova '
                                              'successfully contained! '
                                              '{reward} credits and '
@@ -512,9 +568,11 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                                               'Scout Drone': 6,
                                               'Bio Collector': 5,
                                               'Cyber Armor': 6},
+                        'requiredSupplies': {'SynthArm': 3, 'Cryptex': 3},
                         'Health Effect': 58,
                         'startMessage': 'E.c.h.o.: Launching probes to map '
-                                        'the event horizon of a black hole.',
+                                        'the event horizon of a black '
+                                        'hole.',
                         'successMessage': 'E.c.h.o.: Successful mapping! '
                                           'Collected valuable data and '
                                           '{reward} credits along with '

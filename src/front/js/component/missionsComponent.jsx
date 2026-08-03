@@ -5,6 +5,7 @@ import HealthComponent from "./healthComponent";
 import EnergyComponent from "./energyComponent";
 import CreditsComponent from "./creditsComponent";
 import { successBreakdown } from "../missionOdds";
+import { perkBonusPct } from "../equipmentPerks";
 
 const MissionsComponent = () => {
   const { store, actions } = useContext(Context);
@@ -15,6 +16,14 @@ const MissionsComponent = () => {
   // Mirrors economy.WIN_STREAK_BONUS_PER_WIN / WIN_STREAK_CAP - the server
   // is what actually applies the bonus.
   const streakBonusPct = Math.min(player.winStreak || 0, 10) * 3;
+  // Transports perk discounts the actual energy charged (server-side in
+  // economy.mission_energy_cost) - show the effective cost so the listed
+  // number matches what actually happens.
+  const transportsPct = perkBonusPct(player, "Transports", gameData.equipment);
+  const effectiveEnergy = (required) =>
+    required > 0 && transportsPct > 0
+      ? Math.max(1, Math.round(required * (1 - transportsPct / 100)))
+      : required;
 
   const runMission = (missionName) => {
     setRunningMission(missionName);
@@ -98,6 +107,13 @@ const MissionsComponent = () => {
                         </li>
                         <li>
                           Required Energy: {missionData["Required Energy"]}
+                          {transportsPct > 0 && (
+                            <span className="tx-info">
+                              {" "}
+                              → {effectiveEnergy(missionData["Required Energy"])}{" "}
+                              with your Transports perk
+                            </span>
+                          )}
                         </li>
                         <li style={{ color: wouldSurvive ? undefined : "#ff8a8a" }}>
                           Health Risk: -{missionData["Health Effect"]}
@@ -144,6 +160,38 @@ const MissionsComponent = () => {
                             }
                           )}
                         </ul>
+                        {Object.keys(missionData.requiredSupplies || {}).length >
+                          0 && (
+                          <>
+                            <li>
+                              Supplies{" "}
+                              <span className="tx-info">
+                                (market items, consumed every attempt)
+                              </span>
+                              :
+                            </li>
+                            <ul>
+                              {Object.entries(missionData.requiredSupplies).map(
+                                ([item, quantity]) => {
+                                  const owned = Math.floor(
+                                    player.inventory?.[item]?.quantity || 0
+                                  );
+                                  const met = owned >= quantity;
+                                  return (
+                                    <li
+                                      key={item}
+                                      style={{
+                                        color: met ? "#8aff8a" : "#ff8a8a",
+                                      }}
+                                    >
+                                      {item} x{quantity} (Owned: {owned})
+                                    </li>
+                                  );
+                                }
+                              )}
+                            </ul>
+                          </>
+                        )}
                       </ul>
                       {wouldSurvive ? (
                         <button
