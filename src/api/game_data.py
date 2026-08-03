@@ -36,7 +36,23 @@ ITEMS = {'Energy Cores': {'Alpha Core': {'Base Cost': 50, 'Rank': 1},
                              'Omega Seal': {'Base Cost': 500000, 'Rank': 50}}}
 
 
-MISSIONS = {'Asteroid Mining': {'Required Credits': 1000,
+MISSIONS = {'Salvage Run': {'Required Credits': 0,
+                 'Required Energy': 6,
+                 'Reward': 260,
+                 'Experience': 15,
+                 'Rank': 1,
+                 'requiredEquipment': {},
+                 'Health Effect': 0,
+                 'startMessage': 'E.c.h.o.: Sweeping the near orbit for '
+                                 'loose debris. Low value, but it costs us '
+                                 'nothing but time.',
+                 'successMessage': 'E.c.h.o.: Debris collected and sold on. '
+                                   '{reward} credits and {experience} '
+                                   'experience.',
+                 'failureMessage': 'E.c.h.o.: Nothing salvageable out there '
+                                   'this pass.',
+                 'Guaranteed': True},
+ 'Asteroid Mining': {'Required Credits': 1000,
                      'Required Energy': 10,
                      'Reward': 3200,
                      'Experience': 40,

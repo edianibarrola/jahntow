@@ -30,6 +30,11 @@ UPGRADABLE_STATS = {
 # Refund fraction when selling equipment back.
 EQUIPMENT_SELL_REFUND_PCT = 0.5
 
+# Wins needed on the current story mission before the next one unlocks.
+# Was 5, which meant replaying the same mission 5 times for each of 42
+# chapters - 210 identical repetitions to see the whole story.
+STORY_WINS_PER_UNLOCK = 2
+
 
 def _current_player():
     user_id = int(get_jwt_identity())
@@ -399,7 +404,7 @@ def _resolve_mission_request(player, mission_catalog, mission_name, is_story):
 
     if is_story:
         story_names = list(mission_catalog.keys())
-        unlocked_index = player.storyWins // 5
+        unlocked_index = player.storyWins // STORY_WINS_PER_UNLOCK
         if unlocked_index >= len(story_names) or story_names[unlocked_index] != mission_name:
             return None, (jsonify({"message": "this story mission is not unlocked yet"}), 403)
     else:
