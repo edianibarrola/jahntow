@@ -25,6 +25,16 @@ XP_PER_LEVEL = 100
 # Credits granted per level gained.
 LEVEL_UP_CREDIT_BONUS = 1000
 
+# Credits trickle in while offline (or just idle), same elapsed-time-based
+# mechanism as energy regen/property production, capped so leaving the game
+# open for days doesn't accrue an unbounded amount.
+OFFLINE_TRICKLE_CREDITS_PER_HOUR = 25
+OFFLINE_TRICKLE_CAP_HOURS = 8
+
+# Daily login streak bonus, capped so it plateaus instead of growing forever.
+STREAK_BONUS_PER_DAY = 50
+STREAK_BONUS_CAP_DAYS = 10
+
 # Mission success chance scales with how prepared the player actually is,
 # instead of being a flat coin flip regardless of level or gear:
 #   - BASE_SUCCESS_CHANCE is what you get right at a mission's own rank
@@ -139,18 +149,28 @@ def find_recovery_item(item_name):
 
 def apply_passive_tick(player):
     """
-    Apply energy regen and property-based item production for whatever
-    wall-clock time has passed since the player was last ticked. Called
-    at the top of every authenticated player action so state stays correct
-    even if the player was offline (no client-side interval required).
+    Apply energy regen, property-based item production, and offline credit
+    trickle for whatever wall-clock time has passed since the player was
+    last ticked. Called at the top of every authenticated player action so
+    state stays correct even if the player was offline (no client-side
+    interval required). Returns a summary dict; most callers ignore it,
+    GET /player surfaces "offline_credits" so the frontend can toast it.
     """
     now = utcnow()
     last = player.last_tick_at or now
     elapsed = now - last
     if elapsed <= timedelta(0):
-        return
+        return {"offline_credits": 0}
 
     changed = False
+
+    # Offline credit trickle: capped elapsed time so leaving the game open
+    # (or just not visiting) for days doesn't accrue an unbounded amount.
+    trickle_hours = min(elapsed.total_seconds() / 3600, OFFLINE_TRICKLE_CAP_HOURS)
+    offline_credits = int(trickle_hours * OFFLINE_TRICKLE_CREDITS_PER_HOUR)
+    if offline_credits > 0:
+        player.credits += offline_credits
+        changed = True
 
     # Energy regen: +1 per ENERGY_REGEN_INTERVAL, capped at maxEnergy.
     if player.energy < player.maxEnergy:
@@ -203,6 +223,34 @@ def apply_passive_tick(player):
     player.last_tick_at = now
     if changed:
         db.session.add(player)
+
+    return {"offline_credits": offline_credits}
+
+
+def apply_login_streak(player):
+    """
+    Bump the daily login streak (and grant its credit bonus) the first time
+    this runs on a new UTC calendar day. Called from GET /player, which the
+    frontend hits both right after login and on its regular poll - so this
+    covers "logged in again the next day" and "left a tab open across
+    midnight" with one code path. Returns the bonus granted (0 if none).
+    """
+    now = utcnow()
+    last = player.last_login_at
+
+    if last is not None and last.date() == now.date():
+        return 0
+
+    if last is not None and (now.date() - last.date()).days == 1:
+        player.login_streak += 1
+    else:
+        player.login_streak = 1
+
+    player.last_login_at = now
+    bonus = STREAK_BONUS_PER_DAY * min(player.login_streak, STREAK_BONUS_CAP_DAYS)
+    player.credits += bonus
+    db.session.add(player)
+    return bonus
 
 
 def apply_level_ups(player):

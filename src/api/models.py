@@ -56,12 +56,19 @@ class Player(db.Model):
     # on every page refresh).
     item_cooldowns = db.Column(db.JSON, default=dict)
 
-    # Last time passive effects (energy regen, property item generation)
-    # were applied to this player. Passive gains are computed lazily from
-    # elapsed wall-clock time whenever the player is loaded/acted on,
-    # rather than relying on a client-side setInterval that only ran while
-    # a particular tab/component was open.
+    # Last time passive effects (energy regen, property item generation,
+    # offline credit trickle) were applied to this player. Passive gains
+    # are computed lazily from elapsed wall-clock time whenever the player
+    # is loaded/acted on, rather than relying on a client-side setInterval
+    # that only ran while a particular tab/component was open.
     last_tick_at = db.Column(db.DateTime(), default=utcnow)
+
+    # Daily login streak. last_login_at is compared by UTC calendar date
+    # (not a rolling 24h window) each time GET /player runs, so it's
+    # updated on both an explicit next-day login and a tab left open
+    # across midnight.
+    last_login_at = db.Column(db.DateTime(), nullable=True)
+    login_streak = db.Column(db.Integer, default=0)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # linking the player to a user
 
@@ -89,6 +96,7 @@ class Player(db.Model):
             "maxHealth": self.maxHealth,
             "maxEnergy": self.maxEnergy,
             "storyWins": self.storyWins,
+            "loginStreak": self.login_streak,
         }
 
 
