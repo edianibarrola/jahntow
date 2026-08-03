@@ -25,8 +25,10 @@ const InventoryComponent = () => {
     });
   });
 
+  // Whole units only - a sub-unit remainder is carried server-side (see
+  // Player.production_remainders) and isn't ownable stock yet.
   const held = Object.entries(player.inventory || {}).filter(
-    ([, entry]) => (entry.quantity || 0) > 0
+    ([, entry]) => Math.floor(entry.quantity || 0) > 0
   );
 
   const equipmentHeld = Object.entries(player.equipment || {}).filter(
@@ -38,7 +40,8 @@ const InventoryComponent = () => {
   );
 
   const totalValue = held.reduce(
-    (sum, [name, entry]) => sum + (priceByItem[name] || 0) * entry.quantity,
+    (sum, [name, entry]) =>
+      sum + (priceByItem[name] || 0) * Math.floor(entry.quantity),
     0
   );
 
@@ -66,8 +69,9 @@ const InventoryComponent = () => {
           <ul className="activity-list">
             {held.map(([name, entry]) => {
               const price = priceByItem[name] || 0;
-              const value = price * entry.quantity;
-              const pl = (price - (entry.avg_cost || 0)) * entry.quantity;
+              const quantity = Math.floor(entry.quantity);
+              const value = price * quantity;
+              const pl = (price - (entry.avg_cost || 0)) * quantity;
               return (
                 <li
                   key={name}
@@ -78,8 +82,7 @@ const InventoryComponent = () => {
                     <span className="tx-info">(rank {rankByItem[name] ?? "?"})</span>
                   </span>
                   <span>
-                    {Math.floor(entry.quantity)} × {price.toFixed(0)} ={" "}
-                    {value.toFixed(0)}{" "}
+                    {quantity} × {price.toFixed(0)} = {value.toFixed(0)}{" "}
                     <span className={pl >= 0 ? "tx-sell" : "tx-error"}>
                       ({pl >= 0 ? "+" : ""}
                       {pl.toFixed(0)})

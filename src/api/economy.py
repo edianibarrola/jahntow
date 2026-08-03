@@ -4,6 +4,7 @@ production, mission resolution, and levelling. Every player action that
 changes credits, stats, inventory, or experience is computed here instead
 of trusting values sent by the client.
 """
+import math
 import random
 from datetime import timedelta
 
@@ -814,6 +815,21 @@ def apply_passive_tick(player):
     )
     if production_ticks > 0 and player.properties:
         inventory = dict(player.inventory or {})
+        remainders = dict(player.production_remainders or {})
+        # Legacy cleanup: inventories written before whole-item production
+        # can hold fractional quantities. Fold the fraction back into the
+        # carry pool so the visible inventory is always whole units.
+        for item_name, entry in list(inventory.items()):
+            qty = entry.get("quantity", 0)
+            whole = math.floor(qty)
+            if qty != whole:
+                remainders[item_name] = round(remainders.get(item_name, 0) + (qty - whole), 6)
+                if whole > 0:
+                    inventory[item_name] = {**entry, "quantity": whole}
+                else:
+                    inventory.pop(item_name, None)
+                changed = True
+
         for property_name, owned_qty in (player.properties or {}).items():
             if not owned_qty:
                 continue
@@ -835,11 +851,26 @@ def apply_passive_tick(player):
             ceiling = player.maxInventoryCount * PRODUCTION_OVERFLOW_MULTIPLE
             if current_qty >= ceiling:
                 continue
-            gained = owned_qty * rate * production_ticks
+
+            # Only WHOLE items are ever deposited. Sub-unit output carries
+            # forward in production_remainders until it completes a unit -
+            # the same carry-the-remainder rule the tick clocks use. A
+            # low-rate property (0.0213/tick) therefore delivers 1 item
+            # every ~47 ticks instead of dribbling unsellable slivers into
+            # the inventory that floor to "Owned: 0" but still get valued.
+            produced = owned_qty * rate * production_ticks + remainders.get(generated_item, 0)
+            gained = math.floor(produced)
+            carry = round(produced - gained, 6)
+            if gained <= 0:
+                if carry != remainders.get(generated_item, 0):
+                    remainders[generated_item] = carry
+                    changed = True
+                continue
+
             new_qty = min(ceiling, current_qty + gained)
-            # Round to avoid inventory accumulating values like 0.001 from
-            # the fractional generation rates of high-value items.
-            new_qty = round(new_qty, 2)
+            # Output above the ceiling is lost, not banked - otherwise a
+            # full stock would keep filling the carry pool forever.
+            remainders[generated_item] = carry
             if new_qty != current_qty:
                 # Passively generated units are free (already paid for via
                 # the property itself) - blend them into the average cost
@@ -855,9 +886,11 @@ def apply_passive_tick(player):
                     "quantity": new_qty,
                     "avg_cost": new_avg_cost,
                 }
-                changed = True
+            changed = True
+
         if changed:
             player.inventory = inventory
+            player.production_remainders = remainders
 
     player.last_tick_at = now
     if changed:
