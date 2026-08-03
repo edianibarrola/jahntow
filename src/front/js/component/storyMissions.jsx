@@ -5,6 +5,7 @@ import HealthComponent from "./healthComponent";
 import EnergyComponent from "./energyComponent";
 import CreditsComponent from "./creditsComponent";
 import StoryMissionDetailsComponent from "./storyMissionDetailsComponent";
+import { previewSuccessChance } from "../missionOdds";
 
 const StoryMissions = () => {
   const { store, actions } = useContext(Context);
@@ -22,7 +23,7 @@ const StoryMissions = () => {
       .startStoryMission(missionName)
       .then((data) => {
         if (data.died) {
-          alert("Game Over - your progress has been reset.");
+          alert(data.message);
         }
       })
       .catch((error) => {
@@ -77,6 +78,10 @@ const StoryMissions = () => {
                           </li>
                           <li>
                             Health Risk: -{storyMissionData["Health Effect"]}
+                          </li>
+                          <li>
+                            Est. Success Chance:{" "}
+                            {previewSuccessChance(player, storyMissionData)}%
                           </li>
                           <li>Required Equipment:</li>
                           <ul>

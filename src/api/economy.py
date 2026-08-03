@@ -25,7 +25,31 @@ XP_PER_LEVEL = 100
 # Credits granted per level gained.
 LEVEL_UP_CREDIT_BONUS = 1000
 
-MISSION_SUCCESS_CHANCE = 0.5
+# What happens when health hits 0. Previously this fully reset the player
+# (level, credits, equipment, inventory, properties, story progress - back
+# to a brand new account) instantly and without warning; a couple of bad
+# mission rolls in a row could erase real progress in seconds. Now it's a
+# real but survivable setback: a meaningful credit loss and a rough
+# recovery, but level/XP/gear/story progress are untouched.
+DEATH_CREDIT_PENALTY_PCT = 0.25
+DEATH_RECOVERY_HEALTH_PCT = 0.20
+MIN_RECOVERY_HEALTH = 10
+
+# Mission success chance scales with how prepared the player actually is,
+# instead of being a flat coin flip regardless of level or gear:
+#   - BASE_SUCCESS_CHANCE is what you get right at a mission's own rank
+#     (still a real risk - the mission is new to you).
+#   - Each level above the mission's rank improves your odds; each level
+#     below (possible for story missions, which aren't level-gated)
+#     worsens them.
+#   - Owning more than the bare minimum of required equipment also helps,
+#     capped so gear alone can't trivialize a mission.
+BASE_SUCCESS_CHANCE = 0.5
+SUCCESS_PER_LEVEL_ADVANTAGE = 0.03
+SUCCESS_PER_EXTRA_EQUIPMENT = 0.02
+MAX_EQUIPMENT_BONUS = 0.10
+MIN_SUCCESS_CHANCE = 0.15
+MAX_SUCCESS_CHANCE = 0.92
 
 
 def _all_catalog_items():
@@ -220,11 +244,32 @@ def player_meets_requirements(player, mission):
     return True, None
 
 
+def mission_success_chance(player, mission):
+    """
+    The odds actually used to resolve a mission attempt. Exposed as its own
+    function so the API can report it back to the player (e.g. in the
+    mission result message) rather than the chance being an invisible
+    server-side detail.
+    """
+    level_advantage = player.level - mission["Rank"]
+    chance = BASE_SUCCESS_CHANCE + level_advantage * SUCCESS_PER_LEVEL_ADVANTAGE
+
+    equipment = player.equipment or {}
+    equipment_bonus = 0
+    for item_name, required_qty in (mission.get("requiredEquipment") or {}).items():
+        owned_qty = equipment.get(item_name, {}).get("quantity", 0)
+        extra = max(0, owned_qty - required_qty)
+        equipment_bonus += extra * SUCCESS_PER_EXTRA_EQUIPMENT
+    chance += min(equipment_bonus, MAX_EQUIPMENT_BONUS)
+
+    return max(MIN_SUCCESS_CHANCE, min(MAX_SUCCESS_CHANCE, chance))
+
+
 def resolve_mission(player, mission):
     """
     Runs a mission attempt to completion synchronously (the original
     client-side setTimeout delay was purely cosmetic UI pacing, not a real
-    async process) and returns (success, message).
+    async process) and returns (success, message, died).
 
     Reward handling fixes a bug in the original client logic: mission data
     defines a "Reward" value (e.g. 3000 credits for Asteroid Mining) that
@@ -236,7 +281,7 @@ def resolve_mission(player, mission):
     player.credits -= mission["Required Credits"]
     player.energy -= mission["Required Energy"]
 
-    success = random.random() < MISSION_SUCCESS_CHANCE
+    success = random.random() < mission_success_chance(player, mission)
 
     if success:
         player.credits += mission["Reward"]
@@ -254,3 +299,15 @@ def resolve_mission(player, mission):
 
     died = player.health <= 0
     return success, message, died
+
+
+def apply_death_penalty(player):
+    """
+    Called when a mission failure drops health to 0. Returns the number of
+    credits lost, so the caller can put it in the player-facing message.
+    """
+    lost_credits = round(player.credits * DEATH_CREDIT_PENALTY_PCT)
+    player.credits = max(0, player.credits - lost_credits)
+    player.health = max(MIN_RECOVERY_HEALTH, round(player.maxHealth * DEATH_RECOVERY_HEALTH_PCT))
+    player.energy = 0
+    return lost_credits

@@ -4,6 +4,7 @@ import { Accordion } from "react-bootstrap";
 import HealthComponent from "./healthComponent";
 import EnergyComponent from "./energyComponent";
 import CreditsComponent from "./creditsComponent";
+import { previewSuccessChance } from "../missionOdds";
 
 const MissionsComponent = () => {
   const { store, actions } = useContext(Context);
@@ -17,7 +18,7 @@ const MissionsComponent = () => {
       .startMission(missionName)
       .then((data) => {
         if (data.died) {
-          alert("Game Over - your progress has been reset.");
+          alert(data.message);
         }
       })
       .catch((error) => {
@@ -62,6 +63,10 @@ const MissionsComponent = () => {
                       </li>
                       <li>Required Energy: {missionData["Required Energy"]}</li>
                       <li> Health Risk: -{missionData["Health Effect"]}</li>
+                      <li>
+                        Est. Success Chance:{" "}
+                        {previewSuccessChance(player, missionData)}%
+                      </li>
                       <li>Required Equipment:</li>
                       <ul>
                         {Object.entries(missionData.requiredEquipment).map(
