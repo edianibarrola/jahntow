@@ -95,7 +95,13 @@ const ItemsComponent = () => {
                         {owned > 0 && (
                           <>
                             {" "}
-                            (Owned: {owned}, Avg Cost: {avgCost.toFixed(2)},{" "}
+                            {/* Property-produced items can accumulate at a
+                                fractional rate (e.g. 0.05/tick for rare,
+                                high-value items) - floor for display only,
+                                the true fractional amount is still what's
+                                compared against for selling. */}
+                            (Owned: {Math.floor(owned)}, Avg Cost:{" "}
+                            {avgCost.toFixed(2)},{" "}
                             <span
                               style={{
                                 color:
