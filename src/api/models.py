@@ -133,6 +133,12 @@ class MarketPrice(db.Model):
     current_cost = db.Column(db.Float, nullable=False)
     updated_at = db.Column(db.DateTime(), default=utcnow, onupdate=utcnow)
 
+    # Baseline current_cost was at the last time a "price changed" global
+    # notification was posted for this item - the server-side equivalent
+    # of what used to be a client-only, page-load-reset baseline dict.
+    # Falls back to base_cost the first time a row is checked.
+    last_notified_cost = db.Column(db.Float, nullable=True)
+
     def serialize(self):
         return {
             "item_name": self.item_name,
@@ -165,3 +171,21 @@ class GameEvent(db.Model):
             "multiplier": self.multiplier,
             "ends_at": self.ends_at.isoformat(),
         }
+
+
+class ActivityLogEntry(db.Model):
+    """
+    Server-authoritative activity/notification log, replacing what used to
+    be client-only state built from templated strings and persisted to
+    localStorage. player_id set = that player's own activity (a buy, a
+    mission result, ...); player_id NULL = a global entry (a market price
+    notable move), same shared-scope pattern as MarketPrice/GameEvent.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=True)
+    message = db.Column(db.String(300), nullable=False)
+    type = db.Column(db.String(30), nullable=False, default="info")
+    created_at = db.Column(db.DateTime(), default=utcnow)
+
+    def serialize(self):
+        return {"id": self.id, "message": self.message, "type": self.type}

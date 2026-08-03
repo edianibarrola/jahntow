@@ -4,26 +4,6 @@ import { Context } from "../store/appContext";
 
 const VISIBLE_MS = 4500;
 
-// Anything already in localStorage's persisted transactions log when this
-// page loaded is history from before now, toasted already in a previous
-// session. Read once, at module scope (true page-load granularity) -
-// deliberately not from React/store state at component-mount time, since
-// an action can fire (and append to store.transactions) before this
-// component gets a chance to mount, e.g. a login-streak/offline-credits
-// message queued during fetchPlayerData() while still on the /login page,
-// before navigation to home ever renders this component. Keying "already
-// seen" off mount-time store state would wrongly treat that as stale
-// history and swallow it.
-const persistedIds = new Set(
-  (() => {
-    try {
-      return (JSON.parse(localStorage.getItem("transactions")) || []).map((t) => t.id);
-    } catch {
-      return [];
-    }
-  })()
-);
-
 // Shows entries from store.transactions as brief toasts, regardless of
 // which tab is active - so a mission/buy/sell/upgrade result is always
 // noticed immediately, not just visible if you happen to be on the Market
@@ -36,29 +16,34 @@ const persistedIds = new Set(
 const ActivityToast = () => {
   const { store } = useContext(Context);
   const [toasts, setToasts] = useState([]);
-  const seenIds = useRef(new Set(persistedIds));
+  const seenIds = useRef(new Set());
   // Each toast's dismiss timer is independent of the others, so pending
   // timers are only ever torn down on unmount - not whenever another
   // transaction arrives, which would cancel earlier toasts' own removal.
   const timersRef = useRef(new Map());
 
   useEffect(() => {
-    // Walk from the newest entry until hitting one already shown, so every
-    // genuinely new entry gets its own toast - not just the single latest
-    // one. This matters when two entries are appended synchronously in the
-    // same callback (e.g. a login-streak toast and an offline-credits
-    // toast queued back to back): React batches that into one re-render,
-    // so reacting only to "the latest id changed" would show just the
-    // second and silently drop the first.
+    // Walk from the newest entry until hitting one already processed, so
+    // every genuinely new entry gets its own toast - not just the single
+    // latest one. This matters when two entries are appended synchronously
+    // in the same callback (e.g. a login-streak toast and an
+    // offline-credits toast queued back to back): React batches that into
+    // one re-render, so reacting only to "the latest id changed" would
+    // show just the second and silently drop the first.
     const fresh = [];
     for (const t of store.transactions) {
       if (seenIds.current.has(t.id)) break;
-      fresh.push(t);
+      seenIds.current.add(t.id);
+      // "historical" entries came from fetchActivityLog() syncing in
+      // history from another device/session (or this session's own
+      // pre-existing history on load) - not something that just happened
+      // in front of the player, so they populate the Recent Activity list
+      // without ever toasting.
+      if (!t.historical) fresh.push(t);
     }
     if (fresh.length === 0) return;
 
     fresh.reverse().forEach((t) => {
-      seenIds.current.add(t.id);
       const toast = { id: t.id, message: t.message, type: t.type || "info" };
       setToasts((prev) => [...prev, toast]);
       const timer = setTimeout(() => {

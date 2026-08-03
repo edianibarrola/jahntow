@@ -1454,22 +1454,6 @@ const getState = ({ getStore, getActions, setStore }) => {
     }
   };
 
-  // The activity log and price-change feed are worth keeping across a
-  // reload/re-login just like the player itself - logging back in to a
-  // blank "Recent Activity" panel loses the record of what you just did.
-  const transactionsFromLocalStorage =
-    JSON.parse(localStorage.getItem("transactions")) || [];
-  const notificationsFromLocalStorage =
-    JSON.parse(localStorage.getItem("notifications")) || [];
-
-  const saveListToLocalStorage = (key, list) => {
-    try {
-      localStorage.setItem(key, JSON.stringify(list));
-    } catch (error) {
-      console.error(`Failed to save ${key} in local storage`, error);
-    }
-  };
-
   // All game state (prices, mission outcomes, costs, rewards) is computed
   // server-side. This client only ever sends an intent ("buy 2 Alpha
   // Cores") and applies whatever player object the backend returns -
@@ -1513,42 +1497,27 @@ const getState = ({ getStore, getActions, setStore }) => {
     return data;
   };
 
-  const LOW_HEALTH_RATIO = 0.25;
-
-  // Health only ever drops from a mission's "Health Effect" - append a
-  // warning directly onto that mission's own result message (rather than
-  // firing a separate transaction) so it's guaranteed to show up in the
-  // same toast the player is already looking at, instead of racing another
-  // push for the toast slot.
-  const withLowHealthWarning = (message, player) => {
-    if (!player || !player.maxHealth) return message;
-    const ratio = player.health / player.maxHealth;
-    if (ratio > LOW_HEALTH_RATIO) return message;
-    return `${message} ⚠ Health critically low (${player.health}/${player.maxHealth}).`;
+  // Appends a ready-made {id, message, type} entry to the local activity
+  // list. The message/id are always server-authored now (the backend logs
+  // and serializes each action's own outcome) except for reportError below,
+  // whose entries can never reach the server (network errors, expired
+  // auth, rate limiting) so those stay client-constructed.
+  const appendActivityEntry = (entry) => {
+    if (!entry) return;
+    const store = getStore();
+    setStore({ transactions: [entry, ...store.transactions].slice(0, 50) });
   };
 
-  // Seed the id counter above any id already persisted from a previous
-  // session, otherwise a freshly-created entry after a reload can collide
-  // with a persisted one's id (both starting back at 1) - which breaks
-  // React's key uniqueness and, worse, silently defeats the toast's
-  // `latest?.id` change-detection for that entry.
-  let transactionIdCounter = [
-    ...transactionsFromLocalStorage,
-    ...notificationsFromLocalStorage,
-  ].reduce((max, entry) => Math.max(max, entry.id || 0), 0);
-
-  // Tracks the price each item had the last time we posted a "price
-  // changed" notification for it, so the feed only fires on a genuine
-  // move (>= PRICE_NOTIFY_THRESHOLD cumulative drift since that baseline)
-  // instead of on every ~20s poll for every item in the catalog.
-  const lastNotifiedPrices = {};
-  const PRICE_NOTIFY_THRESHOLD = 0.08;
+  // Client-only entries (errors) use negative ids so they can never collide
+  // with a server-issued (DB primary key) id.
+  let clientEntryIdCounter = 0;
 
   // Every mutating action funnels its failures through here instead of a
   // blocking alert() - "not enough energy", "on cooldown", "insufficient
   // credits" etc. all become a toast/activity-log entry like everything
   // else, then the rejection is re-thrown so the calling component's own
-  // .finally() (button spinner reset, etc.) still runs.
+  // .finally() (button spinner reset, etc.) still runs. Unlike successful
+  // actions, these stay client-side - many can't reach the server at all.
   const reportError = (error, fallbackMessage) => {
     let message = error?.message || fallbackMessage;
     if (error?.status === 429 && error?.data?.retry_after_seconds != null) {
@@ -1556,7 +1525,11 @@ const getState = ({ getStore, getActions, setStore }) => {
         error.data.retry_after_seconds
       )}s.`;
     }
-    getActions().updateTransactions(`Error: ${message}`, "error");
+    appendActivityEntry({
+      id: --clientEntryIdCounter,
+      message: `Error: ${message}`,
+      type: "error",
+    });
     throw error;
   };
 
@@ -1573,8 +1546,11 @@ const getState = ({ getStore, getActions, setStore }) => {
       marketPrices: [],
       leaderboard: [],
       activeEvent: null,
-      notifications: notificationsFromLocalStorage,
-      transactions: transactionsFromLocalStorage,
+      // Both server-authoritative now (ActivityLogEntry), fetched fresh on
+      // load/poll rather than seeded from localStorage - so the log
+      // follows the account across devices/browsers, not just this one.
+      notifications: [],
+      transactions: [],
       charactersImages: charactersImages,
       storyMissionArc: storyMissionArc,
     },
@@ -1616,24 +1592,6 @@ const getState = ({ getStore, getActions, setStore }) => {
         return apiRequest("/api/market/prices", { auth: false })
           .then((data) => {
             const prices = data.prices || [];
-            prices.forEach((price) => {
-              const baseline = lastNotifiedPrices[price.item_name];
-              if (baseline == null) {
-                lastNotifiedPrices[price.item_name] = price.current_cost;
-                return;
-              }
-              const change = (price.current_cost - baseline) / baseline;
-              if (Math.abs(change) < PRICE_NOTIFY_THRESHOLD) return;
-              const pct = Math.abs(change * 100).toFixed(0);
-              const arrow = change > 0 ? "▲" : "▼";
-              getActions().updateNotifications(
-                `${price.item_name} ${arrow} ${pct}% (now ${price.current_cost.toFixed(
-                  1
-                )})`,
-                change > 0 ? "price-up" : "price-down"
-              );
-              lastNotifiedPrices[price.item_name] = price.current_cost;
-            });
             setStore({ marketPrices: prices });
             return prices;
           })
@@ -1642,27 +1600,57 @@ const getState = ({ getStore, getActions, setStore }) => {
           });
       },
 
+      // Global price-change feed - server-computed now (economy._tick_price),
+      // so it's identical for every player rather than depending on each
+      // browser's own poll history. Never drives a toast (ActivityToast only
+      // reads store.transactions), so a plain replace is all this needs.
+      fetchNotifications: () => {
+        return apiRequest("/api/notifications", { auth: false })
+          .then((data) => {
+            setStore({ notifications: data.entries || [] });
+            return data.entries;
+          })
+          .catch((error) => {
+            console.error("Error fetching notifications:", error);
+          });
+      },
+
+      // The player's own activity history from the server - this is what
+      // makes it follow the account across devices/browsers instead of
+      // just this one. Merges (rather than replaces) so it doesn't clobber
+      // entries this tab just appended instantly from its own actions, and
+      // tags anything genuinely new-to-this-tab as "historical" so
+      // ActivityToast displays it in the Recent Activity list without
+      // toasting it - it's sync from elsewhere, not something that just
+      // happened in front of the player.
+      fetchActivityLog: () => {
+        return apiRequest("/api/player/activity")
+          .then((data) => {
+            const store = getStore();
+            const existingIds = new Set(store.transactions.map((t) => t.id));
+            const merged = [
+              ...(data.entries || [])
+                .filter((e) => !existingIds.has(e.id))
+                .map((e) => ({ ...e, historical: true })),
+              ...store.transactions,
+            ]
+              .sort((a, b) => b.id - a.id)
+              .slice(0, 50);
+            setStore({ transactions: merged });
+            return merged;
+          })
+          .catch((error) => {
+            console.error("Error fetching activity log:", error);
+          });
+      },
+
       fetchPlayerData: () => {
         return apiRequest("/api/player")
           .then((data) => {
-            const { offline_credits, login_streak_bonus, ...player } = data;
+            const { offline_credits, login_streak_bonus, activities, ...player } = data;
             setStore({ player });
             updatePlayerInLocalStorage(player);
-            if (login_streak_bonus > 0) {
-              getActions().updateTransactions(
-                `Day ${player.loginStreak} streak! +${login_streak_bonus} credits.`,
-                "streak"
-              );
-            }
-            // Only toast offline trickle once it's a meaningful amount -
-            // during continuous play the 20s poll would otherwise surface
-            // a "+0" or "+1" toast almost every cycle.
-            if (offline_credits > 10) {
-              getActions().updateTransactions(
-                `Welcome back - earned ${offline_credits} credits while away.`,
-                "info"
-              );
-            }
+            (activities || []).forEach(appendActivityEntry);
             return player;
           })
           .catch((error) => {
@@ -1723,8 +1711,6 @@ const getState = ({ getStore, getActions, setStore }) => {
       logout: () => {
         localStorage.setItem("player", JSON.stringify(null));
         localStorage.removeItem("authToken");
-        localStorage.removeItem("transactions");
-        localStorage.removeItem("notifications");
 
         setStore({
           player: defaultPlayer,
@@ -1753,10 +1739,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         return apiRequest("/api/prestige", { method: "POST" })
           .then((data) => {
             applyPlayerResult(data);
-            getActions().updateTransactions(
-              `Prestiged to level ${data.player.prestigeLevel}! Stats reset, but your max Health/Energy/Inventory floor is now permanently higher.`,
-              "prestige"
-            );
+            appendActivityEntry(data.activity);
             return data;
           })
           .catch((error) => reportError(error, "Failed to prestige"));
@@ -1766,9 +1749,10 @@ const getState = ({ getStore, getActions, setStore }) => {
         return apiRequest("/api/player/reset", { method: "POST" })
           .then((data) => {
             applyPlayerResult(data);
-            setStore({ transactions: [], notifications: [] });
-            saveListToLocalStorage("transactions", []);
-            saveListToLocalStorage("notifications", []);
+            // Notifications are global (not this player's data) and stay
+            // untouched - only this player's own activity history clears,
+            // matching what the backend just deleted.
+            setStore({ transactions: [] });
           })
           .catch((error) => {
             console.error("Error resetting player:", error);
@@ -1782,10 +1766,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         })
           .then((data) => {
             applyPlayerResult(data);
-            getActions().updateTransactions(
-              `Bought ${quantity}x ${itemName} for ${data.total_cost} credits.`,
-              "buy"
-            );
+            appendActivityEntry(data.activity);
             return data;
           })
           .catch((error) => reportError(error, "Failed to buy item"));
@@ -1798,17 +1779,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         })
           .then((data) => {
             applyPlayerResult(data);
-            const profit = data.realized_profit || 0;
-            const profitText =
-              profit > 0
-                ? ` (+${profit} profit)`
-                : profit < 0
-                ? ` (${profit} loss)`
-                : "";
-            getActions().updateTransactions(
-              `Sold ${quantity}x ${itemName} for ${data.total_value} credits${profitText}.`,
-              "sell"
-            );
+            appendActivityEntry(data.activity);
             return data;
           })
           .catch((error) => reportError(error, "Failed to sell item"));
@@ -1821,10 +1792,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         })
           .then((data) => {
             applyPlayerResult(data);
-            getActions().updateTransactions(
-              `Bought ${quantity}x ${itemName} for ${data.total_cost} credits.`,
-              "buy"
-            );
+            appendActivityEntry(data.activity);
             return data;
           })
           .catch((error) => reportError(error, "Failed to buy equipment"));
@@ -1837,10 +1805,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         })
           .then((data) => {
             applyPlayerResult(data);
-            getActions().updateTransactions(
-              `Purchased ${propertyName} for ${data.total_cost} credits.`,
-              "property"
-            );
+            appendActivityEntry(data.activity);
             return data;
           })
           .catch((error) => reportError(error, "Failed to purchase property"));
@@ -1853,9 +1818,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         })
           .then((data) => {
             applyPlayerResult(data);
-            const message = withLowHealthWarning(data.message, data.player);
-            const type = data.success ? "mission-success" : "mission-fail";
-            getActions().updateTransactions(message, type);
+            appendActivityEntry(data.activity);
             return data;
           })
           .catch((error) => reportError(error, "Failed to start mission"));
@@ -1868,9 +1831,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         })
           .then((data) => {
             applyPlayerResult(data);
-            const message = withLowHealthWarning(data.message, data.player);
-            const type = data.success ? "mission-success" : "mission-fail";
-            getActions().updateTransactions(message, type);
+            appendActivityEntry(data.activity);
             return data;
           })
           .catch((error) =>
@@ -1885,10 +1846,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         })
           .then((data) => {
             applyPlayerResult(data);
-            getActions().updateTransactions(
-              `Used ${itemName}: +${data.health_gained} health, +${data.energy_gained} energy.`,
-              "recovery"
-            );
+            appendActivityEntry(data.activity);
             return data;
           })
           .catch((error) => reportError(error, "Failed to use item"));
@@ -1901,40 +1859,10 @@ const getState = ({ getStore, getActions, setStore }) => {
         })
           .then((data) => {
             applyPlayerResult(data);
-            getActions().updateTransactions(
-              `Upgraded ${stat} for ${data.cost} credits.`,
-              "upgrade"
-            );
+            appendActivityEntry(data.activity);
             return data;
           })
           .catch((error) => reportError(error, "Failed to upgrade"));
-      },
-
-      updateTransactions: (transaction, type = "info") => {
-        const store = getStore();
-        // Give every entry a unique id, not just its text, so two
-        // consecutive actions that happen to produce the exact same
-        // message (e.g. failing the same mission twice in a row) each
-        // still count as a distinct event for anything watching
-        // transactions[0] - text-only equality would look unchanged.
-        const entry = { id: ++transactionIdCounter, message: transaction, type };
-        const newTransactions = [entry, ...store.transactions];
-        if (newTransactions.length > 50) {
-          newTransactions.length = 50;
-        }
-        setStore({ transactions: newTransactions });
-        saveListToLocalStorage("transactions", newTransactions);
-      },
-
-      updateNotifications: (notification, type = "info") => {
-        const store = getStore();
-        const entry = { id: ++transactionIdCounter, message: notification, type };
-        const newNotifications = [entry, ...store.notifications];
-        if (newNotifications.length > 30) {
-          newNotifications.length = 30;
-        }
-        setStore({ notifications: newNotifications });
-        saveListToLocalStorage("notifications", newNotifications);
       },
     },
   };

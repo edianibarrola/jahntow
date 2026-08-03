@@ -12,7 +12,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from api import economy, game_data
-from api.models import db, Player, utcnow
+from api.models import db, Player, ActivityLogEntry, utcnow
 
 game_api = Blueprint('game_api', __name__)
 
@@ -72,6 +72,26 @@ def active_event():
     if any - same shared/global concept as market prices."""
     event = economy.apply_event_ticks()
     return jsonify({"event": event.serialize() if event else None}), 200
+
+
+@game_api.route('/player/activity', methods=['GET'])
+@jwt_required()
+def player_activity():
+    """The current player's own recent activity log - follows the account,
+    not the browser, unlike the old localStorage-only version."""
+    player, err = _player_or_404()
+    if err:
+        return err
+    entries = economy.get_player_activity(player)
+    return jsonify({"entries": [e.serialize() for e in entries]}), 200
+
+
+@game_api.route('/notifications', methods=['GET'])
+def notifications():
+    """No auth required. Global price-change feed - same shared scope as
+    market prices, not tied to any one player."""
+    entries = economy.get_global_notifications()
+    return jsonify({"entries": [e.serialize() for e in entries]}), 200
 
 
 LEADERBOARD_SIZE = 20
@@ -142,8 +162,15 @@ def market_buy():
     inventory[item_name] = {"quantity": new_qty, "avg_cost": new_avg_cost}
     player.inventory = inventory
 
+    activity = economy.log_activity(
+        player, f"Bought {quantity}x {item_name} for {total_cost} credits.", "buy"
+    )
     db.session.commit()
-    return jsonify({"player": player.serialize(), "total_cost": total_cost}), 200
+    return jsonify({
+        "player": player.serialize(),
+        "total_cost": total_cost,
+        "activity": activity.serialize(),
+    }), 200
 
 
 @game_api.route('/market/sell', methods=['POST'])
@@ -183,11 +210,24 @@ def market_sell():
         inventory.pop(item_name, None)
     player.inventory = inventory
 
+    if realized_profit > 0:
+        profit_text = f" (+{realized_profit} profit)"
+    elif realized_profit < 0:
+        profit_text = f" ({realized_profit} loss)"
+    else:
+        profit_text = ""
+    activity = economy.log_activity(
+        player,
+        f"Sold {quantity}x {item_name} for {total_value} credits{profit_text}.",
+        "sell",
+    )
+
     db.session.commit()
     return jsonify({
         "player": player.serialize(),
         "total_value": total_value,
         "realized_profit": realized_profit,
+        "activity": activity.serialize(),
     }), 200
 
 
@@ -222,8 +262,15 @@ def equipment_buy():
     equipment[item_name] = {"quantity": current_qty + quantity}
     player.equipment = equipment
 
+    activity = economy.log_activity(
+        player, f"Bought {quantity}x {item_name} for {total_cost} credits.", "buy"
+    )
     db.session.commit()
-    return jsonify({"player": player.serialize(), "total_cost": total_cost}), 200
+    return jsonify({
+        "player": player.serialize(),
+        "total_cost": total_cost,
+        "activity": activity.serialize(),
+    }), 200
 
 
 @game_api.route('/properties/buy', methods=['POST'])
@@ -254,8 +301,15 @@ def properties_buy():
     properties[property_name] = 1
     player.properties = properties
 
+    activity = economy.log_activity(
+        player, f"Purchased {property_name} for {cost} credits.", "property"
+    )
     db.session.commit()
-    return jsonify({"player": player.serialize(), "total_cost": cost}), 200
+    return jsonify({
+        "player": player.serialize(),
+        "total_cost": cost,
+        "activity": activity.serialize(),
+    }), 200
 
 
 def _resolve_mission_request(player, mission_catalog, mission_name, is_story):
@@ -295,12 +349,16 @@ def mission_start():
         return err
 
     success, message = economy.resolve_mission(player, mission)
+    activity = economy.log_activity(
+        player, message, "mission-success" if success else "mission-fail"
+    )
 
     db.session.commit()
     return jsonify({
         "success": success,
         "message": message,
         "player": player.serialize(),
+        "activity": activity.serialize(),
     }), 200
 
 
@@ -324,11 +382,16 @@ def story_mission_start():
     if success:
         player.storyWins += 1
 
+    activity = economy.log_activity(
+        player, message, "mission-success" if success else "mission-fail"
+    )
+
     db.session.commit()
     return jsonify({
         "success": success,
         "message": message,
         "player": player.serialize(),
+        "activity": activity.serialize(),
     }), 200
 
 
@@ -384,11 +447,17 @@ def recovery_use():
     cooldowns[item_name] = now.isoformat()
     player.item_cooldowns = cooldowns
 
+    activity = economy.log_activity(
+        player,
+        f"Used {item_name}: +{health_gain} health, +{energy_gain} energy.",
+        "recovery",
+    )
     db.session.commit()
     return jsonify({
         "player": player.serialize(),
         "health_gained": health_gain,
         "energy_gained": energy_gain,
+        "activity": activity.serialize(),
     }), 200
 
 
@@ -416,8 +485,13 @@ def upgrade_stat():
     player.credits -= cost
     setattr(player, field_name, current_value + UPGRADE_STAT_STEP)
 
+    activity = economy.log_activity(player, f"Upgraded {stat} for {cost} credits.", "upgrade")
     db.session.commit()
-    return jsonify({"player": player.serialize(), "cost": cost}), 200
+    return jsonify({
+        "player": player.serialize(),
+        "cost": cost,
+        "activity": activity.serialize(),
+    }), 200
 
 
 def _reset_player(player):
@@ -444,6 +518,10 @@ def reset_player():
     if err:
         return err
     _reset_player(player)
+    # Wipe this player's own activity history along with everything else -
+    # global price notifications are untouched, they're not this player's
+    # data.
+    ActivityLogEntry.query.filter_by(player_id=player.id).delete()
     db.session.commit()
     return jsonify({"player": player.serialize()}), 200
 
@@ -485,5 +563,11 @@ def prestige():
     if player.level < economy.MAX_LEVEL:
         return jsonify({"message": f"Reach level {economy.MAX_LEVEL} to prestige"}), 400
     _prestige_player(player)
+    activity = economy.log_activity(
+        player,
+        f"Prestiged to level {player.prestige_level}! Stats reset, but your max "
+        "Health/Energy/Inventory floor is now permanently higher.",
+        "prestige",
+    )
     db.session.commit()
-    return jsonify({"player": player.serialize()}), 200
+    return jsonify({"player": player.serialize(), "activity": activity.serialize()}), 200

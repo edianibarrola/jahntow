@@ -125,12 +125,28 @@ def get_player_info():
 
     tick_summary = economy.apply_passive_tick(player)
     streak_bonus = economy.apply_login_streak(player)
+
+    activities = []
+    if streak_bonus > 0:
+        activities.append(economy.log_activity(
+            player,
+            f"Day {player.login_streak} streak! +{streak_bonus} credits.",
+            "streak",
+        ))
+    if tick_summary["offline_credits"] > 10:
+        activities.append(economy.log_activity(
+            player,
+            f"Welcome back - earned {tick_summary['offline_credits']} credits while away.",
+            "info",
+        ))
+
     db.session.commit()
 
     return jsonify({
         **player.serialize(),
         "offline_credits": tick_summary["offline_credits"],
         "login_streak_bonus": streak_bonus,
+        "activities": [entry.serialize() for entry in activities],
     }), 200
 
 @api.route('/player', methods=['PUT'])

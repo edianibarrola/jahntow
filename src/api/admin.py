@@ -3,7 +3,7 @@ import secrets
 from flask import request, Response
 from flask_admin import Admin, AdminIndexView, expose
 from flask_admin.theme import Bootstrap4Theme
-from .models import db, User, Player
+from .models import db, User, Player, MarketPrice, GameEvent, ActivityLogEntry
 from flask_admin.contrib.sqla import ModelView
 
 
@@ -73,3 +73,6 @@ def setup_admin(app):
 
     admin.add_view(UserModelView(User, db.session))
     admin.add_view(SecureModelView(Player, db.session))
+    admin.add_view(SecureModelView(MarketPrice, db.session))
+    admin.add_view(SecureModelView(GameEvent, db.session))
+    admin.add_view(SecureModelView(ActivityLogEntry, db.session))
