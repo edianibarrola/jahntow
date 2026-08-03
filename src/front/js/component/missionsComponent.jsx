@@ -4,7 +4,7 @@ import { Accordion } from "react-bootstrap";
 import HealthComponent from "./healthComponent";
 import EnergyComponent from "./energyComponent";
 import CreditsComponent from "./creditsComponent";
-import { previewSuccessChance } from "../missionOdds";
+import { successBreakdown } from "../missionOdds";
 
 const MissionsComponent = () => {
   const { store, actions } = useContext(Context);
@@ -49,6 +49,7 @@ const MissionsComponent = () => {
               // even offer a mission that could drop the player to 0.
               const wouldSurvive =
                 player.health - missionData["Health Effect"] > 0;
+              const odds = successBreakdown(player, missionData);
               return (
                 <Accordion.Item
                   className="holo"
@@ -69,10 +70,28 @@ const MissionsComponent = () => {
                         <li style={{ color: wouldSurvive ? undefined : "#ff8a8a" }}>
                           Health Risk: -{missionData["Health Effect"]}
                         </li>
-                        <li>
-                          Est. Success Chance:{" "}
-                          {previewSuccessChance(player, missionData)}%
-                        </li>
+                        {missionData.Guaranteed ? (
+                          <li className="tx-sell">
+                            Always succeeds — a guaranteed fallback when you're
+                            short on credits.
+                          </li>
+                        ) : (
+                          <li>
+                            Est. Success Chance: {odds.chance}%{" "}
+                            <span className="tx-info">
+                              (base {odds.basePct}%
+                              {odds.levelPct !== 0 &&
+                                `, level ${odds.levelPct > 0 ? "+" : ""}${odds.levelPct}%`}
+                              , gear +{odds.gearPct}% of {odds.gearMaxPct}% max)
+                            </span>
+                          </li>
+                        )}
+                        {odds.gearCapped && (
+                          <li className="tx-info">
+                            Gear bonus is maxed — spares beyond{" "}
+                            {odds.usefulSpares} add nothing.
+                          </li>
+                        )}
                         <li>Required Equipment:</li>
                         <ul>
                           {Object.entries(missionData.requiredEquipment || {}).map(

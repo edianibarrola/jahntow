@@ -7,13 +7,17 @@ import CreditsComponent from "./creditsComponent";
 import StoryMissionDetailsComponent from "./storyMissionDetailsComponent";
 import { previewSuccessChance } from "../missionOdds";
 
+const STORY_WINS_PER_UNLOCK = 2;
+
 const StoryMissions = () => {
   const { store, actions } = useContext(Context);
   const { player, gameData } = store;
   const storyMissionsData = gameData.storyMissions || {};
   const [isStoryMissionRunning, setStoryMissionRunning] = useState(false);
 
-  const availableMissionIndex = Math.floor(player.storyWins / 5);
+  // Mirrors STORY_WINS_PER_UNLOCK in src/api/game_routes.py - the server
+  // is what actually enforces which story mission may be run.
+  const availableMissionIndex = Math.floor(player.storyWins / STORY_WINS_PER_UNLOCK);
   const availableMissionName =
     Object.keys(storyMissionsData)[availableMissionIndex];
 
@@ -46,11 +50,11 @@ const StoryMissions = () => {
         <Accordion>
           {Object.entries(storyMissionsData).map(
             ([storyMissionName, storyMissionData], index) => {
-              const startWin = index * 5; // Calculate the start win for the mission
+              const startWin = index * STORY_WINS_PER_UNLOCK;
 
               if (
                 player.storyWins >= startWin &&
-                player.storyWins < startWin + 5
+                player.storyWins < startWin + STORY_WINS_PER_UNLOCK
               ) {
                 const isUnlocked = storyMissionName === availableMissionName;
                 // Mirrors the backend's own gate in player_meets_requirements:

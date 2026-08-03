@@ -15,8 +15,13 @@ from api import game_data
 
 # How often shared market prices are allowed to drift, and by how much.
 PRICE_TICK_INTERVAL = timedelta(seconds=30)
-PRICE_DRIFT_PCT = 0.10          # +/-10% random walk per tick
-PRICE_REVERT_THRESHOLD_PCT = 0.50  # snap back to base once drifted this far
+# Baseline drift is deliberately gentle. At the old +/-10% per tick the
+# random walk reached a ~26% standard deviation over 10 minutes, which
+# completely swallowed the 20-40% price events - an "event" was
+# statistically indistinguishable from ordinary noise, so it never felt
+# like anything was happening.
+PRICE_DRIFT_PCT = 0.035
+PRICE_REVERT_THRESHOLD_PCT = 0.35  # snap back to base once drifted this far
 # Buy above mid, sell below it. Without a spread, buy and sell used the
 # identical price, so a round trip was free and "buy under base, sell over
 # base" was risk-free money against a bounded mean-reverting price the
@@ -46,6 +51,12 @@ PRODUCTION_CAP_HOURS = 8
 # XP_PER_LEVEL is imported from models (Player.serialize needs it too).
 # Credits granted per level gained.
 LEVEL_UP_CREDIT_BONUS = 1000
+# A failed mission refunds most of its entry cost. The real price of
+# failure is the energy, the health, and the consumed equipment - not the
+# fee. Charging the full non-refundable entry on a coin flip meant a
+# fresh player with 5000 credits got 5 attempts and had a ~7% chance of
+# going broke before their first win, with no way back.
+MISSION_FAILURE_REFUND_PCT = 0.6
 # Max health/energy also grow with level, so session length doesn't
 # collapse as mission energy costs scale up with rank.
 MAX_ENERGY_PER_LEVEL = 5
@@ -103,10 +114,15 @@ PRESTIGE_MAX_EQUIPMENT_BONUS = 10
 #     dropping a few ranks is the safe-but-slower one - which is the
 #     decision the loop previously didn't have, since every mission used to
 #     be safely +EV and higher ranks were paradoxically *safer* bets.
-BASE_SUCCESS_CHANCE = 0.42
+BASE_SUCCESS_CHANCE = 0.48
 SUCCESS_PER_LEVEL_ADVANTAGE = 0.035
 SUCCESS_PER_EXTRA_EQUIPMENT = 0.02
-MAX_EQUIPMENT_BONUS = 0.10
+# Spare gear is worth stockpiling further than it used to be: the old
+# +0.10 cap saturated at 5 spares, so a player who bought 17 of something
+# saw no change past the 6th and no explanation why. Still capped, but the
+# cap is now surfaced in the mission card so it's a visible ceiling rather
+# than a silent one.
+MAX_EQUIPMENT_BONUS = 0.20
 # Out-levelling a mission helps, but only so far - every mission keeps an
 # irreducible risk. Uncapped, a level-50 player farming rank-36 content sat
 # at a 0.91 success rate, which made trivial content the best credits per
@@ -119,14 +135,17 @@ MAX_SUCCESS_CHANCE = 0.92
 # normal per-item random walk. Rolled lazily whenever prices are checked
 # (same request-driven pattern as everything else - no scheduler), gated
 # by a cooldown so events don't chain back to back.
-EVENT_CHECK_COOLDOWN = timedelta(minutes=10)
+EVENT_CHECK_COOLDOWN = timedelta(minutes=4)
 EVENT_SPAWN_CHANCE = 0.15
 # Several events can run at once, but only one per category.
 MAX_CONCURRENT_EVENTS = 3
-EVENT_DURATION_MIN = timedelta(minutes=5)
-EVENT_DURATION_MAX = timedelta(minutes=15)
-EVENT_MAGNITUDE_MIN = 0.20
-EVENT_MAGNITUDE_MAX = 0.40
+# Short and violent rather than long and mild. A 15-minute +25% move was
+# both easy to miss and easy to mistake for drift; a 3-minute +80% move is
+# an obvious, actionable window you have to react to.
+EVENT_DURATION_MIN = timedelta(minutes=2)
+EVENT_DURATION_MAX = timedelta(minutes=5)
+EVENT_MAGNITUDE_MIN = 0.50
+EVENT_MAGNITUDE_MAX = 1.20
 
 # Server-side activity log / notification feed. Player history is capped
 # at ACTIVITY_LOG_CAP entries (only ever trimmed on read, rows aren't
@@ -299,7 +318,9 @@ def apply_event_ticks():
     category = random.choice(candidates)
     kind = random.choice(["price_spike", "price_crash"])
     magnitude = random.uniform(EVENT_MAGNITUDE_MIN, EVENT_MAGNITUDE_MAX)
-    multiplier = 1 + magnitude if kind == "price_spike" else 1 - magnitude
+    # Symmetric in log space: a crash divides where a spike multiplies. A
+    # plain (1 - magnitude) would go negative once magnitude exceeds 1.
+    multiplier = (1 + magnitude) if kind == "price_spike" else 1 / (1 + magnitude)
     duration = timedelta(seconds=random.uniform(
         EVENT_DURATION_MIN.total_seconds(), EVENT_DURATION_MAX.total_seconds()
     ))
@@ -413,6 +434,11 @@ def get_market_prices():
     for row in rows:
         serialized = row.serialize()
         serialized["current_cost"] = round(get_effective_price(row, events), 2)
+        # Send the actual buy and sell prices, not just the mid. With only
+        # the mid shown, the spread made the real cost of a purchase
+        # unknowable until after it went through.
+        serialized["buy_price"] = int(get_buy_price(row, events))
+        serialized["sell_price"] = int(get_sell_price(row, events))
         # Let the UI mark which items are under an active event rather than
         # silently baking the multiplier into the price with no cue.
         serialized["event_multiplier"] = round(get_event_multiplier(row.category, events), 4)
@@ -747,9 +773,10 @@ def resolve_mission(player, mission):
     Reward handling fixes a bug in the original client logic: mission data
     defines a "Reward" value (e.g. 3000 credits for Asteroid Mining) that
     was never actually paid out - success only refunded the entry cost.
-    Here, "Required Credits" is the entry cost (spent whether the mission
-    succeeds or fails) and "Reward" is the actual payout on success, which
-    is what the mission data and its own successMessage text always implied.
+    Here, "Required Credits" is the entry cost and "Reward" is the payout
+    on success, which is what the mission data and its own successMessage
+    text always implied. A failure refunds MISSION_FAILURE_REFUND_PCT of
+    the entry, so a losing streak bleeds rather than bankrupts.
 
     Health can only ever drop here, from a failure's "Health Effect", and
     player_meets_requirements already refuses to start a mission whose
@@ -759,7 +786,11 @@ def resolve_mission(player, mission):
     player.credits -= mission["Required Credits"]
     player.energy -= mission["Required Energy"]
 
-    success = random.random() < mission_success_chance(player, mission)
+    # A "Guaranteed" mission always succeeds. This exists so there is always
+    # at least one action that cannot fail and costs no credits - otherwise
+    # a player who loses their bankroll on a run of failures has no way back
+    # into the game at all.
+    success = mission.get("Guaranteed") or random.random() < mission_success_chance(player, mission)
 
     if success:
         xp_awarded = mission_xp_award(player, mission)
@@ -777,10 +808,14 @@ def resolve_mission(player, mission):
         if xp_awarded < mission["Experience"]:
             message = f"{message} (XP reduced - this mission is below your level.)"
     else:
+        refund = int(mission["Required Credits"] * MISSION_FAILURE_REFUND_PCT)
+        player.credits += refund
         player.health -= mission["Health Effect"]
         player.energy = min(player.maxEnergy, player.energy + mission["Required Energy"] // 8)
         resolve_mission_equipment_loss(player, mission.get("requiredEquipment"))
         message = mission["failureMessage"]
+        if refund > 0:
+            message = f"{message} ({refund} credits recovered.)"
 
     player.energy = max(0, player.energy)
     apply_level_ups(player)

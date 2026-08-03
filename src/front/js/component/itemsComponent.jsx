@@ -102,8 +102,12 @@ const ItemsComponent = () => {
                       className="d-flex justify-content-between align-items-center flex-wrap"
                     >
                       <span>
-                        {item.item_name}: Base: {item.base_cost.toFixed(0)},
-                        Current Cost: {item.current_cost.toFixed(1)}
+                        {item.item_name}: Base {item.base_cost.toFixed(0)} ·{" "}
+                        {/* Buy and sell differ by the market spread, so
+                            showing only a single "current cost" left the
+                            actual price of a purchase unknowable. */}
+                        Buy <span className="tx-price-up">{item.buy_price}</span> /
+                        Sell <span className="tx-price-down">{item.sell_price}</span>
                         {hasEvent && (
                           <span className={eventMultiplier > 1 ? "tx-price-up" : "tx-price-down"}>
                             {" "}⚡{eventMultiplier > 1 ? "+" : ""}
