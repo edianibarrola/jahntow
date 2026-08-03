@@ -82,6 +82,34 @@ const GoalsComponent = () => {
         </div>
       </div>
 
+      {Object.keys(player.reputation || {}).length > 0 && (
+        <div className="row mb-3">
+          <div className="col-12 holo p-3">
+            <h4 className="text-center">🤝 Faction Reputation</h4>
+            <ul className="activity-list">
+              {Object.entries(player.reputation)
+                .filter(([, points]) => points > 0)
+                .map(([faction, points]) => (
+                  <li
+                    key={faction}
+                    className="d-flex justify-content-between flex-wrap"
+                  >
+                    <span className="tx-rep">{faction}</span>
+                    <span className="tx-info">
+                      {points} —{" "}
+                      {points >= 25
+                        ? "Trusted Ally (10% discounts, +5% story odds)"
+                        : points >= 10
+                        ? "Friend (5% discounts, +3% story odds)"
+                        : `${10 - points} more to Friend`}
+                    </span>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
       <div className="row mb-5">
         <div className="col-12 holo p-3">
           <h4 className="text-center">

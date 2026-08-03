@@ -11,11 +11,49 @@ import { previewSuccessChance } from "../missionOdds";
 // actually enforces which story mission may be run.
 const STORY_WINS_PER_UNLOCK = 5;
 
+// Mirrors economy.REP_TIER_1/2 - display only, the server applies the perks.
+const REP_TIERS = [10, 25];
+const repTierLabel = (points) =>
+  points >= 25 ? "Trusted Ally" : points >= 10 ? "Friend" : "Known";
+
+// A pending chapter-end choice, presented as the chapter's epilogue. The
+// catalog and validation are server-side; this just renders
+// player.pendingChoice and posts the picked option id.
+const StoryChoiceCard = ({ choice, onChoose, busy }) => (
+  <div className="holo p-3 mb-3 choice-card">
+    <h4 className="text-center">📖 A Decision Awaits</h4>
+    <p>{choice.prompt}</p>
+    <div className="d-flex flex-column gap-2">
+      {choice.options.map((option) => (
+        <button
+          key={option.id}
+          disabled={busy}
+          onClick={() => onChoose(choice.id, option.id)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
 const StoryMissions = () => {
   const { store, actions } = useContext(Context);
   const { player, gameData } = store;
   const storyMissionsData = gameData.storyMissions || {};
   const [isStoryMissionRunning, setStoryMissionRunning] = useState(false);
+  const [isChoosing, setChoosing] = useState(false);
+
+  const reputation = player.reputation || {};
+  const repEntries = Object.entries(reputation).filter(([, v]) => v > 0);
+
+  const handleChoice = (choiceId, optionId) => {
+    setChoosing(true);
+    actions
+      .resolveStoryChoice(choiceId, optionId)
+      .catch(() => {})
+      .finally(() => setChoosing(false));
+  };
 
   // Mirrors STORY_WINS_PER_UNLOCK in src/api/game_routes.py - the server
   // is what actually enforces which story mission may be run.
@@ -47,7 +85,24 @@ const StoryMissions = () => {
         <div className="col-12 text-center">
           <p>Story Missions:</p>
         </div>
+        {repEntries.length > 0 && (
+          <div className="col-12 text-center pb-1">
+            <p className="tx-rep m-0">
+              🤝{" "}
+              {repEntries
+                .map(([faction, points]) => `${faction} ${points} (${repTierLabel(points)})`)
+                .join(" · ")}
+            </p>
+          </div>
+        )}
       </div>
+      {player.pendingChoice && (
+        <StoryChoiceCard
+          choice={player.pendingChoice}
+          onChoose={handleChoice}
+          busy={isChoosing}
+        />
+      )}
       <div className="row mb-5">
         <Accordion>
           {Object.entries(storyMissionsData).map(
@@ -74,6 +129,20 @@ const StoryMissions = () => {
                     <Accordion.Body>
                       <div className="col-12 pl-5 pr-5 text-center">
                         <ul className="holo">
+                          {storyMissionData.Boss && (
+                            <li className="tx-error">
+                              ⚔️ BOSS FIGHT — success is capped at 75% no
+                              matter how prepared you are, and the health
+                              stakes are doubled.
+                            </li>
+                          )}
+                          {storyMissionData.Faction && (
+                            <li className="tx-rep">
+                              Faction: {storyMissionData.Faction}
+                              {storyMissionData.Faction !== "United Front" &&
+                                ` (+1 rep per win — allies get discounts and better odds)`}
+                            </li>
+                          )}
                           <li>Reward: {storyMissionData.Reward}</li>
                           <li>
                             Required Credits:{" "}

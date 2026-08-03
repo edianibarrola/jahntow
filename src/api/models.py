@@ -122,6 +122,17 @@ class Player(db.Model):
     # makes "newest title" well-defined). Catalog in game_data.ACHIEVEMENTS.
     achievements = db.Column(db.JSON, default=list)
 
+    # Faction reputation, {faction_name: points}. +1 with a mission's
+    # faction per story win (+1 with all six on United Front finale
+    # missions). Tiers unlock discounts and story success bonuses - see
+    # economy.REP_* constants. Like storyWins, survives prestige.
+    reputation = db.Column(db.JSON, default=dict)
+
+    # Resolved chapter-end choices, {choice_id: option_id}. The catalog
+    # lives in game_data.STORY_CHOICES; pending_story_choice() computes
+    # which one (if any) is currently awaiting a decision.
+    story_choices = db.Column(db.JSON, default=dict)
+
     # Number of times this player has rebirthed at max level. Each prestige
     # permanently raises the maxHealth/maxEnergy/maxInventoryCount floor
     # (see economy.PRESTIGE_MAX_*_BONUS) in exchange for resetting level,
@@ -151,6 +162,19 @@ class Player(db.Model):
             if ach and ach.get("title"):
                 title = ach["title"]
         return title
+
+    def pending_story_choice(self):
+        """
+        The earliest chapter-end choice whose after_wins threshold has been
+        crossed but which hasn't been resolved yet (or None). One at a
+        time, in story order - a player who blasts past several thresholds
+        answers them oldest-first.
+        """
+        resolved = self.story_choices or {}
+        for choice in game_data.STORY_CHOICES:
+            if (self.storyWins or 0) >= choice["after_wins"] and choice["id"] not in resolved:
+                return choice
+        return None
 
     def serialize(self):
         return {
@@ -183,6 +207,9 @@ class Player(db.Model):
             "dailyContracts": self.daily_contracts or {},
             "achievements": self.achievements or [],
             "title": self.current_title(),
+            "reputation": self.reputation or {},
+            "storyChoices": self.story_choices or {},
+            "pendingChoice": self.pending_story_choice(),
         }
 
     def serialize_public(self):

@@ -297,11 +297,15 @@ def equipment_buy():
 
     # A traveling merchant event discounts this category's Base Cost for a
     # few minutes. Applied here at transaction time (like price events on
-    # market items) so it needs no cleanup when the event expires.
+    # market items) so it needs no cleanup when the event expires. Faction
+    # reputation stacks its own per-player trade discount on top.
     merchant_factor = economy.get_merchant_price_factor(category)
+    rep_off = economy.rep_discount(player)
     unit_cost = equipment_data["Base Cost"]
     if merchant_factor < 1:
         unit_cost = max(1, round(unit_cost * merchant_factor))
+    if rep_off > 0:
+        unit_cost = max(1, round(unit_cost * (1 - rep_off)))
     total_cost = unit_cost * quantity
     if player.credits < total_cost:
         return jsonify({"message": "insufficient credits"}), 400
@@ -322,10 +326,12 @@ def equipment_buy():
     equipment[item_name] = {"quantity": current_qty + quantity}
     player.equipment = equipment
 
-    bought_note = (
-        f" (merchant discount: {round((1 - merchant_factor) * 100)}% off)"
-        if merchant_factor < 1 else ""
-    )
+    notes = []
+    if merchant_factor < 1:
+        notes.append(f"merchant discount: {round((1 - merchant_factor) * 100)}% off")
+    if rep_off > 0:
+        notes.append(f"ally discount: {round(rep_off * 100)}% off")
+    bought_note = f" ({', '.join(notes)})" if notes else ""
     activity = economy.log_activity(
         player,
         f"Bought {quantity}x {item_name} for {total_cost} credits.{bought_note}",
@@ -519,6 +525,9 @@ def story_mission_start():
 
     if success:
         player.storyWins += 1
+        # Every story win earns +1 reputation with the mission's faction
+        # (all six tribes for the United Front finale arc).
+        goal_entries.extend(economy.grant_story_reputation(player, mission))
         # storyWins moved after resolve_mission's own bump_stats ran, so
         # re-check achievements for story-win thresholds crossed just now.
         goal_entries.extend(economy.check_achievements(player))
@@ -531,6 +540,74 @@ def story_mission_start():
     return jsonify({
         "success": success,
         "message": message,
+        "player": player.serialize(),
+        "activity": activity.serialize(),
+        "extra_activities": [e.serialize() for e in goal_entries],
+    }), 200
+
+
+@game_api.route('/story/choice', methods=['POST'])
+@jwt_required()
+def story_choice():
+    """
+    Resolve the player's currently pending chapter-end choice. The catalog
+    (game_data.STORY_CHOICES) is server-side; the client only ever sends
+    the ids, and only the choice that is actually pending can be resolved -
+    no skipping ahead, no re-answering.
+    """
+    player, err = _player_or_404()
+    if err:
+        return err
+    economy.apply_passive_tick(player)
+
+    data = request.get_json(silent=True) or {}
+    choice_id = data.get("choice_id")
+    option_id = data.get("option_id")
+
+    pending = player.pending_story_choice()
+    if not pending or pending["id"] != choice_id:
+        return jsonify({"message": "that choice is not pending"}), 400
+    option = next((o for o in pending["options"] if o["id"] == option_id), None)
+    if not option:
+        return jsonify({"message": "unknown option"}), 400
+
+    # Record first (copy-reassign), then grant the reward.
+    resolved = dict(player.story_choices or {})
+    resolved[choice_id] = option_id
+    player.story_choices = resolved
+
+    reward = option.get("reward") or {}
+    reward_notes = []
+    if reward.get("credits"):
+        player.credits += reward["credits"]
+        reward_notes.append(f"+{reward['credits']} credits")
+    if reward.get("rep"):
+        reputation = dict(player.reputation or {})
+        for faction, points in reward["rep"].items():
+            reputation[faction] = reputation.get(faction, 0) + points
+            reward_notes.append(f"+{points} {faction} reputation")
+        player.reputation = reputation
+    if reward.get("rep_all"):
+        reputation = dict(player.reputation or {})
+        for faction in game_data.FACTIONS:
+            reputation[faction] = reputation.get(faction, 0) + reward["rep_all"]
+        player.reputation = reputation
+        reward_notes.append(f"+{reward['rep_all']} reputation with all tribes")
+    if reward.get("equipment"):
+        equipment = dict(player.equipment or {})
+        for item_name, qty in reward["equipment"].items():
+            held = equipment.get(item_name, {}).get("quantity", 0)
+            equipment[item_name] = {"quantity": held + qty}
+            reward_notes.append(f"+{qty}x {item_name}")
+        player.equipment = equipment
+
+    note = f" ({', '.join(reward_notes)}.)" if reward_notes else ""
+    activity = economy.log_activity(
+        player, f"📖 {option['outcome_text']}{note}", "choice"
+    )
+    goal_entries = economy.check_achievements(player)
+    db.session.commit()
+    return jsonify({
         "player": player.serialize(),
         "activity": activity.serialize(),
         "extra_activities": [e.serialize() for e in goal_entries],
@@ -577,21 +654,27 @@ def recovery_use():
     if needs_health and needs_energy and player.health >= player.maxHealth and player.energy >= player.maxEnergy:
         return jsonify({"message": "health and energy are already full"}), 400
 
-    if player.credits < item_data["Cost"]:
+    # Faction allies extend their trade discount to Medlab supplies too.
+    rep_off = economy.rep_discount(player)
+    cost = item_data["Cost"]
+    if rep_off > 0:
+        cost = max(1, round(cost * (1 - rep_off)))
+    if player.credits < cost:
         return jsonify({"message": "insufficient credits"}), 400
 
     health_gain = min(item_data["Health Gain"], player.maxHealth - player.health)
     energy_gain = min(item_data["Energy Gain"], player.maxEnergy - player.energy)
 
-    player.credits -= item_data["Cost"]
+    player.credits -= cost
     player.health += health_gain
     player.energy += energy_gain
     cooldowns[item_name] = now.isoformat()
     player.item_cooldowns = cooldowns
 
+    rep_note = f" (ally discount: {round(rep_off * 100)}% off)" if rep_off > 0 else ""
     activity = economy.log_activity(
         player,
-        f"Used {item_name}: +{health_gain} health, +{energy_gain} energy.",
+        f"Used {item_name}: +{health_gain} health, +{energy_gain} energy.{rep_note}",
         "recovery",
     )
     goal_entries = economy.bump_stats(player, recovery_items_used=1)
@@ -688,6 +771,10 @@ def _reset_player(player):
     player.stats = {}
     player.daily_contracts = {}
     player.achievements = []
+    # Story progress axes reset with the full wipe (prestige, by contrast,
+    # keeps storyWins - and with it reputation and resolved choices).
+    player.reputation = {}
+    player.story_choices = {}
     _reset_tick_clocks(player)
 
 

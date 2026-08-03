@@ -587,104 +587,114 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                           'Reward': 6528,
                           'Experience': 40,
                           'Rank': 1,
+                          'Faction': 'Xictlians',
                           'requiredEquipment': {'Alien Ally': 1},
                           'Health Effect': 4,
                           'startMessage': 'ECHO: Elevate your vigilance, '
-                                          'Jahntow. Rogue drones sent by the '
-                                          'Corporation threaten the harmony '
-                                          'of Aelithian space.',
+                                          'Jahntow. Rogue drones sent by '
+                                          'the Corporation threaten the '
+                                          'harmony of Xictlian space.',
                           'successMessage': 'ECHO: Drones eliminated '
                                             "successfully. You've earned "
                                             '{reward} credits and '
                                             '{experience} experience.',
-                          'failureMessage': 'ECHO: Our attempt to neutralize '
-                                            'the rogue drones failed. We '
-                                            'must ensure Aelithian safety.'},
+                          'failureMessage': 'ECHO: Our attempt to '
+                                            'neutralize the rogue drones '
+                                            'failed. We must ensure '
+                                            'Xictlian safety.'},
  'Protect the Caravans': {'Required Credits': 3480,
                           'Required Energy': 11,
                           'Reward': 11512,
                           'Experience': 80,
                           'Rank': 2,
+                          'Faction': 'Xictlians',
                           'requiredEquipment': {'Alien Ally': 1},
                           'Health Effect': 4,
                           'startMessage': 'ECHO: Jahntow, delve into the '
                                           'shadows of Corporation '
-                                          'activities. Infiltrate their base '
-                                          'and unveil their plans against '
-                                          'Aelithians.',
+                                          'activities. Infiltrate their '
+                                          'base and unveil their plans '
+                                          'against Xictlians.',
                           'successMessage': "ECHO: Jahntow, we've "
                                             'successfully gathered '
                                             'intelligence on Corporation '
                                             'activities. Rewarded {reward} '
                                             'credits and {experience} '
                                             'experience.',
-                          'failureMessage': 'ECHO: Our attempt to infiltrate '
-                                            'the Corporation base failed. We '
-                                            'must refine our approach.'},
+                          'failureMessage': 'ECHO: Our attempt to '
+                                            'infiltrate the Corporation '
+                                            'base failed. We must refine '
+                                            'our approach.'},
  'Free Oases': {'Required Credits': 6360,
                 'Required Energy': 14,
                 'Reward': 22416,
                 'Experience': 160,
                 'Rank': 4,
+                'Faction': 'Xictlians',
                 'requiredEquipment': {'Alien Ally': 1},
                 'Health Effect': 4,
                 'startMessage': 'ECHO: The Corporation seeks to disrupt '
-                                'Aelithian energy trade. Engage in '
+                                'Xictlian energy trade. Engage in '
                                 "negotiations to preserve your species' "
                                 'vitality.',
                 'successMessage': 'ECHO: Negotiations were successful. '
-                                  'Aelithian energy trade remains strong, '
+                                  'Xictlian energy trade remains strong, '
                                   'earning you {reward} credits and '
                                   '{experience} experience.',
-                'failureMessage': 'ECHO: Our negotiation attempts faltered. '
-                                  "We must ensure the energy trade's "
-                                  'stability.'},
+                'failureMessage': 'ECHO: Our negotiation attempts '
+                                  'faltered. We must ensure the energy '
+                                  "trade's stability."},
  'Repel Invasions': {'Required Credits': 7800,
                      'Required Energy': 16,
                      'Reward': 28335,
                      'Experience': 200,
                      'Rank': 5,
+                     'Faction': 'Xictlians',
                      'requiredEquipment': {'Alien Ally': 1},
                      'Health Effect': 4,
-                     'startMessage': 'ECHO: Unite with Aelithian leaders in '
+                     'startMessage': 'ECHO: Unite with Xictlian leaders in '
                                      'a celestial ritual. Counter the '
-                                     "Corporation's efforts to disrupt your "
-                                     'cosmic harmony.',
+                                     "Corporation's efforts to disrupt "
+                                     'your cosmic harmony.',
                      'successMessage': 'ECHO: The celestial ritual was a '
-                                       'success. Aelithian cosmic harmony '
-                                       'remains intact, earning you {reward} '
-                                       'credits and {experience} experience.',
-                     'failureMessage': 'ECHO: Our attempt to maintain cosmic '
-                                       'harmony faced opposition. We must '
-                                       'continue safeguarding Aelithian '
-                                       'traditions.'},
+                                       'success. Xictlian cosmic harmony '
+                                       'remains intact, earning you '
+                                       '{reward} credits and {experience} '
+                                       'experience.',
+                     'failureMessage': 'ECHO: Our attempt to maintain '
+                                       'cosmic harmony faced opposition. '
+                                       'We must continue safeguarding '
+                                       'Xictlian traditions.'},
  'Fortify Temples': {'Required Credits': 9240,
                      'Required Energy': 18,
                      'Reward': 34565,
                      'Experience': 240,
                      'Rank': 6,
+                     'Faction': 'Xictlians',
                      'requiredEquipment': {'Alien Ally': 1},
                      'Health Effect': 4,
-                     'startMessage': 'ECHO: The Cepharians face a temporal '
+                     'startMessage': 'ECHO: The Xictlians face a temporal '
                                      'distortion crisis. Navigate the '
                                      'labyrinth of time to restore their '
                                      "reality's stability.",
-                     'successMessage': 'ECHO: The temporal distortion crisis '
-                                       "has been resolved. You've earned "
-                                       '{reward} credits and {experience} '
-                                       'experience.',
+                     'successMessage': 'ECHO: The temporal distortion '
+                                       "crisis has been resolved. You've "
+                                       'earned {reward} credits and '
+                                       '{experience} experience.',
                      'failureMessage': 'ECHO: Our attempt to stabilize '
-                                       "Cepharian reality's timeline failed. "
-                                       'We must safeguard their existence.'},
+                                       "Xictlian reality's timeline "
+                                       'failed. We must safeguard their '
+                                       'existence.'},
  'Lead Sandstorm Offensives': {'Required Credits': 10680,
                                'Required Energy': 19,
                                'Reward': 41107,
                                'Experience': 280,
                                'Rank': 7,
+                               'Faction': 'Xictlians',
                                'requiredEquipment': {'Alien Ally': 1},
                                'Health Effect': 4,
                                'startMessage': 'ECHO: Descend into the '
-                                               'Cepharian subterranean '
+                                               'Xictlian subterranean '
                                                'depths. Reclaim their '
                                                'ancient technology from '
                                                "Corporation's clutches.",
@@ -694,90 +704,102 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                  'credits and {experience} '
                                                  'experience.',
                                'failureMessage': 'ECHO: Our attempt to '
-                                                 'reclaim ancient technology '
-                                                 'faced obstacles. We must '
-                                                 'secure Cepharian legacy.'},
+                                                 'reclaim ancient '
+                                                 'technology faced '
+                                                 'obstacles. We must '
+                                                 'secure Xictlian legacy.'},
  'Infiltrate Vortex Camps': {'Required Credits': 12120,
                              'Required Energy': 21,
                              'Reward': 47961,
                              'Experience': 320,
                              'Rank': 8,
+                             'Faction': 'Luxorians',
                              'requiredEquipment': {'Alien Ally': 1},
                              'Health Effect': 4,
                              'startMessage': 'ECHO: Engage in an astral '
                                              'harmony ceremony with '
-                                             'Cepharian leaders. Counter the '
-                                             "Corporation's interference in "
-                                             'their ethereal connection.',
+                                             'Luxorian leaders. Counter '
+                                             "the Corporation's "
+                                             'interference in their '
+                                             'ethereal connection.',
                              'successMessage': 'ECHO: Astral harmony '
-                                               'achieved. Cepharian ethereal '
-                                               'connection restored, earning '
-                                               'you {reward} credits and '
+                                               'achieved. Luxorian '
+                                               'ethereal connection '
+                                               'restored, earning you '
+                                               '{reward} credits and '
                                                '{experience} experience.',
-                             'failureMessage': 'ECHO: Our attempt to restore '
-                                               'astral harmony faced '
-                                               'opposition. We must preserve '
-                                               'Cepharian spiritual unity.'},
+                             'failureMessage': 'ECHO: Our attempt to '
+                                               'restore astral harmony '
+                                               'faced opposition. We must '
+                                               'preserve Luxorian '
+                                               'spiritual unity.'},
  'Sabotage Supply Lines': {'Required Credits': 15000,
                            'Required Energy': 24,
                            'Reward': 62602,
                            'Experience': 400,
                            'Rank': 10,
+                           'Faction': 'Luxorians',
                            'requiredEquipment': {'Steel Machete': 2},
                            'Health Effect': 5,
-                           'startMessage': 'ECHO: Embark on a cosmic journey '
-                                           'through nebulas with the '
-                                           'Cepharians. Foil the '
+                           'startMessage': 'ECHO: Embark on a cosmic '
+                                           'journey through nebulas with '
+                                           'the Luxorians. Foil the '
                                            "Corporation's attempt to "
                                            'manipulate celestial energies.',
-                           'successMessage': 'ECHO: Nebula journey completed '
-                                             'successfully. Cepharian '
-                                             'celestial energies secured, '
-                                             'earning you {reward} credits '
-                                             'and {experience} experience.',
-                           'failureMessage': 'ECHO: Our attempt to navigate '
-                                             'the nebulas faced challenges. '
-                                             'We must ensure Cepharian '
-                                             'cosmic balance.'},
+                           'successMessage': 'ECHO: Nebula journey '
+                                             'completed successfully. '
+                                             'Luxorian celestial energies '
+                                             'secured, earning you '
+                                             '{reward} credits and '
+                                             '{experience} experience.',
+                           'failureMessage': 'ECHO: Our attempt to '
+                                             'navigate the nebulas faced '
+                                             'challenges. We must ensure '
+                                             'Luxorian cosmic balance.'},
  'Persuade Mercenaries to Defect': {'Required Credits': 16440,
                                     'Required Energy': 26,
                                     'Reward': 70390,
                                     'Experience': 440,
                                     'Rank': 11,
+                                    'Faction': 'Luxorians',
                                     'requiredEquipment': {'Jet Pack': 1},
                                     'Health Effect': 6,
                                     'startMessage': 'ECHO: The harmonious '
-                                                    'frequencies of Veloran '
-                                                    'music are disrupted by '
+                                                    'frequencies of '
+                                                    'Luxorian music are '
+                                                    'disrupted by '
                                                     'Corporation '
                                                     'interference. Restore '
-                                                    'their sonic resonance.',
-                                    'successMessage': 'ECHO: Sonic resonance '
-                                                      'restored '
-                                                      "successfully. You've "
-                                                      'earned {reward} '
-                                                      'credits and '
-                                                      '{experience} '
+                                                    'their sonic '
+                                                    'resonance.',
+                                    'successMessage': 'ECHO: Sonic '
+                                                      'resonance restored '
+                                                      'successfully. '
+                                                      "You've earned "
+                                                      '{reward} credits '
+                                                      'and {experience} '
                                                       'experience.',
-                                    'failureMessage': 'ECHO: Our attempt to '
-                                                      'restore sonic '
+                                    'failureMessage': 'ECHO: Our attempt '
+                                                      'to restore sonic '
                                                       'resonance faced '
                                                       'obstacles. We must '
-                                                      'ensure Veloran '
+                                                      'ensure Luxorian '
                                                       'musical harmony.'},
  'Hack Vortex Terraforming Tech': {'Required Credits': 17880,
                                    'Required Energy': 27,
                                    'Reward': 78490,
                                    'Experience': 480,
                                    'Rank': 12,
+                                   'Faction': 'Luxorians',
                                    'requiredEquipment': {'Metalloid Armor': 2},
                                    'Health Effect': 6,
                                    'startMessage': 'ECHO: The Corporation '
-                                                   'exploits Veloran crystal '
-                                                   'core energy sources. '
-                                                   'Engage in a high-stakes '
-                                                   'operation to safeguard '
-                                                   'their essence.',
+                                                   'exploits Luxorian '
+                                                   'crystal core energy '
+                                                   'sources. Engage in a '
+                                                   'high-stakes operation '
+                                                   'to safeguard their '
+                                                   'essence.',
                                    'successMessage': 'ECHO: Crystal core '
                                                      'safeguarded '
                                                      "successfully. You've "
@@ -786,178 +808,197 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                      '{experience} '
                                                      'experience.',
                                    'failureMessage': 'ECHO: Our attempt to '
-                                                     'safeguard the crystal '
-                                                     'core faced opposition. '
-                                                     'We must protect '
-                                                     'Veloran energy '
-                                                     'legacy.'},
+                                                     'safeguard the '
+                                                     'crystal core faced '
+                                                     'opposition. We must '
+                                                     'protect Luxorian '
+                                                     'energy legacy.'},
  'Lead Stampede Assaults': {'Required Credits': 19320,
                             'Required Energy': 29,
                             'Reward': 86901,
                             'Experience': 520,
                             'Rank': 13,
+                            'Faction': 'Luxorians',
                             'requiredEquipment': {'Holo Clone': 1},
                             'Health Effect': 6,
-                            'startMessage': 'ECHO: Join Veloran leaders in a '
-                                            'luminous unison ceremony. '
-                                            "Counter the Corporation's "
-                                            'manipulation of their '
-                                            'collective light.',
+                            'startMessage': 'ECHO: Join Luxorian leaders '
+                                            'in a luminous unison '
+                                            'ceremony. Counter the '
+                                            "Corporation's manipulation of "
+                                            'their collective light.',
                             'successMessage': 'ECHO: Luminous unison '
-                                              'achieved. Veloran collective '
-                                              'light restored, earning you '
-                                              '{reward} credits and '
-                                              '{experience} experience.',
-                            'failureMessage': 'ECHO: Our attempt to restore '
-                                              'luminous unison faced '
-                                              'challenges. We must protect '
-                                              'Veloran shared radiance.'},
+                                              'achieved. Luxorian '
+                                              'collective light restored, '
+                                              'earning you {reward} '
+                                              'credits and {experience} '
+                                              'experience.',
+                            'failureMessage': 'ECHO: Our attempt to '
+                                              'restore luminous unison '
+                                              'faced challenges. We must '
+                                              'protect Luxorian shared '
+                                              'radiance.'},
  'Defend Sacred Groves': {'Required Credits': 20760,
                           'Required Energy': 30,
                           'Reward': 95623,
                           'Experience': 560,
                           'Rank': 14,
+                          'Faction': 'Luxorians',
                           'requiredEquipment': {'Laser Sword': 2},
                           'Health Effect': 7,
                           'startMessage': 'ECHO: Embark on a celestial '
-                                          'pilgrimage with the Velorans. '
-                                          "Foil the Corporation's attempt to "
-                                          'distort their connection to '
+                                          'pilgrimage with the Luxorians. '
+                                          "Foil the Corporation's attempt "
+                                          'to distort their connection to '
                                           'stars.',
                           'successMessage': 'ECHO: Celestial pilgrimage '
-                                            'completed successfully. Veloran '
-                                            'stellar connection secured, '
-                                            'earning you {reward} credits '
-                                            'and {experience} experience.',
+                                            'completed successfully. '
+                                            'Luxorian stellar connection '
+                                            'secured, earning you {reward} '
+                                            'credits and {experience} '
+                                            'experience.',
                           'failureMessage': 'ECHO: Our attempt to navigate '
-                                            'the celestial pilgrimage faced '
-                                            'challenges. We must ensure '
-                                            'Veloran starry bonds.'},
+                                            'the celestial pilgrimage '
+                                            'faced challenges. We must '
+                                            'ensure Luxorian starry '
+                                            'bonds.'},
  'Infiltrate Lumber Facility': {'Required Credits': 22200,
                                 'Required Energy': 32,
                                 'Reward': 104657,
                                 'Experience': 600,
                                 'Rank': 15,
+                                'Faction': 'Xiaojians',
                                 'requiredEquipment': {'Basic Ship': 1,
                                                       'Alien Skin Armor': 2},
                                 'Health Effect': 8,
-                                'startMessage': 'ECHO: The Drakorian Eclipse '
-                                                'Ritual is threatened by the '
-                                                "Corporation's intervention. "
-                                                'Assist in ensuring their '
-                                                'cosmic balance.',
+                                'startMessage': 'ECHO: The Xiaojian '
+                                                'Eclipse Ritual is '
+                                                'threatened by the '
+                                                "Corporation's "
+                                                'intervention. Assist in '
+                                                'ensuring their cosmic '
+                                                'balance.',
                                 'successMessage': 'ECHO: Eclipse Ritual '
                                                   'protected successfully. '
                                                   "You've earned {reward} "
-                                                  'credits and {experience} '
+                                                  'credits and '
+                                                  '{experience} '
                                                   'experience.',
                                 'failureMessage': 'ECHO: Our attempt to '
                                                   'protect the Eclipse '
-                                                  'Ritual faced challenges. '
-                                                  'We must ensure Drakorian '
-                                                  'cosmic equilibrium.'},
+                                                  'Ritual faced '
+                                                  'challenges. We must '
+                                                  'ensure Xiaojian cosmic '
+                                                  'equilibrium.'},
  'Join Xiaojian Rebels': {'Required Credits': 25080,
                           'Required Energy': 35,
                           'Reward': 123660,
                           'Experience': 680,
                           'Rank': 17,
+                          'Faction': 'Xiaojians',
                           'requiredEquipment': {'Alien Squad': 2,
                                                 'Bio Collector': 1},
                           'Health Effect': 8,
                           'startMessage': 'ECHO: Retrieve the sacred '
                                           'Flameforged Relics from the '
-                                          "Corporation's grasp. Rekindle the "
-                                          'spirit of the Drakorian '
+                                          "Corporation's grasp. Rekindle "
+                                          'the spirit of the Xiaojian '
                                           'ancestors.',
                           'successMessage': 'ECHO: Flameforged Relics '
-                                            "reclaimed successfully. You've "
-                                            'earned {reward} credits and '
-                                            '{experience} experience.',
+                                            'reclaimed successfully. '
+                                            "You've earned {reward} "
+                                            'credits and {experience} '
+                                            'experience.',
                           'failureMessage': 'ECHO: Our attempt to reclaim '
                                             'Flameforged Relics faced '
                                             'opposition. We must honor '
-                                            'Drakorian ancestral heritage.'},
+                                            'Xiaojian ancestral heritage.'},
  'Rescue Caged Pandalings': {'Required Credits': 26520,
                              'Required Energy': 37,
                              'Reward': 133628,
                              'Experience': 720,
                              'Rank': 18,
+                             'Faction': 'Xiaojians',
                              'requiredEquipment': {'Laser Sword': 1,
                                                    'Oxygen Rebreather': 2},
                              'Health Effect': 9,
                              'startMessage': 'ECHO: Engage in the creation '
-                                             'of the Stellar Aegis, a cosmic '
-                                             'shield to ward off the '
-                                             "Corporation's astral "
+                                             'of the Stellar Aegis, a '
+                                             'cosmic shield to ward off '
+                                             "the Corporation's astral "
                                              'intrusion.',
                              'successMessage': 'ECHO: Stellar Aegis '
                                                'successfully erected. '
-                                               'Drakorian astral domain '
+                                               'Xiaojian astral domain '
                                                'protected, earning you '
                                                '{reward} credits and '
                                                '{experience} experience.',
-                             'failureMessage': 'ECHO: Our attempt to create '
-                                               'the Stellar Aegis faced '
-                                               'challenges. We must defend '
-                                               'Drakorian astral '
+                             'failureMessage': 'ECHO: Our attempt to '
+                                               'create the Stellar Aegis '
+                                               'faced challenges. We must '
+                                               'defend Xiaojian astral '
                                                'sovereignty.'},
  'Dragonbone Bombing Run': {'Required Credits': 27960,
                             'Required Energy': 38,
                             'Reward': 143908,
                             'Experience': 760,
                             'Rank': 19,
+                            'Faction': 'Xiaojians',
                             'requiredEquipment': {'Basic Ship': 2,
                                                   'Steel Machete': 1},
                             'Health Effect': 10,
                             'startMessage': 'ECHO: Navigate the Celestial '
-                                            'Confluence with the Drakorians. '
-                                            "Counter the Corporation's "
-                                            'manipulation of their cosmic '
-                                            'connection.',
+                                            'Confluence with the '
+                                            'Xiaojians. Counter the '
+                                            "Corporation's manipulation of "
+                                            'their cosmic connection.',
                             'successMessage': 'ECHO: Celestial Confluence '
                                               'completed successfully. '
-                                              'Drakorian cosmic connection '
+                                              'Xiaojian cosmic connection '
                                               'reinforced, earning you '
                                               '{reward} credits and '
                                               '{experience} experience.',
-                            'failureMessage': 'ECHO: Our attempt to navigate '
-                                              'the Celestial Confluence '
-                                              'faced challenges. We must '
-                                              'ensure Drakorian celestial '
-                                              'ties.'},
+                            'failureMessage': 'ECHO: Our attempt to '
+                                              'navigate the Celestial '
+                                              'Confluence faced '
+                                              'challenges. We must ensure '
+                                              'Xiaojian celestial ties.'},
  'Defection and Tragedy': {'Required Credits': 29400,
                            'Required Energy': 40,
                            'Reward': 154500,
                            'Experience': 800,
                            'Rank': 20,
+                           'Faction': 'Xiaojians',
                            'requiredEquipment': {'Alien Army': 2,
                                                  'Bio Collector': 3},
                            'Health Effect': 10,
                            'startMessage': 'ECHO: The harmonic light '
-                                           'patterns of the Thelorian realm '
+                                           'patterns of the Xiaojian realm '
                                            'are being disrupted. Restore '
                                            'their luminous correlation.',
                            'successMessage': 'ECHO: Luminous correlation '
-                                             "restored successfully. You've "
-                                             'earned {reward} credits and '
-                                             '{experience} experience.',
+                                             'restored successfully. '
+                                             "You've earned {reward} "
+                                             'credits and {experience} '
+                                             'experience.',
                            'failureMessage': 'ECHO: Our attempt to restore '
                                              'luminous correlation faced '
                                              'obstacles. We must ensure '
-                                             'Thelorian radiant unity.'},
+                                             'Xiaojian radiant unity.'},
  'Final Stand in Ancient Tree City': {'Required Credits': 30840,
                                       'Required Energy': 42,
                                       'Reward': 165403,
                                       'Experience': 840,
                                       'Rank': 21,
+                                      'Faction': 'Xiaojians',
                                       'requiredEquipment': {'Environmental Suit': 3,
                                                             'Terrain Scanner': 1},
                                       'Health Effect': 10,
-                                      'startMessage': 'ECHO: The Corporation '
-                                                      'seeks to exploit '
-                                                      'Thelorian ethereal '
-                                                      'nexus for power. '
-                                                      'Protect their '
+                                      'startMessage': 'ECHO: The '
+                                                      'Corporation seeks '
+                                                      'to exploit Xiaojian '
+                                                      'ethereal nexus for '
+                                                      'power. Protect '
+                                                      'their '
                                                       'interdimensional '
                                                       'heritage.',
                                       'successMessage': 'ECHO: Ethereal '
@@ -972,7 +1013,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                         'ethereal nexus '
                                                         'faced opposition. '
                                                         'We must secure '
-                                                        'Thelorian '
+                                                        'Xiaojian '
                                                         'multidimensional '
                                                         'legacy.'},
  'Scout Vortex Mines': {'Required Credits': 33720,
@@ -980,159 +1021,170 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                         'Reward': 188144,
                         'Experience': 920,
                         'Rank': 23,
+                        'Faction': 'Titans',
                         'requiredEquipment': {'Plasma Blade': 1,
                                               'Steel Machete': 2},
                         'Health Effect': 12,
-                        'startMessage': 'ECHO: Join Thelorian leaders in a '
+                        'startMessage': 'ECHO: Join Titan leaders in a '
                                         'harmonic resonance ceremony. '
                                         "Counter the Corporation's "
                                         'disruption of their cosmic '
                                         'connection.',
                         'successMessage': 'ECHO: Harmonic resonance '
-                                          'achieved. Thelorian cosmic '
-                                          'connection restored, earning you '
-                                          '{reward} credits and {experience} '
-                                          'experience.',
+                                          'achieved. Titan cosmic '
+                                          'connection restored, earning '
+                                          'you {reward} credits and '
+                                          '{experience} experience.',
                         'failureMessage': 'ECHO: Our attempt to restore '
                                           'harmonic resonance faced '
                                           'challenges. We must protect '
-                                          'Thelorian celestial bonds.'},
+                                          'Titan celestial bonds.'},
  'Collapse Mining Tunnels': {'Required Credits': 35160,
                              'Required Energy': 46,
                              'Reward': 199981,
                              'Experience': 960,
                              'Rank': 24,
+                             'Faction': 'Titans',
                              'requiredEquipment': {'Alien Squad': 2,
                                                    'Jet Pack': 3},
                              'Health Effect': 12,
                              'startMessage': 'ECHO: Embark on an astral '
                                              'rhapsody through cosmic '
-                                             'harmonies with the Thelorians. '
+                                             'harmonies with the Titans. '
                                              "Prevent the Corporation's "
                                              'cosmic disharmony.',
                              'successMessage': 'ECHO: Astral rhapsody '
                                                'completed successfully. '
-                                               'Thelorian cosmic melodies '
+                                               'Titan cosmic melodies '
                                                'protected, earning you '
                                                '{reward} credits and '
                                                '{experience} experience.',
                              'failureMessage': 'ECHO: Our attempt to '
-                                               'navigate the astral rhapsody '
-                                               'faced challenges. We must '
-                                               'ensure Thelorian cosmic '
-                                               'harmony.'},
+                                               'navigate the astral '
+                                               'rhapsody faced challenges. '
+                                               'We must ensure Titan '
+                                               'cosmic harmony.'},
  'Use Yeti Allies for Spying': {'Required Credits': 36600,
                                 'Required Energy': 48,
                                 'Reward': 212131,
                                 'Experience': 1000,
                                 'Rank': 25,
+                                'Faction': 'Titans',
                                 'requiredEquipment': {'Hover Board': 3,
                                                       'Teleporter Beacon': 1},
                                 'Health Effect': 12,
                                 'startMessage': 'ECHO: The ethereal echoes '
-                                                'of the Zeraphan realm are '
+                                                'of the Titan realm are '
                                                 'fading. Revive their '
                                                 'celestial harmonies for '
                                                 'eternal existence.',
                                 'successMessage': 'ECHO: Celestial echoes '
                                                   'revived successfully. '
                                                   "You've earned {reward} "
-                                                  'credits and {experience} '
+                                                  'credits and '
+                                                  '{experience} '
                                                   'experience.',
                                 'failureMessage': 'ECHO: Our attempt to '
                                                   'revive celestial echoes '
-                                                  'faced obstacles. We must '
-                                                  'ensure Zeraphan ethereal '
-                                                  'vitality.'},
+                                                  'faced obstacles. We '
+                                                  'must ensure Titan '
+                                                  'ethereal vitality.'},
  'Lead Mech Assaults': {'Required Credits': 38040,
                         'Required Energy': 50,
                         'Reward': 224591,
                         'Experience': 1040,
                         'Rank': 26,
+                        'Faction': 'Titans',
                         'requiredEquipment': {'Star Ship': 1,
                                               'Metalloid Armor': 2},
                         'Health Effect': 13,
-                        'startMessage': 'ECHO: The Zeraphan nebulae are '
-                                        'being disrupted by the '
-                                        "Corporation's intrusion. Achieve "
-                                        'nebula synchrony to maintain cosmic '
+                        'startMessage': 'ECHO: The Titan nebulae are being '
+                                        "disrupted by the Corporation's "
+                                        'intrusion. Achieve nebula '
+                                        'synchrony to maintain cosmic '
                                         'order.',
                         'successMessage': 'ECHO: Nebula synchrony achieved '
                                           "successfully. You've earned "
-                                          '{reward} credits and {experience} '
-                                          'experience.',
+                                          '{reward} credits and '
+                                          '{experience} experience.',
                         'failureMessage': 'ECHO: Our attempt to achieve '
                                           'nebula synchrony faced '
                                           'opposition. We must preserve '
-                                          'Zeraphan cosmic balance.'},
+                                          'Titan cosmic balance.'},
  'Persuade Titan Clans to Unite': {'Required Credits': 39480,
                                    'Required Energy': 51,
                                    'Reward': 237363,
                                    'Experience': 1080,
                                    'Rank': 27,
+                                   'Faction': 'Titans',
                                    'requiredEquipment': {'Alien Ally': 2,
                                                          'Holo Clone': 3},
                                    'Health Effect': 14,
-                                   'startMessage': 'ECHO: Join the Zeraphan '
+                                   'startMessage': 'ECHO: Join the Titan '
                                                    'council in an ethereal '
                                                    'convergence ceremony. '
                                                    'Counter the '
-                                                   "Corporation's disruption "
-                                                   'of their cosmic bond.',
+                                                   "Corporation's "
+                                                   'disruption of their '
+                                                   'cosmic bond.',
                                    'successMessage': 'ECHO: Ethereal '
-                                                     'convergence achieved. '
-                                                     'Zeraphan cosmic bond '
-                                                     'restored, earning you '
-                                                     '{reward} credits and '
-                                                     '{experience} '
+                                                     'convergence '
+                                                     'achieved. Titan '
+                                                     'cosmic bond '
+                                                     'restored, earning '
+                                                     'you {reward} credits '
+                                                     'and {experience} '
                                                      'experience.',
                                    'failureMessage': 'ECHO: Our attempt to '
                                                      'restore ethereal '
                                                      'convergence faced '
                                                      'challenges. We must '
-                                                     'protect Zeraphan '
-                                                     'cosmic unity.'},
+                                                     'protect Titan cosmic '
+                                                     'unity.'},
  'Defend Mountain Fortresses': {'Required Credits': 42360,
                                 'Required Energy': 54,
                                 'Reward': 263842,
                                 'Experience': 1160,
                                 'Rank': 29,
+                                'Faction': 'Titans',
                                 'requiredEquipment': {'Scout Drone': 3,
                                                       'Porta Lab': 1},
                                 'Health Effect': 14,
                                 'startMessage': 'ECHO: Embark on a cosmic '
-                                                'overture with the '
-                                                'Zeraphans. Foil the '
-                                                "Corporation's attempt to "
-                                                'disrupt their cosmic '
-                                                'symphony.',
+                                                'overture with the Titans. '
+                                                "Foil the Corporation's "
+                                                'attempt to disrupt their '
+                                                'cosmic symphony.',
                                 'successMessage': 'ECHO: Cosmic overture '
                                                   'completed successfully. '
-                                                  'Zeraphan cosmic symphony '
-                                                  'safeguarded, earning you '
-                                                  '{reward} credits and '
-                                                  '{experience} experience.',
+                                                  'Titan cosmic symphony '
+                                                  'safeguarded, earning '
+                                                  'you {reward} credits '
+                                                  'and {experience} '
+                                                  'experience.',
                                 'failureMessage': 'ECHO: Our attempt to '
                                                   'navigate the cosmic '
                                                   'overture faced '
                                                   'challenges. We must '
-                                                  'ensure Zeraphan cosmic '
+                                                  'ensure Titan cosmic '
                                                   'harmony.'},
  'Infiltrate Logging Facilities': {'Required Credits': 43800,
                                    'Required Energy': 56,
                                    'Reward': 277549,
                                    'Experience': 1200,
                                    'Rank': 30,
+                                   'Faction': 'Tuathans',
                                    'requiredEquipment': {'Oxygen Rebreather': 3,
                                                          'Laser Sword': 2},
                                    'Health Effect': 15,
-                                   'startMessage': 'ECHO: The time has come, '
-                                                   'Jahntow. Begin the '
-                                                   "united alliance's cosmic "
-                                                   'confrontation against '
-                                                   'the Space Corporation. '
-                                                   'This is the first step '
-                                                   'towards liberation.',
+                                   'startMessage': 'ECHO: The time has '
+                                                   'come, Jahntow. Begin '
+                                                   "the united alliance's "
+                                                   'cosmic confrontation '
+                                                   'against the Space '
+                                                   'Corporation. This is '
+                                                   'the first step towards '
+                                                   'liberation.',
                                    'successMessage': 'ECHO: Part 1 of the '
                                                      'cosmic confrontation '
                                                      'completed '
@@ -1141,19 +1193,22 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                      'earning you {reward} '
                                                      'credits and '
                                                      '{experience} '
-                                                     'experience. The fight '
-                                                     'gains momentum.',
+                                                     'experience. The '
+                                                     'fight gains '
+                                                     'momentum.',
                                    'failureMessage': 'ECHO: Our attempt to '
                                                      'begin the cosmic '
                                                      'confrontation faced '
-                                                     'resistance. The fight '
-                                                     "is not over; we'll "
-                                                     'keep pushing forward.'},
+                                                     'resistance. The '
+                                                     'fight is not over; '
+                                                     "we'll keep pushing "
+                                                     'forward.'},
  'Ambush Vortex Forces': {'Required Credits': 45240,
                           'Required Energy': 58,
                           'Reward': 291567,
                           'Experience': 1240,
                           'Rank': 31,
+                          'Faction': 'Tuathans',
                           'requiredEquipment': {'Invisi Veil': 4,
                                                 'Basic Ship': 3},
                           'Health Effect': 16,
@@ -1171,60 +1226,65 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                             '{experience} experience. The '
                                             'path to victory is clear.',
                           'failureMessage': 'ECHO: Our attempt to advance '
-                                            'the cosmic confrontation faced '
-                                            'challenges. The united alliance '
-                                            "remains resolute; we'll "
-                                            'overcome.'},
+                                            'the cosmic confrontation '
+                                            'faced challenges. The united '
+                                            'alliance remains resolute; '
+                                            "we'll overcome."},
  'Foil Vortex Trapping': {'Required Credits': 46680,
                           'Required Energy': 59,
                           'Reward': 305897,
                           'Experience': 1280,
                           'Rank': 32,
+                          'Faction': 'Tuathans',
                           'requiredEquipment': {'Alien Skin Armor': 1,
                                                 'Cyber Armor': 4},
                           'Health Effect': 16,
-                          'startMessage': 'ECHO: Jahntow, this is the final '
-                                          'push. Lead the united alien '
-                                          'alliance in the ultimate cosmic '
-                                          'confrontation against the Space '
-                                          'Corporation. The time for '
-                                          'liberation is now.',
-                          'successMessage': 'ECHO: The cosmic confrontation '
-                                            'is victorious. The united alien '
-                                            'alliance triumphs, earning you '
+                          'startMessage': 'ECHO: Jahntow, this is the '
+                                          'final push. Lead the united '
+                                          'alien alliance in the ultimate '
+                                          'cosmic confrontation against '
+                                          'the Space Corporation. The time '
+                                          'for liberation is now.',
+                          'successMessage': 'ECHO: The cosmic '
+                                            'confrontation is victorious. '
+                                            'The united alien alliance '
+                                            'triumphs, earning you '
                                             '{reward} credits and '
                                             '{experience} experience. The '
                                             'cosmos is free once more.',
-                          'failureMessage': 'ECHO: Our attempt at the final '
-                                            'cosmic confrontation faced '
-                                            'tremendous adversity. But '
-                                            'remember, the spirit of unity '
-                                            'endures.'},
+                          'failureMessage': 'ECHO: Our attempt at the '
+                                            'final cosmic confrontation '
+                                            'faced tremendous adversity. '
+                                            'But remember, the spirit of '
+                                            'unity endures.'},
  'Destroy Bioweapon Stockpiles': {'Required Credits': 48120,
                                   'Required Energy': 61,
                                   'Reward': 320538,
                                   'Experience': 1320,
                                   'Rank': 33,
+                                  'Faction': 'Tuathans',
                                   'requiredEquipment': {'Bio Collector': 2,
                                                         'Alien Army': 1},
                                   'Health Effect': 16,
                                   'startMessage': 'ECHO: Jahntow, this is '
-                                                  'the final push. Lead the '
-                                                  'united alien alliance in '
-                                                  'the ultimate cosmic '
-                                                  'confrontation against the '
-                                                  'Space Corporation. The '
-                                                  'time for liberation is '
-                                                  'now.',
+                                                  'the final push. Lead '
+                                                  'the united alien '
+                                                  'alliance in the '
+                                                  'ultimate cosmic '
+                                                  'confrontation against '
+                                                  'the Space Corporation. '
+                                                  'The time for liberation '
+                                                  'is now.',
                                   'successMessage': 'ECHO: The cosmic '
                                                     'confrontation is '
-                                                    'victorious. The united '
-                                                    'alien alliance '
+                                                    'victorious. The '
+                                                    'united alien alliance '
                                                     'triumphs, earning you '
                                                     '{reward} credits and '
                                                     '{experience} '
-                                                    'experience. The cosmos '
-                                                    'is free once more.',
+                                                    'experience. The '
+                                                    'cosmos is free once '
+                                                    'more.',
                                   'failureMessage': 'ECHO: Our attempt at '
                                                     'the final cosmic '
                                                     'confrontation faced '
@@ -1237,65 +1297,73 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                    'Reward': 350755,
                                    'Experience': 1400,
                                    'Rank': 35,
+                                   'Faction': 'Tuathans',
                                    'requiredEquipment': {'Terrain Scanner': 3,
                                                          'Environmental Suit': 2},
                                    'Health Effect': 18,
                                    'startMessage': 'ECHO: Jahntow, this is '
-                                                   'the final push. Lead the '
-                                                   'united alien alliance in '
-                                                   'the ultimate cosmic '
+                                                   'the final push. Lead '
+                                                   'the united alien '
+                                                   'alliance in the '
+                                                   'ultimate cosmic '
                                                    'confrontation against '
                                                    'the Space Corporation. '
-                                                   'The time for liberation '
-                                                   'is now.',
+                                                   'The time for '
+                                                   'liberation is now.',
                                    'successMessage': 'ECHO: The cosmic '
                                                      'confrontation is '
-                                                     'victorious. The united '
-                                                     'alien alliance '
-                                                     'triumphs, earning you '
-                                                     '{reward} credits and '
+                                                     'victorious. The '
+                                                     'united alien '
+                                                     'alliance triumphs, '
+                                                     'earning you {reward} '
+                                                     'credits and '
                                                      '{experience} '
-                                                     'experience. The cosmos '
-                                                     'is free once more.',
+                                                     'experience. The '
+                                                     'cosmos is free once '
+                                                     'more.',
                                    'failureMessage': 'ECHO: Our attempt at '
                                                      'the final cosmic '
                                                      'confrontation faced '
-                                                     'tremendous adversity. '
-                                                     'But remember, the '
-                                                     'spirit of unity '
-                                                     'endures.'},
+                                                     'tremendous '
+                                                     'adversity. But '
+                                                     'remember, the spirit '
+                                                     'of unity endures.'},
  'Defend the Heart of the Forest': {'Required Credits': 52440,
                                     'Required Energy': 66,
                                     'Reward': 366331,
                                     'Experience': 1440,
                                     'Rank': 36,
+                                    'Faction': 'Tuathans',
                                     'requiredEquipment': {'Steel Machete': 4,
                                                           'Plasma Blade': 3},
                                     'Health Effect': 18,
-                                    'startMessage': 'ECHO: Jahntow, this is '
-                                                    'the final push. Lead '
-                                                    'the united alien '
+                                    'startMessage': 'ECHO: Jahntow, this '
+                                                    'is the final push. '
+                                                    'Lead the united alien '
                                                     'alliance in the '
                                                     'ultimate cosmic '
                                                     'confrontation against '
-                                                    'the Space Corporation. '
-                                                    'The time for liberation '
-                                                    'is now.',
+                                                    'the Space '
+                                                    'Corporation. The time '
+                                                    'for liberation is '
+                                                    'now.',
                                     'successMessage': 'ECHO: The cosmic '
                                                       'confrontation is '
                                                       'victorious. The '
-                                                      'united alien alliance '
-                                                      'triumphs, earning you '
-                                                      '{reward} credits and '
-                                                      '{experience} '
+                                                      'united alien '
+                                                      'alliance triumphs, '
+                                                      'earning you '
+                                                      '{reward} credits '
+                                                      'and {experience} '
                                                       'experience. The '
                                                       'cosmos is free once '
                                                       'more.',
-                                    'failureMessage': 'ECHO: Our attempt at '
-                                                      'the final cosmic '
+                                    'failureMessage': 'ECHO: Our attempt '
+                                                      'at the final cosmic '
                                                       'confrontation faced '
-                                                      'tremendous adversity. '
-                                                      'But remember, the '
+                                                      'tremendous '
+                                                      'adversity. But '
+                                                      'remember, the '
                                                       'spirit of unity '
                                                       'endures.'},
  'Scout Vortex Facilities': {'Required Credits': 53880,
@@ -1303,123 +1371,141 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                              'Reward': 382218,
                              'Experience': 1480,
                              'Rank': 37,
+                             'Faction': 'Namarupians',
                              'requiredEquipment': {'Jet Pack': 1,
                                                    'Alien Squad': 4},
                              'Health Effect': 18,
                              'startMessage': 'ECHO: Jahntow, this is the '
                                              'final push. Lead the united '
-                                             'alien alliance in the ultimate '
-                                             'cosmic confrontation against '
-                                             'the Space Corporation. The '
-                                             'time for liberation is now.',
+                                             'alien alliance in the '
+                                             'ultimate cosmic '
+                                             'confrontation against the '
+                                             'Space Corporation. The time '
+                                             'for liberation is now.',
                              'successMessage': 'ECHO: The cosmic '
-                                               'confrontation is victorious. '
-                                               'The united alien alliance '
-                                               'triumphs, earning you '
-                                               '{reward} credits and '
-                                               '{experience} experience. The '
-                                               'cosmos is free once more.',
+                                               'confrontation is '
+                                               'victorious. The united '
+                                               'alien alliance triumphs, '
+                                               'earning you {reward} '
+                                               'credits and {experience} '
+                                               'experience. The cosmos is '
+                                               'free once more.',
                              'failureMessage': 'ECHO: Our attempt at the '
                                                'final cosmic confrontation '
-                                               'faced tremendous adversity. '
-                                               'But remember, the spirit of '
-                                               'unity endures.'},
+                                               'faced tremendous '
+                                               'adversity. But remember, '
+                                               'the spirit of unity '
+                                               'endures.'},
  'Disrupt Executive Speeches': {'Required Credits': 55320,
                                 'Required Energy': 69,
                                 'Reward': 398417,
                                 'Experience': 1520,
                                 'Rank': 38,
+                                'Faction': 'Namarupians',
                                 'requiredEquipment': {'Teleporter Beacon': 2,
                                                       'Hover Board': 1},
                                 'Health Effect': 19,
-                                'startMessage': 'ECHO: Jahntow, this is the '
-                                                'final push. Lead the united '
-                                                'alien alliance in the '
-                                                'ultimate cosmic '
+                                'startMessage': 'ECHO: Jahntow, this is '
+                                                'the final push. Lead the '
+                                                'united alien alliance in '
+                                                'the ultimate cosmic '
                                                 'confrontation against the '
-                                                'Space Corporation. The time '
-                                                'for liberation is now.',
+                                                'Space Corporation. The '
+                                                'time for liberation is '
+                                                'now.',
                                 'successMessage': 'ECHO: The cosmic '
                                                   'confrontation is '
                                                   'victorious. The united '
-                                                  'alien alliance triumphs, '
-                                                  'earning you {reward} '
-                                                  'credits and {experience} '
-                                                  'experience. The cosmos is '
-                                                  'free once more.',
-                                'failureMessage': 'ECHO: Our attempt at the '
-                                                  'final cosmic '
+                                                  'alien alliance '
+                                                  'triumphs, earning you '
+                                                  '{reward} credits and '
+                                                  '{experience} '
+                                                  'experience. The cosmos '
+                                                  'is free once more.',
+                                'failureMessage': 'ECHO: Our attempt at '
+                                                  'the final cosmic '
                                                   'confrontation faced '
-                                                  'tremendous adversity. But '
-                                                  'remember, the spirit of '
-                                                  'unity endures.'},
+                                                  'tremendous adversity. '
+                                                  'But remember, the '
+                                                  'spirit of unity '
+                                                  'endures.'},
  'Make Vortex Mechs Malfunction': {'Required Credits': 56760,
                                    'Required Energy': 70,
                                    'Reward': 414927,
                                    'Experience': 1560,
                                    'Rank': 39,
+                                   'Faction': 'Namarupians',
                                    'requiredEquipment': {'Metalloid Armor': 3,
                                                          'Star Ship': 2},
                                    'Health Effect': 20,
                                    'startMessage': 'ECHO: Jahntow, this is '
-                                                   'the final push. Lead the '
-                                                   'united alien alliance in '
-                                                   'the ultimate cosmic '
+                                                   'the final push. Lead '
+                                                   'the united alien '
+                                                   'alliance in the '
+                                                   'ultimate cosmic '
                                                    'confrontation against '
                                                    'the Space Corporation. '
-                                                   'The time for liberation '
-                                                   'is now.',
+                                                   'The time for '
+                                                   'liberation is now.',
                                    'successMessage': 'ECHO: The cosmic '
                                                      'confrontation is '
-                                                     'victorious. The united '
-                                                     'alien alliance '
-                                                     'triumphs, earning you '
-                                                     '{reward} credits and '
+                                                     'victorious. The '
+                                                     'united alien '
+                                                     'alliance triumphs, '
+                                                     'earning you {reward} '
+                                                     'credits and '
                                                      '{experience} '
-                                                     'experience. The cosmos '
-                                                     'is free once more.',
+                                                     'experience. The '
+                                                     'cosmos is free once '
+                                                     'more.',
                                    'failureMessage': 'ECHO: Our attempt at '
                                                      'the final cosmic '
                                                      'confrontation faced '
-                                                     'tremendous adversity. '
-                                                     'But remember, the '
-                                                     'spirit of unity '
-                                                     'endures.'},
+                                                     'tremendous '
+                                                     'adversity. But '
+                                                     'remember, the spirit '
+                                                     'of unity endures.'},
  'Create Illusions to Confuse Vortex': {'Required Credits': 58200,
                                         'Required Energy': 72,
                                         'Reward': 431749,
                                         'Experience': 1600,
                                         'Rank': 40,
+                                        'Faction': 'Namarupians',
                                         'requiredEquipment': {'Holo Clone': 1,
                                                               'Alien Ally': 5},
                                         'Health Effect': 20,
-                                        'startMessage': 'ECHO: Jahntow, this '
-                                                        'is the final push. '
-                                                        'Lead the united '
-                                                        'alien alliance in '
-                                                        'the ultimate cosmic '
+                                        'startMessage': 'ECHO: Jahntow, '
+                                                        'this is the final '
+                                                        'push. Lead the '
+                                                        'united alien '
+                                                        'alliance in the '
+                                                        'ultimate cosmic '
                                                         'confrontation '
                                                         'against the Space '
                                                         'Corporation. The '
-                                                        'time for liberation '
-                                                        'is now.',
-                                        'successMessage': 'ECHO: The cosmic '
-                                                          'confrontation is '
-                                                          'victorious. The '
-                                                          'united alien '
-                                                          'alliance '
-                                                          'triumphs, earning '
-                                                          'you {reward} '
+                                                        'time for '
+                                                        'liberation is '
+                                                        'now.',
+                                        'successMessage': 'ECHO: The '
+                                                          'cosmic '
+                                                          'confrontation '
+                                                          'is victorious. '
+                                                          'The united '
+                                                          'alien alliance '
+                                                          'triumphs, '
+                                                          'earning you '
+                                                          '{reward} '
                                                           'credits and '
                                                           '{experience} '
                                                           'experience. The '
                                                           'cosmos is free '
                                                           'once more.',
-                                        'failureMessage': 'ECHO: Our attempt '
-                                                          'at the final '
-                                                          'cosmic '
+                                        'failureMessage': 'ECHO: Our '
+                                                          'attempt at the '
+                                                          'final cosmic '
                                                           'confrontation '
-                                                          'faced tremendous '
+                                                          'faced '
+                                                          'tremendous '
                                                           'adversity. But '
                                                           'remember, the '
                                                           'spirit of unity '
@@ -1429,57 +1515,64 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                      'Reward': 466327,
                                      'Experience': 1680,
                                      'Rank': 42,
+                                     'Faction': 'Namarupians',
                                      'requiredEquipment': {'Porta Lab': 2,
                                                            'Scout Drone': 1},
                                      'Health Effect': 21,
-                                     'startMessage': 'ECHO: Jahntow, this is '
-                                                     'the final push. Lead '
-                                                     'the united alien '
-                                                     'alliance in the '
-                                                     'ultimate cosmic '
-                                                     'confrontation against '
-                                                     'the Space Corporation. '
-                                                     'The time for '
-                                                     'liberation is now.',
+                                     'startMessage': 'ECHO: Jahntow, this '
+                                                     'is the final push. '
+                                                     'Lead the united '
+                                                     'alien alliance in '
+                                                     'the ultimate cosmic '
+                                                     'confrontation '
+                                                     'against the Space '
+                                                     'Corporation. The '
+                                                     'time for liberation '
+                                                     'is now.',
                                      'successMessage': 'ECHO: The cosmic '
                                                        'confrontation is '
                                                        'victorious. The '
                                                        'united alien '
                                                        'alliance triumphs, '
-                                                       'earning you {reward} '
-                                                       'credits and '
-                                                       '{experience} '
+                                                       'earning you '
+                                                       '{reward} credits '
+                                                       'and {experience} '
                                                        'experience. The '
-                                                       'cosmos is free once '
-                                                       'more.',
-                                     'failureMessage': 'ECHO: Our attempt at '
-                                                       'the final cosmic '
-                                                       'confrontation faced '
-                                                       'tremendous '
+                                                       'cosmos is free '
+                                                       'once more.',
+                                     'failureMessage': 'ECHO: Our attempt '
+                                                       'at the final '
+                                                       'cosmic '
+                                                       'confrontation '
+                                                       'faced tremendous '
                                                        'adversity. But '
-                                                       'remember, the spirit '
-                                                       'of unity endures.'},
+                                                       'remember, the '
+                                                       'spirit of unity '
+                                                       'endures.'},
  'Final Psychic Showdown': {'Required Credits': 62520,
                             'Required Energy': 77,
                             'Reward': 484083,
                             'Experience': 1720,
                             'Rank': 43,
+                            'Faction': 'Namarupians',
                             'requiredEquipment': {'Laser Sword': 3,
                                                   'Oxygen Rebreather': 2},
                             'Health Effect': 22,
                             'startMessage': 'ECHO: Jahntow, this is the '
                                             'final push. Lead the united '
-                                            'alien alliance in the ultimate '
-                                            'cosmic confrontation against '
-                                            'the Space Corporation. The time '
-                                            'for liberation is now.',
+                                            'alien alliance in the '
+                                            'ultimate cosmic confrontation '
+                                            'against the Space '
+                                            'Corporation. The time for '
+                                            'liberation is now.',
                             'successMessage': 'ECHO: The cosmic '
-                                              'confrontation is victorious. '
-                                              'The united alien alliance '
-                                              'triumphs, earning you '
-                                              '{reward} credits and '
-                                              '{experience} experience. The '
-                                              'cosmos is free once more.',
+                                              'confrontation is '
+                                              'victorious. The united '
+                                              'alien alliance triumphs, '
+                                              'earning you {reward} '
+                                              'credits and {experience} '
+                                              'experience. The cosmos is '
+                                              'free once more.',
                             'failureMessage': 'ECHO: Our attempt at the '
                                               'final cosmic confrontation '
                                               'faced tremendous adversity. '
@@ -1490,63 +1583,68 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                'Reward': 502151,
                                'Experience': 1760,
                                'Rank': 44,
+                               'Faction': 'United Front',
                                'requiredEquipment': {'Basic Ship': 4,
                                                      'Invisi Veil': 3},
                                'Health Effect': 22,
                                'startMessage': 'ECHO: Jahntow, this is the '
-                                               'final push. Lead the united '
-                                               'alien alliance in the '
-                                               'ultimate cosmic '
+                                               'final push. Lead the '
+                                               'united alien alliance in '
+                                               'the ultimate cosmic '
                                                'confrontation against the '
-                                               'Space Corporation. The time '
-                                               'for liberation is now.',
+                                               'Space Corporation. The '
+                                               'time for liberation is '
+                                               'now.',
                                'successMessage': 'ECHO: The cosmic '
                                                  'confrontation is '
                                                  'victorious. The united '
                                                  'alien alliance triumphs, '
                                                  'earning you {reward} '
                                                  'credits and {experience} '
-                                                 'experience. The cosmos is '
-                                                 'free once more.',
+                                                 'experience. The cosmos '
+                                                 'is free once more.',
                                'failureMessage': 'ECHO: Our attempt at the '
-                                                 'final cosmic confrontation '
-                                                 'faced tremendous '
-                                                 'adversity. But remember, '
-                                                 'the spirit of unity '
-                                                 'endures.'},
+                                                 'final cosmic '
+                                                 'confrontation faced '
+                                                 'tremendous adversity. '
+                                                 'But remember, the spirit '
+                                                 'of unity endures.'},
  'Vortex Corp: Inside the Fortress': {'Required Credits': 65400,
                                       'Required Energy': 80,
                                       'Reward': 520531,
                                       'Experience': 1800,
                                       'Rank': 45,
+                                      'Faction': 'United Front',
                                       'requiredEquipment': {'Cyber Armor': 5,
                                                             'Alien Skin Armor': 4},
                                       'Health Effect': 22,
                                       'startMessage': 'ECHO: Jahntow, this '
                                                       'is the final push. '
-                                                      'Lead the united alien '
-                                                      'alliance in the '
-                                                      'ultimate cosmic '
-                                                      'confrontation against '
-                                                      'the Space '
-                                                      'Corporation. The time '
-                                                      'for liberation is '
-                                                      'now.',
+                                                      'Lead the united '
+                                                      'alien alliance in '
+                                                      'the ultimate cosmic '
+                                                      'confrontation '
+                                                      'against the Space '
+                                                      'Corporation. The '
+                                                      'time for liberation '
+                                                      'is now.',
                                       'successMessage': 'ECHO: The cosmic '
                                                         'confrontation is '
                                                         'victorious. The '
                                                         'united alien '
-                                                        'alliance triumphs, '
-                                                        'earning you '
-                                                        '{reward} credits '
-                                                        'and {experience} '
+                                                        'alliance '
+                                                        'triumphs, earning '
+                                                        'you {reward} '
+                                                        'credits and '
+                                                        '{experience} '
                                                         'experience. The '
-                                                        'cosmos is free once '
-                                                        'more.',
+                                                        'cosmos is free '
+                                                        'once more.',
                                       'failureMessage': 'ECHO: Our attempt '
-                                                        'at the final cosmic '
-                                                        'confrontation faced '
-                                                        'tremendous '
+                                                        'at the final '
+                                                        'cosmic '
+                                                        'confrontation '
+                                                        'faced tremendous '
                                                         'adversity. But '
                                                         'remember, the '
                                                         'spirit of unity '
@@ -1556,80 +1654,93 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                            'Reward': 539221,
                            'Experience': 1840,
                            'Rank': 46,
+                           'Faction': 'United Front',
                            'requiredEquipment': {'Alien Army': 1,
                                                  'Bio Collector': 5},
                            'Health Effect': 23,
-                           'startMessage': 'ECHO: Jahntow, this is the final '
-                                           'push. Lead the united alien '
-                                           'alliance in the ultimate cosmic '
-                                           'confrontation against the Space '
-                                           'Corporation. The time for '
-                                           'liberation is now.',
-                           'successMessage': 'ECHO: The cosmic confrontation '
-                                             'is victorious. The united '
-                                             'alien alliance triumphs, '
-                                             'earning you {reward} credits '
-                                             'and {experience} experience. '
-                                             'The cosmos is free once more.',
-                           'failureMessage': 'ECHO: Our attempt at the final '
-                                             'cosmic confrontation faced '
-                                             'tremendous adversity. But '
-                                             'remember, the spirit of unity '
-                                             'endures.'},
+                           'startMessage': 'ECHO: Jahntow, this is the '
+                                           'final push. Lead the united '
+                                           'alien alliance in the ultimate '
+                                           'cosmic confrontation against '
+                                           'the Space Corporation. The '
+                                           'time for liberation is now.',
+                           'successMessage': 'ECHO: The cosmic '
+                                             'confrontation is victorious. '
+                                             'The united alien alliance '
+                                             'triumphs, earning you '
+                                             '{reward} credits and '
+                                             '{experience} experience. The '
+                                             'cosmos is free once more.',
+                           'failureMessage': 'ECHO: Our attempt at the '
+                                             'final cosmic confrontation '
+                                             'faced tremendous adversity. '
+                                             'But remember, the spirit of '
+                                             'unity endures.'},
  'Vortex Corp: Disabling the Defenses': {'Required Credits': 69720,
                                          'Required Energy': 85,
                                          'Reward': 577538,
                                          'Experience': 1920,
                                          'Rank': 48,
+                                         'Faction': 'United Front',
                                          'requiredEquipment': {'Environmental Suit': 2,
                                                                'Terrain Scanner': 1},
                                          'Health Effect': 24,
                                          'startMessage': 'ECHO: Jahntow, '
-                                                         'this is the final '
-                                                         'push. Lead the '
-                                                         'united alien '
+                                                         'this is the '
+                                                         'final push. Lead '
+                                                         'the united alien '
                                                          'alliance in the '
                                                          'ultimate cosmic '
                                                          'confrontation '
-                                                         'against the Space '
+                                                         'against the '
+                                                         'Space '
                                                          'Corporation. The '
                                                          'time for '
-                                                         'liberation is now.',
-                                         'successMessage': 'ECHO: The cosmic '
-                                                           'confrontation is '
-                                                           'victorious. The '
-                                                           'united alien '
-                                                           'alliance '
+                                                         'liberation is '
+                                                         'now.',
+                                         'successMessage': 'ECHO: The '
+                                                           'cosmic '
+                                                           'confrontation '
+                                                           'is victorious. '
+                                                           'The united '
+                                                           'alien alliance '
                                                            'triumphs, '
                                                            'earning you '
-                                                           '{reward} credits '
-                                                           'and {experience} '
-                                                           'experience. The '
-                                                           'cosmos is free '
-                                                           'once more.',
+                                                           '{reward} '
+                                                           'credits and '
+                                                           '{experience} '
+                                                           'experience. '
+                                                           'The cosmos is '
+                                                           'free once '
+                                                           'more.',
                                          'failureMessage': 'ECHO: Our '
                                                            'attempt at the '
                                                            'final cosmic '
                                                            'confrontation '
-                                                           'faced tremendous '
+                                                           'faced '
+                                                           'tremendous '
                                                            'adversity. But '
                                                            'remember, the '
-                                                           'spirit of unity '
+                                                           'spirit of '
+                                                           'unity '
                                                            'endures.'},
  'Vortex Corp: Confrontation with Xaezor': {'Required Credits': 71160,
                                             'Required Energy': 86,
-                                            'Reward': 597163,
+                                            'Reward': 1500000,
                                             'Experience': 1960,
                                             'Rank': 49,
+                                            'Faction': 'United Front',
                                             'requiredEquipment': {'Plasma Blade': 3,
                                                                   'Steel Machete': 2},
-                                            'Health Effect': 24,
-                                            'startMessage': 'ECHO: Jahntow, '
-                                                            'this is the '
-                                                            'final push. '
-                                                            'Lead the united '
-                                                            'alien alliance '
-                                                            'in the ultimate '
+                                            'Health Effect': 48,
+                                            'startMessage': 'ECHO: '
+                                                            'Jahntow, this '
+                                                            'is the final '
+                                                            'push. Lead '
+                                                            'the united '
+                                                            'alien '
+                                                            'alliance in '
+                                                            'the ultimate '
                                                             'cosmic '
                                                             'confrontation '
                                                             'against the '
@@ -1652,9 +1763,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                               'credits and '
                                                               '{experience} '
                                                               'experience. '
-                                                              'The cosmos is '
-                                                              'free once '
-                                                              'more.',
+                                                              'The cosmos '
+                                                              'is free '
+                                                              'once more.',
                                             'failureMessage': 'ECHO: Our '
                                                               'attempt at '
                                                               'the final '
@@ -1663,35 +1774,39 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                               'faced '
                                                               'tremendous '
                                                               'adversity. '
-                                                              'But remember, '
-                                                              'the spirit of '
-                                                              'unity '
-                                                              'endures.'},
+                                                              'But '
+                                                              'remember, '
+                                                              'the spirit '
+                                                              'of unity '
+                                                              'endures.',
+                                            'Boss': True},
  'Victory and Aftermath': {'Required Credits': 72600,
                            'Required Energy': 88,
                            'Reward': 617100,
                            'Experience': 2000,
                            'Rank': 50,
+                           'Faction': 'United Front',
                            'requiredEquipment': {'Alien Squad': 2,
                                                  'Jet Pack': 1},
                            'Health Effect': 25,
-                           'startMessage': 'ECHO: Jahntow, this is the final '
-                                           'push. Lead the united alien '
-                                           'alliance in the ultimate cosmic '
-                                           'confrontation against the Space '
-                                           'Corporation. The time for '
-                                           'liberation is now.',
-                           'successMessage': 'ECHO: The cosmic confrontation '
-                                             'is victorious. The united '
-                                             'alien alliance triumphs, '
-                                             'earning you {reward} credits '
-                                             'and {experience} experience. '
-                                             'The cosmos is free once more.',
-                           'failureMessage': 'ECHO: Our attempt at the final '
-                                             'cosmic confrontation faced '
-                                             'tremendous adversity. But '
-                                             'remember, the spirit of unity '
-                                             'endures.'}}
+                           'startMessage': 'ECHO: Jahntow, this is the '
+                                           'final push. Lead the united '
+                                           'alien alliance in the ultimate '
+                                           'cosmic confrontation against '
+                                           'the Space Corporation. The '
+                                           'time for liberation is now.',
+                           'successMessage': 'ECHO: The cosmic '
+                                             'confrontation is victorious. '
+                                             'The united alien alliance '
+                                             'triumphs, earning you '
+                                             '{reward} credits and '
+                                             '{experience} experience. The '
+                                             'cosmos is free once more.',
+                           'failureMessage': 'ECHO: Our attempt at the '
+                                             'final cosmic confrontation '
+                                             'faced tremendous adversity. '
+                                             'But remember, the spirit of '
+                                             'unity endures.'}}
 
 
 PROPERTIES = {'Energy Labs': {'Fusion Facility': {'Base Cost': 3482,
@@ -1976,4 +2091,117 @@ ACHIEVEMENTS = [
      'metric': 'credits', 'threshold': 100000},
     {'id': 'credits-1m', 'name': 'Millionaire', 'desc': 'Hold 1,000,000 credits',
      'metric': 'credits', 'threshold': 1000000, 'title': 'Tycoon'},
+]
+
+# The six tribes of Zephyr, in story order - each owns six consecutive
+# story missions (1-6, 7-12, ...36); the finale arc (37-42) is fought as
+# the "United Front" and earns reputation with all six at once.
+FACTIONS = ['Xictlians', 'Luxorians', 'Xiaojians', 'Titans', 'Tuathans',
+            'Namarupians']
+
+# Chapter-end story choices, presented once storyWins crosses after_wins
+# (one pending at a time, earliest first; resolved ids live in
+# Player.story_choices). Rewards deliberately diverge between faction
+# reputation, credits, and gear so the decision is a real trade-off.
+# reward forms: {"credits": n} | {"rep": {faction: n}} | {"rep_all": n}
+# | {"equipment": {item: qty}}.
+STORY_CHOICES = [
+    {'id': 'xictlian-tribute', 'after_wins': 30,
+     'prompt': ("The Xictlian elders lay a war-tribute of credits at Jahntow's "
+                "feet for freeing their oases. Zu'ark quietly suggests the tribe "
+                "needs it more than we do."),
+     'options': [
+         {'id': 'accept', 'label': 'Accept the tribute',
+          'outcome_text': ("The caravans deliver the tribute by nightfall. War "
+                           "runs on credits, and the elders understand."),
+          'reward': {'credits': 4000}},
+         {'id': 'refuse', 'label': 'Refuse - the water belongs to the tribe',
+          'outcome_text': ("The elders pour the first freed water over Jahntow's "
+                           "hands. Xictlians do not forget."),
+          'reward': {'rep': {'Xictlians': 3}}},
+     ]},
+    {'id': 'luxorian-mercenaries', 'after_wins': 60,
+     'prompt': ("The mercenaries Ava pulled out of the Vortex camps are asking "
+                "who they fight for now. They'll follow Jahntow's word."),
+     'options': [
+         {'id': 'raiders', 'label': 'Send them raiding Vortex convoys',
+          'outcome_text': ("The free company's first raid pays out within days - "
+                           "and Vortex supply officers start sleeping badly."),
+          'reward': {'credits': 8000}},
+         {'id': 'guards', 'label': "Post them as guards over Luxor's temples",
+          'outcome_text': ("Temple guards in mercenary armor become a symbol of "
+                           "the defection. The Luxorians take note of who sent them."),
+          'reward': {'rep': {'Luxorians': 3}}},
+     ]},
+    {'id': 'xiaojian-heartseed', 'after_wins': 90,
+     'prompt': ("Master Zhenwu offers Jahntow the Heartseed of the ancient tree "
+                "city - it can be grown into living armor, or returned to the "
+                "grove it was cut from."),
+     'options': [
+         {'id': 'armor', 'label': 'Grow it into living armor',
+          'outcome_text': ("The Heartseed weaves itself into three suits of "
+                           "bark-and-sinew armor - Xiaojian craft, alive to the touch."),
+          'reward': {'equipment': {'Alien Skin Armor': 3}}},
+         {'id': 'grove', 'label': 'Return it to the grove',
+          'outcome_text': ("The grove closes around the Heartseed like a healed "
+                           "wound. Zhenwu bows lower than a master ever should."),
+          'reward': {'rep': {'Xiaojians': 3}}},
+     ]},
+    {'id': 'titan-forge', 'after_wins': 120,
+     'prompt': ("With the mountain fortresses held, the Titan forges stand idle "
+                "for the first time in years. Kazon asks what they should make."),
+     'options': [
+         {'id': 'blades', 'label': 'Commission plasma blades for the strike team',
+          'outcome_text': ("Two Titan-forged plasma blades, balanced for Jahntow's "
+                           "hand. You will want these at the fortress gates."),
+          'reward': {'equipment': {'Plasma Blade': 2}}},
+         {'id': 'refugees', 'label': 'Arm the refugee columns instead',
+          'outcome_text': ("Every refugee column now walks behind Titan steel. "
+                           "Kazon's clans call Jahntow kin from this day."),
+          'reward': {'rep': {'Titans': 3}}},
+     ]},
+    {'id': 'tuathan-rites', 'after_wins': 150,
+     'prompt': ("The Emerald Mage offers to teach the forest regrowth rite - or "
+                "to hand over the order's stockpile of healing salves for the "
+                "war effort."),
+     'options': [
+         {'id': 'stockpile', 'label': 'Take the salve stockpile',
+          'outcome_text': ("Crates of Tuathan salves reach the front lines - and "
+                           "the surplus sells for a small fortune."),
+          'reward': {'credits': 20000}},
+         {'id': 'rite', 'label': 'Learn the rite yourself',
+          'outcome_text': ("Jahntow spends three nights under the canopy learning "
+                           "the rite. The order counts him as one of their own now."),
+          'reward': {'rep': {'Tuathans': 3}}},
+     ]},
+    {'id': 'namarupian-broadcast', 'after_wins': 180,
+     'prompt': ("Zhalia can broadcast the amplifier's destruction into every "
+                "mind on Zephyr - or the strike can stay silent, and the standing "
+                "Vortex bounties on 'unknown saboteurs' can quietly be claimed."),
+     'options': [
+         {'id': 'broadcast', 'label': 'Broadcast the victory to all tribes',
+          'outcome_text': ("For one shared heartbeat, every tribe on Zephyr feels "
+                           "the amplifier die. The united front is no longer a plan - "
+                           "it is a fact."),
+          'reward': {'rep_all': 1}},
+         {'id': 'silent', 'label': 'Keep the strike silent',
+          'outcome_text': ("Vortex never learns who broke the amplifier. Their own "
+                           "bounty offices pay out to a stranger in a dust cloak."),
+          'reward': {'credits': 30000}},
+     ]},
+    {'id': 'zerrok-verdict', 'after_wins': 195,
+     'prompt': ("Zerrok kneels in chains, the daughter who died stopping him not "
+                "yet buried. The tribes ask Jahntow for a verdict: spare the "
+                "traitor, or condemn him."),
+     'options': [
+         {'id': 'spare', 'label': 'Spare him - Ava died believing he could be more',
+          'outcome_text': ("Zerrok is led away alive, sentenced to rebuild what he "
+                           "burned. Across Zephyr, the tribes speak of the mercy "
+                           "shown at the fortress."),
+          'reward': {'rep_all': 1}},
+         {'id': 'condemn', 'label': "Condemn him for Ava's death",
+          'outcome_text': ("The verdict is carried out at dawn. Zerrok's hidden "
+                           "accounts are seized and turned over to the war chest."),
+          'reward': {'credits': 25000}},
+     ]},
 ]
