@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Context } from "../store/appContext";
 
@@ -12,10 +12,22 @@ const ActivityToast = () => {
   const { store } = useContext(Context);
   const latest = store.transactions[0];
   const [visibleMessage, setVisibleMessage] = useState(null);
+  const [visibleType, setVisibleType] = useState("info");
+  // The activity log is now persisted across reloads, so on first mount
+  // "latest" may already be yesterday's last transaction, not something
+  // that just happened. Skip toasting it once so a fresh page load
+  // doesn't pop a stale result; any genuinely new entry after that toasts
+  // normally.
+  const isFirstRun = useRef(true);
 
   useEffect(() => {
     if (!latest) return;
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      return;
+    }
     setVisibleMessage(latest.message);
+    setVisibleType(latest.type || "info");
     const timer = setTimeout(() => setVisibleMessage(null), VISIBLE_MS);
     return () => clearTimeout(timer);
     // Keyed on the transaction's id, not its text: two consecutive events
@@ -33,7 +45,10 @@ const ActivityToast = () => {
   // instead of the actual viewport, and disappears above the fold as soon
   // as the page is scrolled. A portal sidesteps that entirely.
   return createPortal(
-    <div className="activity-toast holo" role="status">
+    <div
+      className={`activity-toast holo tx-${visibleType}`}
+      role="status"
+    >
       {visibleMessage}
     </div>,
     document.body
