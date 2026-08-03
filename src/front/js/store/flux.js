@@ -1798,14 +1798,8 @@ const getState = ({ getStore, getActions, setStore }) => {
         })
           .then((data) => {
             applyPlayerResult(data);
-            const message = data.died
-              ? data.message
-              : withLowHealthWarning(data.message, data.player);
-            const type = data.died
-              ? "death"
-              : data.success
-              ? "mission-success"
-              : "mission-fail";
+            const message = withLowHealthWarning(data.message, data.player);
+            const type = data.success ? "mission-success" : "mission-fail";
             getActions().updateTransactions(message, type);
             return data;
           })
@@ -1819,14 +1813,8 @@ const getState = ({ getStore, getActions, setStore }) => {
         })
           .then((data) => {
             applyPlayerResult(data);
-            const message = data.died
-              ? data.message
-              : withLowHealthWarning(data.message, data.player);
-            const type = data.died
-              ? "death"
-              : data.success
-              ? "mission-success"
-              : "mission-fail";
+            const message = withLowHealthWarning(data.message, data.player);
+            const type = data.success ? "mission-success" : "mission-fail";
             getActions().updateTransactions(message, type);
             return data;
           })

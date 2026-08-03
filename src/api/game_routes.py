@@ -266,26 +266,11 @@ def mission_start():
     if err:
         return err
 
-    success, message, died = economy.resolve_mission(player, mission)
-
-    if died:
-        lost_credits = economy.apply_death_penalty(player)
-        db.session.commit()
-        return jsonify({
-            "success": False,
-            "died": True,
-            "message": (
-                f"{message} Your health dropped to zero - you were pulled out "
-                f"critically injured, losing {lost_credits} credits in the "
-                f"process. Level, equipment, and inventory are safe."
-            ),
-            "player": player.serialize(),
-        }), 200
+    success, message = economy.resolve_mission(player, mission)
 
     db.session.commit()
     return jsonify({
         "success": success,
-        "died": False,
         "message": message,
         "player": player.serialize(),
     }), 200
@@ -306,29 +291,14 @@ def story_mission_start():
     if err:
         return err
 
-    success, message, died = economy.resolve_mission(player, mission)
+    success, message = economy.resolve_mission(player, mission)
 
     if success:
         player.storyWins += 1
 
-    if died:
-        lost_credits = economy.apply_death_penalty(player)
-        db.session.commit()
-        return jsonify({
-            "success": False,
-            "died": True,
-            "message": (
-                f"{message} Your health dropped to zero - you were pulled out "
-                f"critically injured, losing {lost_credits} credits in the "
-                f"process. Level, equipment, and inventory are safe."
-            ),
-            "player": player.serialize(),
-        }), 200
-
     db.session.commit()
     return jsonify({
         "success": success,
-        "died": False,
         "message": message,
         "player": player.serialize(),
     }), 200

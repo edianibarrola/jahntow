@@ -43,57 +43,75 @@ const MissionsComponent = () => {
         <Accordion>
           {Object.entries(missionsData)
             .filter(([, missionData]) => missionData.Rank <= player.level)
-            .map(([missionName, missionData], index) => (
-              <Accordion.Item
-                className="holo"
-                eventKey={index.toString()}
-                key={missionName}
-              >
-                <Accordion.Header>{missionName}</Accordion.Header>
-                <Accordion.Body>
-                  <div className="col-12 pl-5 pr-5 text-center">
-                    <ul className="holo">
-                      <li>Reward: {missionData.Reward}</li>
-                      <li>
-                        Required Credits: {missionData["Required Credits"]}
-                      </li>
-                      <li>Required Energy: {missionData["Required Energy"]}</li>
-                      <li> Health Risk: -{missionData["Health Effect"]}</li>
-                      <li>
-                        Est. Success Chance:{" "}
-                        {previewSuccessChance(player, missionData)}%
-                      </li>
-                      <li>Required Equipment:</li>
-                      <ul>
-                        {Object.entries(missionData.requiredEquipment).map(
-                          ([equipment, quantity]) => {
-                            const owned =
-                              player.equipment[equipment]?.quantity || 0;
-                            const met = owned >= quantity;
-                            return (
-                              <li
-                                key={equipment}
-                                style={{ color: met ? "#8aff8a" : "#ff8a8a" }}
-                              >
-                                {equipment} x{quantity} (Owned: {owned})
-                              </li>
-                            );
-                          }
-                        )}
+            .map(([missionName, missionData], index) => {
+              // Mirrors the backend's own gate in player_meets_requirements:
+              // a failed attempt costs "Health Effect" health, so refuse to
+              // even offer a mission that could drop the player to 0.
+              const wouldSurvive =
+                player.health - missionData["Health Effect"] > 0;
+              return (
+                <Accordion.Item
+                  className="holo"
+                  eventKey={index.toString()}
+                  key={missionName}
+                >
+                  <Accordion.Header>{missionName}</Accordion.Header>
+                  <Accordion.Body>
+                    <div className="col-12 pl-5 pr-5 text-center">
+                      <ul className="holo">
+                        <li>Reward: {missionData.Reward}</li>
+                        <li>
+                          Required Credits: {missionData["Required Credits"]}
+                        </li>
+                        <li>
+                          Required Energy: {missionData["Required Energy"]}
+                        </li>
+                        <li style={{ color: wouldSurvive ? undefined : "#ff8a8a" }}>
+                          Health Risk: -{missionData["Health Effect"]}
+                        </li>
+                        <li>
+                          Est. Success Chance:{" "}
+                          {previewSuccessChance(player, missionData)}%
+                        </li>
+                        <li>Required Equipment:</li>
+                        <ul>
+                          {Object.entries(missionData.requiredEquipment).map(
+                            ([equipment, quantity]) => {
+                              const owned =
+                                player.equipment[equipment]?.quantity || 0;
+                              const met = owned >= quantity;
+                              return (
+                                <li
+                                  key={equipment}
+                                  style={{ color: met ? "#8aff8a" : "#ff8a8a" }}
+                                >
+                                  {equipment} x{quantity} (Owned: {owned})
+                                </li>
+                              );
+                            }
+                          )}
+                        </ul>
                       </ul>
-                    </ul>
-                    <button
-                      onClick={() => runMission(missionName)}
-                      disabled={runningMission !== null}
-                    >
-                      {runningMission === missionName
-                        ? "Running..."
-                        : "Run Mission"}
-                    </button>
-                  </div>
-                </Accordion.Body>
-              </Accordion.Item>
-            ))}
+                      {wouldSurvive ? (
+                        <button
+                          onClick={() => runMission(missionName)}
+                          disabled={runningMission !== null}
+                        >
+                          {runningMission === missionName
+                            ? "Running..."
+                            : "Run Mission"}
+                        </button>
+                      ) : (
+                        <p className="tx-error">
+                          Your health is too low to survive a failed attempt.
+                          Recover first.
+                        </p>
+                      )}
+                    </div>
+                  </Accordion.Body>
+                </Accordion.Item>
+              );
+            })}
         </Accordion>
       </div>
     </div>

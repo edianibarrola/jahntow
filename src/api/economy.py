@@ -25,16 +25,6 @@ XP_PER_LEVEL = 100
 # Credits granted per level gained.
 LEVEL_UP_CREDIT_BONUS = 1000
 
-# What happens when health hits 0. Previously this fully reset the player
-# (level, credits, equipment, inventory, properties, story progress - back
-# to a brand new account) instantly and without warning; a couple of bad
-# mission rolls in a row could erase real progress in seconds. Now it's a
-# real but survivable setback: a meaningful credit loss and a rough
-# recovery, but level/XP/gear/story progress are untouched.
-DEATH_CREDIT_PENALTY_PCT = 0.25
-DEATH_RECOVERY_HEALTH_PCT = 0.20
-MIN_RECOVERY_HEALTH = 10
-
 # Mission success chance scales with how prepared the player actually is,
 # instead of being a flat coin flip regardless of level or gear:
 #   - BASE_SUCCESS_CHANCE is what you get right at a mission's own rank
@@ -219,14 +209,20 @@ def apply_level_ups(player):
 
 
 def resolve_mission_equipment_loss(player, required_equipment):
-    """On mission failure, consume the required equipment quantities (if held)."""
+    """
+    On mission failure, consume 1 unit of each required equipment item
+    (down to zero), instead of wiping the full required quantity. Extra
+    units bought beyond what's required now act as a buffer: a player
+    carrying spares loses one but stays above the requirement, while one
+    holding exactly the minimum drops below it and has to restock.
+    """
     if not required_equipment:
         return
     equipment = dict(player.equipment or {})
-    for item_name, required_qty in required_equipment.items():
+    for item_name in required_equipment:
         held = equipment.get(item_name)
-        if held and held.get("quantity", 0) >= required_qty:
-            new_qty = held["quantity"] - required_qty
+        if held and held.get("quantity", 0) > 0:
+            new_qty = held["quantity"] - 1
             equipment[item_name] = {**held, "quantity": new_qty}
     player.equipment = equipment
 
@@ -241,6 +237,15 @@ def player_meets_requirements(player, mission):
         held_qty = equipment.get(item_name, {}).get("quantity", 0)
         if held_qty < required_qty:
             return False, f"Requires {required_qty}x {item_name}."
+    # A failed attempt costs health equal to the mission's "Health Effect".
+    # Refusing to start a mission that could drop health to 0 makes death
+    # unreachable, rather than letting it happen and then softening the
+    # penalty afterward.
+    if player.health - mission["Health Effect"] <= 0:
+        return False, (
+            "Your health is too low for this mission - a failed attempt "
+            "could leave you at 0. Recover first."
+        )
     return True, None
 
 
@@ -269,7 +274,7 @@ def resolve_mission(player, mission):
     """
     Runs a mission attempt to completion synchronously (the original
     client-side setTimeout delay was purely cosmetic UI pacing, not a real
-    async process) and returns (success, message, died).
+    async process) and returns (success, message).
 
     Reward handling fixes a bug in the original client logic: mission data
     defines a "Reward" value (e.g. 3000 credits for Asteroid Mining) that
@@ -277,6 +282,11 @@ def resolve_mission(player, mission):
     Here, "Required Credits" is the entry cost (spent whether the mission
     succeeds or fails) and "Reward" is the actual payout on success, which
     is what the mission data and its own successMessage text always implied.
+
+    Health can only ever drop here, from a failure's "Health Effect", and
+    player_meets_requirements already refuses to start a mission whose
+    Health Effect could take the player to 0 - so a mission attempt can
+    never end in death.
     """
     player.credits -= mission["Required Credits"]
     player.energy -= mission["Required Energy"]
@@ -297,17 +307,4 @@ def resolve_mission(player, mission):
     player.energy = max(0, player.energy)
     apply_level_ups(player)
 
-    died = player.health <= 0
-    return success, message, died
-
-
-def apply_death_penalty(player):
-    """
-    Called when a mission failure drops health to 0. Returns the number of
-    credits lost, so the caller can put it in the player-facing message.
-    """
-    lost_credits = round(player.credits * DEATH_CREDIT_PENALTY_PCT)
-    player.credits = max(0, player.credits - lost_credits)
-    player.health = max(MIN_RECOVERY_HEALTH, round(player.maxHealth * DEATH_RECOVERY_HEALTH_PCT))
-    player.energy = 0
-    return lost_credits
+    return success, message
