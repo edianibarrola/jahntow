@@ -94,27 +94,44 @@ const PropertiesComponent = () => {
                     .map((propertyName) => {
                       const property =
                         store.gameData.properties[categoryName][propertyName];
+                      // The stored value is the property's level (1-3);
+                      // upgrades re-use the same buy endpoint. Mirrors
+                      // PROPERTY_MAX_LEVEL / PROPERTY_UPGRADE_COST_MULTIPLIER
+                      // in src/api/game_routes.py, which is what actually
+                      // prices and caps upgrades.
+                      const level = player.properties[propertyName] || 0;
+                      const maxLevel = 3;
+                      const upgradeCost = Math.floor(
+                        property["Base Cost"] * Math.pow(1.25, level)
+                      );
+                      const label =
+                        level === 0
+                          ? `Purchase: ${propertyName} for (${property["Base Cost"]})`
+                          : level < maxLevel
+                          ? `Upgrade ${propertyName} to L${level + 1} for (${upgradeCost})`
+                          : `${propertyName} — Max level`;
                       return (
                         <div key={propertyName} className="property-container">
                           <button
                             onClick={() =>
                               handlePurchase(categoryName, propertyName)
                             }
+                            disabled={level >= maxLevel}
                           >
-                            {player.properties[propertyName] > 0
-                              ? `Owned: ${propertyName}`
-                              : `Purchase: ${propertyName} for (${property["Base Cost"]})`}
+                            {label}
                           </button>
                           <div className="property-details">
                             <p>
                               This property{" "}
-                              {player.properties[propertyName] > 0
-                                ? "generates"
-                                : "will generate"}{" "}
-                              {property["Generation Rate"]}{" "}
+                              {level > 0 ? "generates" : "will generate"}{" "}
+                              {level > 0
+                                ? property["Generation Rate"] * level
+                                : property["Generation Rate"]}{" "}
                               {property["Item Generated"]} apprx every 30
                               seconds
-                              {/* You can add more details here */}
+                              {level > 0 && (
+                                <span className="tx-property"> (level {level})</span>
+                              )}
                             </p>
                           </div>
                         </div>

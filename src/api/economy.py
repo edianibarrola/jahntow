@@ -188,6 +188,18 @@ MERCHANT_PRICE_FACTOR_MAX = 0.60  # 40% off
 MERCHANT_DURATION_MIN = timedelta(minutes=3)
 MERCHANT_DURATION_MAX = timedelta(minutes=6)
 
+# Equipment category perks: each unit held in these categories nudges one
+# mission variable, capped per category so a full locker is a loadout
+# decision rather than a stat explosion. Deliberately NOT touching success
+# chance - the odds breakdown shown on the mission card stays truthful.
+# per_unit/cap are fractions; "direction" is just for building UI text.
+EQUIPMENT_PERKS = {
+    "Research":   {"per_unit": 0.02, "cap": 0.10},  # +mission XP
+    "Transports": {"per_unit": 0.02, "cap": 0.10},  # -mission energy cost
+    "Armor":      {"per_unit": 0.05, "cap": 0.25},  # -failure health loss
+    "Ships":      {"per_unit": 0.02, "cap": 0.10},  # +mission credit reward
+}
+
 # Goals: lifetime stat counters, daily contracts, achievements.
 # Only these keys are persisted into Player.stats; other delta keys passed
 # to bump_stats (e.g. missions_won_at_level) still tick matching contracts
@@ -1027,7 +1039,7 @@ def apply_level_ups(player):
     return leveled_up
 
 
-def mission_xp_award(player, mission):
+def mission_xp_award(player, mission, perks=None):
     """
     Experience actually granted, with a falloff for badly over-levelled
     content. Flat XP made grinding a mission far below your level strictly
@@ -1035,10 +1047,39 @@ def mission_xp_award(player, mission):
     and failures refund far less energy than successes - so easy content
     won on both throughput axes at once. The falloff is the standard RPG
     answer: out-levelled missions stop being worth grinding.
+
+    The Research equipment perk boosts the final figure (capped, see
+    EQUIPMENT_PERKS).
     """
     over = max(0, player.level - mission["Rank"])
     multiplier = max(XP_FALLOFF_FLOOR, 1 - XP_FALLOFF_PER_LEVEL * over)
+    if perks:
+        multiplier *= 1 + perks.get("Research", 0)
     return max(1, round(mission["Experience"] * multiplier))
+
+
+def equipment_perks(player):
+    """
+    Fraction bonuses per perk category, computed from units held (capped).
+    E.g. {"Research": 0.06, "Transports": 0.0, ...}.
+    """
+    held = player.equipment or {}
+    perks = {}
+    for category, cfg in EQUIPMENT_PERKS.items():
+        items = game_data.EQUIPMENT.get(category, {})
+        units = sum(held.get(name, {}).get("quantity", 0) for name in items)
+        perks[category] = min(cfg["cap"], units * cfg["per_unit"])
+    return perks
+
+
+def mission_energy_cost(player, mission, perks=None):
+    """Effective energy cost after the Transports perk discount."""
+    cost = mission["Required Energy"]
+    if cost <= 0:
+        return 0
+    if perks is None:
+        perks = equipment_perks(player)
+    return max(1, round(cost * (1 - perks["Transports"])))
 
 
 def resolve_mission_equipment_loss(player, required_equipment):
@@ -1073,13 +1114,23 @@ def player_meets_requirements(player, mission):
         )
     if player.credits < mission["Required Credits"]:
         return False, "Not enough credits for this mission."
-    if player.energy < mission["Required Energy"]:
+    if player.energy < mission_energy_cost(player, mission):
         return False, "Not enough energy for this mission."
     equipment = player.equipment or {}
     for item_name, required_qty in (mission.get("requiredEquipment") or {}).items():
         held_qty = equipment.get(item_name, {}).get("quantity", 0)
         if held_qty < required_qty:
             return False, f"Requires {required_qty}x {item_name}."
+    # Supplies are market items consumed on every attempt (the fuel for the
+    # run), unlike equipment which is only lost on failure.
+    inventory = player.inventory or {}
+    for item_name, required_qty in (mission.get("requiredSupplies") or {}).items():
+        held_qty = inventory.get(item_name, {}).get("quantity", 0)
+        if held_qty < required_qty:
+            return False, (
+                f"Requires {required_qty}x {item_name} as supplies - "
+                "buy them on the Market."
+            )
     # A failed attempt costs health equal to the mission's "Health Effect".
     # Refusing to start a mission that could drop health to 0 makes death
     # unreachable, rather than letting it happen and then softening the
@@ -1148,8 +1199,29 @@ def resolve_mission(player, mission, mission_name=None):
     Returns (success, message, goal_entries) where goal_entries are any
     contract/achievement ActivityLogEntry rows created by bump_stats.
     """
+    perks = equipment_perks(player)
+
     player.credits -= mission["Required Credits"]
-    player.energy -= mission["Required Energy"]
+    player.energy -= mission_energy_cost(player, mission, perks)
+
+    # Supplies burn on every attempt, win or lose - they're the fuel, not
+    # a stake. This is the market->mission link (and credit sink) the
+    # economy was missing: gearing up for a big run now means shopping.
+    supplies = mission.get("requiredSupplies") or {}
+    supplies_note = ""
+    if supplies:
+        inventory = dict(player.inventory or {})
+        used = []
+        for item_name, qty in supplies.items():
+            entry = inventory.get(item_name, {})
+            remaining = round(entry.get("quantity", 0) - qty, 2)
+            if remaining > 0:
+                inventory[item_name] = {**entry, "quantity": remaining}
+            else:
+                inventory.pop(item_name, None)
+            used.append(f"{qty}x {item_name}")
+        player.inventory = inventory
+        supplies_note = f" (Supplies used: {', '.join(used)}.)"
 
     # A "Guaranteed" mission always succeeds. This exists so there is always
     # at least one action that cannot fail and costs no credits - otherwise
@@ -1159,8 +1231,12 @@ def resolve_mission(player, mission, mission_name=None):
     success = guaranteed or random.random() < mission_success_chance(player, mission)
 
     if success:
-        xp_awarded = mission_xp_award(player, mission)
+        xp_awarded = mission_xp_award(player, mission, perks)
         reward = mission["Reward"]
+        # Ships perk: a flat, non-random boost from investment - applied to
+        # the base before the luck-based multipliers stack on top.
+        if perks["Ships"] > 0:
+            reward = round(reward * (1 + perks["Ships"]))
         extras = []
 
         if not guaranteed:
@@ -1205,6 +1281,9 @@ def resolve_mission(player, mission, mission_name=None):
         refund = int(mission["Required Credits"] * MISSION_FAILURE_REFUND_PCT)
         player.credits += refund
         health_loss = mission["Health Effect"]
+        # Armor perk shaves failure damage before the narrow-escape halving.
+        if health_loss > 0 and perks["Armor"] > 0:
+            health_loss = max(1, round(health_loss * (1 - perks["Armor"])))
         narrow_escape = health_loss > 0 and random.random() < NARROW_ESCAPE_CHANCE
         if narrow_escape:
             health_loss -= health_loss // 2
@@ -1220,6 +1299,9 @@ def resolve_mission(player, mission, mission_name=None):
             )
         if refund > 0:
             message = f"{message} ({refund} credits recovered.)"
+
+    if supplies_note:
+        message = f"{message}{supplies_note}"
 
     player.energy = max(0, player.energy)
     apply_level_ups(player)

@@ -3,6 +3,7 @@ import { Context } from "../store/appContext";
 import HealthComponent from "./healthComponent";
 import EnergyComponent from "./energyComponent";
 import CreditsComponent from "./creditsComponent";
+import { EQUIPMENT_PERKS, perkBonusPct } from "../equipmentPerks";
 
 const EquipmentShopComponent = () => {
   const { store, actions } = useContext(Context);
@@ -105,6 +106,17 @@ const EquipmentShopComponent = () => {
                 <span className="tx-merchant ms-2">🛒 {offPct}% off!</span>
               )}
             </h4>
+            {EQUIPMENT_PERKS[category] && (
+              <p className="tx-info">
+                Perk: {EQUIPMENT_PERKS[category].sign}
+                {EQUIPMENT_PERKS[category].perUnit}%{" "}
+                {EQUIPMENT_PERKS[category].effect} per unit held (now{" "}
+                {EQUIPMENT_PERKS[category].sign}
+                {perkBonusPct(player, category, equipmentItems)}%, max{" "}
+                {EQUIPMENT_PERKS[category].sign}
+                {EQUIPMENT_PERKS[category].cap}%)
+              </p>
+            )}
             <ul>
               {Object.entries(items).map(([itemName, data]) => {
                 const owned = player.equipment[itemName]?.quantity || 0;
