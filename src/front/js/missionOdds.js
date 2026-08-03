@@ -11,6 +11,36 @@ const MAX_EQUIPMENT_BONUS = 0.2;
 const MAX_LEVEL_ADVANTAGE_BONUS = 0.22;
 const MIN_SUCCESS_CHANCE = 0.1;
 const MAX_SUCCESS_CHANCE = 0.92;
+// Mirrors economy.REP_* / BOSS_MAX_SUCCESS_CHANCE.
+const REP_TIER_1 = 10;
+const REP_TIER_2 = 25;
+const REP_STORY_BONUS_T1 = 0.03;
+const REP_STORY_BONUS_T2 = 0.05;
+const BOSS_MAX_SUCCESS_CHANCE = 0.75;
+const FACTIONS = [
+  "Xictlians",
+  "Luxorians",
+  "Xiaojians",
+  "Titans",
+  "Tuathans",
+  "Namarupians",
+];
+
+// Mirrors economy.story_faction_bonus: faction standing helps on that
+// faction's own story missions; United Front missions use the weakest of
+// the six bonds.
+const factionBonus = (player, mission) => {
+  const faction = mission.Faction;
+  if (!faction) return 0;
+  const rep = player.reputation || {};
+  const points =
+    faction === "United Front"
+      ? Math.min(...FACTIONS.map((f) => rep[f] || 0))
+      : rep[faction] || 0;
+  if (points >= REP_TIER_2) return REP_STORY_BONUS_T2;
+  if (points >= REP_TIER_1) return REP_STORY_BONUS_T1;
+  return 0;
+};
 
 // Broken out so the UI can explain *why* the odds are what they are - and
 // in particular show that the gear bonus is capped, which was previously
@@ -38,9 +68,18 @@ export const successBreakdown = (player, mission) => {
   );
   const equipmentBonus = Math.min(rawEquipmentBonus, MAX_EQUIPMENT_BONUS);
 
+  const repBonus = factionBonus(player, mission);
+  // The boss fight's odds are hard-capped server-side; mirror it so the
+  // preview never overstates.
+  const ceiling = mission.Boss
+    ? Math.min(MAX_SUCCESS_CHANCE, BOSS_MAX_SUCCESS_CHANCE)
+    : MAX_SUCCESS_CHANCE;
   const chance = Math.max(
     MIN_SUCCESS_CHANCE,
-    Math.min(MAX_SUCCESS_CHANCE, BASE_SUCCESS_CHANCE + advantageBonus + equipmentBonus)
+    Math.min(
+      ceiling,
+      BASE_SUCCESS_CHANCE + advantageBonus + equipmentBonus + repBonus
+    )
   );
 
   return {

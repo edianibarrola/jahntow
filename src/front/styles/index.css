@@ -462,6 +462,25 @@ input.form-control {
   opacity: 0.55;
 }
 
+/* Story: faction reputation + chapter-end choices. */
+.tx-rep {
+  color: #7ec8ff;
+}
+
+.tx-choice {
+  color: #e0c8ff;
+}
+
+.choice-card {
+  border: 1px solid #e0c8ff;
+}
+
+.choice-card button {
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
 /* Inline price sparkline in the market list. */
 .sparkline-wrap {
   display: inline-block;

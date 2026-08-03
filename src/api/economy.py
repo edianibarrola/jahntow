@@ -200,6 +200,49 @@ EQUIPMENT_PERKS = {
     "Ships":      {"per_unit": 0.02, "cap": 0.10},  # +mission credit reward
 }
 
+# Faction reputation: +1 with a story mission's faction per story win
+# (United Front finale missions grant +1 with all six tribes). Two tiers:
+# allies give trade discounts (equipment + Medlab, per-player transaction
+# prices - shared market prices are deliberately untouched) and a success
+# bonus on that faction's own story missions.
+REP_TIER_1 = 10
+REP_TIER_2 = 25
+REP_DISCOUNT_T1 = 0.05
+REP_DISCOUNT_T2 = 0.10
+REP_STORY_BONUS_T1 = 0.03
+REP_STORY_BONUS_T2 = 0.05
+
+# The boss fight ("Boss": True in the catalog) can never be out-prepared
+# past this ceiling - it's the climax, not a formality.
+BOSS_MAX_SUCCESS_CHANCE = 0.75
+
+# E.C.H.O. color commentary, appended to mission results on notable
+# moments. One line max per mission, and only sometimes - chatter that
+# fires every single time stops being chatter.
+ECHO_CHATTER_CHANCE = 0.5
+ECHO_CHATTER = {
+    "crit": [
+        "E.c.h.o.: Recalibrating my projections - that outcome was two sigmas better than my best case.",
+        "E.c.h.o.: I have recorded this run for training purposes. Mine, not yours.",
+        "E.c.h.o.: Statistically, that should not have gone that well. I am choosing not to question it.",
+    ],
+    "escape": [
+        "E.c.h.o.: My damage forecast was... pessimistic. Delighted to be wrong.",
+        "E.c.h.o.: That was closer than my sensors are comfortable admitting.",
+        "E.c.h.o.: Hull intact, gear intact, pride negotiable. I will take it.",
+    ],
+    "streak": [
+        "E.c.h.o.: Five in a row. I am beginning to suspect you practice when I am in sleep mode.",
+        "E.c.h.o.: This streak is skewing my baseline models. Keep going.",
+        "E.c.h.o.: At this win rate, Vortex actuaries are filing complaints about you by name.",
+    ],
+    "bounty": [
+        "E.c.h.o.: Bounty payout confirmed. I have already spent 3% of it on sensor upgrades. Apologies.",
+        "E.c.h.o.: The bounty board just marked your contract complete. Someone out there is very unhappy.",
+        "E.c.h.o.: Claimed. For the record, I flagged that bounty first.",
+    ],
+}
+
 # Goals: lifetime stat counters, daily contracts, achievements.
 # Only these keys are persisted into Player.stats; other delta keys passed
 # to bump_stats (e.g. missions_won_at_level) still tick matching contracts
@@ -1058,6 +1101,76 @@ def mission_xp_award(player, mission, perks=None):
     return max(1, round(mission["Experience"] * multiplier))
 
 
+def _rep_tier_value(points):
+    if points >= REP_TIER_2:
+        return 2
+    if points >= REP_TIER_1:
+        return 1
+    return 0
+
+
+def rep_discount(player):
+    """
+    Trade discount fraction from the player's best faction relationship -
+    allies anywhere get you better prices everywhere you shop.
+    """
+    rep = player.reputation or {}
+    best = max((_rep_tier_value(v) for v in rep.values()), default=0)
+    return {0: 0.0, 1: REP_DISCOUNT_T1, 2: REP_DISCOUNT_T2}[best]
+
+
+def story_faction_bonus(player, mission):
+    """
+    Success bonus on a faction's own story missions once the player's
+    standing with that faction reaches a tier. United Front missions use
+    the WEAKEST of the six bonds - the finale is only as strong as the
+    least-earned alliance.
+    """
+    faction = mission.get("Faction")
+    if not faction:
+        return 0.0
+    rep = player.reputation or {}
+    if faction == "United Front":
+        points = min((rep.get(f, 0) for f in game_data.FACTIONS), default=0)
+    else:
+        points = rep.get(faction, 0)
+    tier = _rep_tier_value(points)
+    return {0: 0.0, 1: REP_STORY_BONUS_T1, 2: REP_STORY_BONUS_T2}[tier]
+
+
+def grant_story_reputation(player, mission):
+    """
+    +1 rep with the mission's faction for a story win (all six for United
+    Front missions). Returns the ActivityLogEntry rows for any tier
+    crossings so they toast - silent +1s just show in the rep panel.
+    """
+    faction = mission.get("Faction")
+    if not faction:
+        return []
+    factions = game_data.FACTIONS if faction == "United Front" else [faction]
+    rep = dict(player.reputation or {})
+    entries = []
+    for name in factions:
+        before = rep.get(name, 0)
+        rep[name] = before + 1
+        if _rep_tier_value(rep[name]) > _rep_tier_value(before):
+            tier = _rep_tier_value(rep[name])
+            perks_text = (
+                f"{round(REP_DISCOUNT_T1 * 100)}% trade discount and better odds on their missions"
+                if tier == 1 else
+                f"{round(REP_DISCOUNT_T2 * 100)}% trade discount and even better odds on their missions"
+            )
+            entries.append(log_activity(
+                player,
+                f"🤝 The {name} now consider you a "
+                f"{'trusted ally' if tier == 2 else 'friend'} - {perks_text}.",
+                "rep",
+            ))
+    player.reputation = rep
+    db.session.add(player)
+    return entries
+
+
 def equipment_perks(player):
     """
     Fraction bonuses per perk category, computed from units held (capped).
@@ -1166,7 +1279,16 @@ def mission_success_chance(player, mission):
         equipment_bonus += extra * SUCCESS_PER_EXTRA_EQUIPMENT
     chance += min(equipment_bonus, MAX_EQUIPMENT_BONUS)
 
-    return max(MIN_SUCCESS_CHANCE, min(MAX_SUCCESS_CHANCE, chance))
+    # Faction standing helps on that faction's own story missions.
+    chance += story_faction_bonus(player, mission)
+
+    ceiling = MAX_SUCCESS_CHANCE
+    # The boss fight keeps an irreducible one-in-four risk no matter how
+    # over-prepared the player is.
+    if mission.get("Boss"):
+        ceiling = min(ceiling, BOSS_MAX_SUCCESS_CHANCE)
+
+    return max(MIN_SUCCESS_CHANCE, min(ceiling, chance))
 
 
 def resolve_mission(player, mission, mission_name=None):
@@ -1229,6 +1351,10 @@ def resolve_mission(player, mission, mission_name=None):
     # into the game at all.
     guaranteed = bool(mission.get("Guaranteed"))
     success = guaranteed or random.random() < mission_success_chance(player, mission)
+    # E.c.h.o. comments on at most one notable moment per mission, and
+    # only sometimes (ECHO_CHATTER_CHANCE) - priority crit > bounty >
+    # streak milestone > narrow escape.
+    chatter_trigger = None
 
     if success:
         xp_awarded = mission_xp_award(player, mission, perks)
@@ -1245,11 +1371,13 @@ def resolve_mission(player, mission, mission_name=None):
             if random.random() < CRIT_CHANCE:
                 reward *= CRIT_REWARD_MULTIPLIER
                 extras.append("💥 Critical success - double credits!")
+                chatter_trigger = "crit"
 
             bounty_multiplier = get_bounty_multiplier(mission_name) if mission_name else 1.0
             if bounty_multiplier > 1:
                 reward = round(reward * bounty_multiplier)
                 extras.append(f"⭐ Bounty claimed: {bounty_multiplier:g}x reward.")
+                chatter_trigger = chatter_trigger or "bounty"
 
             player.win_streak = (player.win_streak or 0) + 1
             streak_bonus = min(player.win_streak, WIN_STREAK_CAP) * WIN_STREAK_BONUS_PER_WIN
@@ -1258,6 +1386,8 @@ def resolve_mission(player, mission, mission_name=None):
                 extras.append(
                     f"🎯 Win streak {player.win_streak}: +{round(streak_bonus * 100)}% credits."
                 )
+            if player.win_streak in (5, 10):
+                chatter_trigger = chatter_trigger or "streak"
 
         player.credits += reward
         player.experience += xp_awarded
@@ -1297,11 +1427,15 @@ def resolve_mission(player, mission, mission_name=None):
                 f"{message} A narrow escape - gear intact, "
                 f"only {health_loss} health lost."
             )
+            chatter_trigger = "escape"
         if refund > 0:
             message = f"{message} ({refund} credits recovered.)"
 
     if supplies_note:
         message = f"{message}{supplies_note}"
+
+    if chatter_trigger and random.random() < ECHO_CHATTER_CHANCE:
+        message = f"{message} {random.choice(ECHO_CHATTER[chatter_trigger])}"
 
     player.energy = max(0, player.energy)
     apply_level_ups(player)
