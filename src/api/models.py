@@ -140,3 +140,28 @@ class MarketPrice(db.Model):
             "base_cost": self.base_cost,
             "current_cost": self.current_cost,
         }
+
+
+class GameEvent(db.Model):
+    """
+    A temporary, global price-spike or price-crash on one item category -
+    shared across every player, same as MarketPrice. The multiplier is
+    applied at read/transaction time (see economy.get_event_multiplier),
+    never by mutating MarketPrice.current_cost directly, so the event is
+    fully reversible by construction: once ends_at passes, it just stops
+    applying, nothing needs to be undone.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    kind = db.Column(db.String(20), nullable=False)  # "price_spike" | "price_crash"
+    category = db.Column(db.String(80), nullable=False)
+    multiplier = db.Column(db.Float, nullable=False)
+    starts_at = db.Column(db.DateTime(), default=utcnow)
+    ends_at = db.Column(db.DateTime(), nullable=False)
+
+    def serialize(self):
+        return {
+            "kind": self.kind,
+            "category": self.category,
+            "multiplier": self.multiplier,
+            "ends_at": self.ends_at.isoformat(),
+        }

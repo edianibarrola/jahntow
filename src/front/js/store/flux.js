@@ -1572,6 +1572,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       gameData: defaultGameData,
       marketPrices: [],
       leaderboard: [],
+      activeEvent: null,
       notifications: notificationsFromLocalStorage,
       transactions: transactionsFromLocalStorage,
       charactersImages: charactersImages,
@@ -1586,6 +1587,17 @@ const getState = ({ getStore, getActions, setStore }) => {
           })
           .catch((error) => {
             console.error("Error fetching game data:", error);
+          });
+      },
+
+      fetchActiveEvent: () => {
+        return apiRequest("/api/events/active", { auth: false })
+          .then((data) => {
+            setStore({ activeEvent: data.event });
+            return data.event;
+          })
+          .catch((error) => {
+            console.error("Error fetching active event:", error);
           });
       },
 

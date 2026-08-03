@@ -19,6 +19,7 @@ import PropertiesComponent from "../component/propertiesComponent";
 import InventoryUpgradeComponent from "../component/inventoryUpgradeComponent";
 import EquipmentStore from "../component/equipmentStore";
 import LeaderboardComponent from "../component/leaderboardComponent";
+import ActiveEventBanner from "../component/activeEventBanner";
 import ActivityToast from "../component/ActivityToast";
 
 import StoryMissions from "../component/storyMissions";
@@ -46,11 +47,13 @@ export const Home = () => {
     actions.fetchGameData();
     actions.fetchMarketPrices();
     actions.fetchLeaderboard();
+    actions.fetchActiveEvent();
 
     const intervalId = setInterval(() => {
       actions.fetchMarketPrices();
       actions.fetchPlayerData();
       actions.fetchLeaderboard();
+      actions.fetchActiveEvent();
     }, POLL_INTERVAL_MS);
 
     return () => clearInterval(intervalId);
@@ -69,6 +72,9 @@ export const Home = () => {
           <LevelComponent level={player.level} />
           <ExperienceComponent experience={player.experience} />
           <LoginStreakComponent streak={player.loginStreak} />
+        </div>
+        <div className="row pb-2 m-0 justify-content-around text-center">
+          <ActiveEventBanner event={store.activeEvent} />
         </div>
       </div>
       {/* <div className="row mb-2 holo sticky-top">
