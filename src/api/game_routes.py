@@ -66,6 +66,14 @@ def get_market_prices():
     return jsonify({"prices": economy.get_market_prices()}), 200
 
 
+@game_api.route('/events/active', methods=['GET'])
+def active_event():
+    """No auth required. The currently active category-wide price event,
+    if any - same shared/global concept as market prices."""
+    event = economy.apply_event_ticks()
+    return jsonify({"event": event.serialize() if event else None}), 200
+
+
 LEADERBOARD_SIZE = 20
 
 
@@ -111,7 +119,7 @@ def market_buy():
     if not price_row:
         return jsonify({"message": "unknown item"}), 404
 
-    total_cost = int(price_row.current_cost * quantity)
+    total_cost = int(economy.get_effective_price(price_row) * quantity)
     existing = (player.inventory or {}).get(item_name, {})
     current_qty = existing.get("quantity", 0)
     current_avg_cost = existing.get("avg_cost", 0)
@@ -163,7 +171,7 @@ def market_sell():
         return jsonify({"message": "unknown item"}), 404
 
     avg_cost = existing.get("avg_cost", 0)
-    total_value = int(price_row.current_cost * quantity)
+    total_value = int(economy.get_effective_price(price_row) * quantity)
     realized_profit = round(total_value - (avg_cost * quantity), 2)
 
     player.credits += total_value

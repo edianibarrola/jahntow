@@ -7,7 +7,7 @@ of trusting values sent by the client.
 import random
 from datetime import timedelta
 
-from api.models import db, MarketPrice, utcnow
+from api.models import db, MarketPrice, GameEvent, utcnow
 from api import game_data
 
 # How often shared market prices are allowed to drift, and by how much.
@@ -64,6 +64,17 @@ SUCCESS_PER_EXTRA_EQUIPMENT = 0.02
 MAX_EQUIPMENT_BONUS = 0.10
 MIN_SUCCESS_CHANCE = 0.15
 MAX_SUCCESS_CHANCE = 0.92
+
+# Random, temporary category-wide price events, layered on top of the
+# normal per-item random walk. Rolled lazily whenever prices are checked
+# (same request-driven pattern as everything else - no scheduler), gated
+# by a cooldown so events don't chain back to back.
+EVENT_CHECK_COOLDOWN = timedelta(minutes=10)
+EVENT_SPAWN_CHANCE = 0.15
+EVENT_DURATION_MIN = timedelta(minutes=5)
+EVENT_DURATION_MAX = timedelta(minutes=15)
+EVENT_MAGNITUDE_MIN = 0.20
+EVENT_MAGNITUDE_MAX = 0.40
 
 
 def _all_catalog_items():
@@ -122,14 +133,87 @@ def apply_price_ticks():
         db.session.commit()
 
 
+def apply_event_ticks():
+    """
+    Roll a new category-wide price event into existence if none is
+    currently active and the cooldown since the last one ended has
+    elapsed. Same lazy, request-driven pattern as apply_price_ticks -
+    called wherever prices are read, no scheduler. Returns the active
+    event (existing or freshly rolled), or None.
+    """
+    now = utcnow()
+    active = get_active_event()
+    if active:
+        return active
+
+    last = GameEvent.query.order_by(GameEvent.id.desc()).first()
+    if last and (now - last.ends_at) < EVENT_CHECK_COOLDOWN:
+        return None
+
+    if random.random() > EVENT_SPAWN_CHANCE:
+        return None
+
+    category = random.choice(list(game_data.ITEMS.keys()))
+    kind = random.choice(["price_spike", "price_crash"])
+    magnitude = random.uniform(EVENT_MAGNITUDE_MIN, EVENT_MAGNITUDE_MAX)
+    multiplier = 1 + magnitude if kind == "price_spike" else 1 - magnitude
+    duration = timedelta(seconds=random.uniform(
+        EVENT_DURATION_MIN.total_seconds(), EVENT_DURATION_MAX.total_seconds()
+    ))
+
+    event = GameEvent(
+        kind=kind,
+        category=category,
+        multiplier=multiplier,
+        starts_at=now,
+        ends_at=now + duration,
+    )
+    db.session.add(event)
+    db.session.commit()
+    return event
+
+
+def get_active_event():
+    return (
+        GameEvent.query
+        .filter(GameEvent.ends_at > utcnow())
+        .order_by(GameEvent.id.desc())
+        .first()
+    )
+
+
+def get_event_multiplier(category):
+    event = get_active_event()
+    if event and event.category == category:
+        return event.multiplier
+    return 1.0
+
+
+def get_effective_price(price_row):
+    """
+    The price actually charged/credited right now: the stored current_cost
+    adjusted by any active category-wide event. Computed at read time
+    rather than persisted into current_cost itself, so an event needs no
+    cleanup when it expires - the multiplier just stops applying.
+    """
+    return price_row.current_cost * get_event_multiplier(price_row.category)
+
+
 def get_market_prices():
     apply_price_ticks()
+    apply_event_ticks()
     rows = MarketPrice.query.order_by(MarketPrice.category, MarketPrice.item_name).all()
-    return [row.serialize() for row in rows]
+    results = []
+    for row in rows:
+        serialized = row.serialize()
+        serialized["current_cost"] = round(get_effective_price(row), 2)
+        results.append(serialized)
+    return results
 
 
 def get_item_price(item_name):
     apply_price_ticks()
+    apply_event_ticks()
     return MarketPrice.query.filter_by(item_name=item_name).first()
 
 
