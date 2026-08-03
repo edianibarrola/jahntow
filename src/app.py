@@ -23,6 +23,13 @@ static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
+# Flask's default jsonify() alphabetically sorts dict keys, which silently
+# scrambles the intentional ordering of game_data.py's catalogs (missions,
+# story missions, etc.) - story mission unlocking specifically depends on
+# insertion order (the Nth mission unlocks after 5*N wins) matching between
+# what the frontend receives and what the backend enforces.
+app.json.sort_keys = False
+
 
 jwt_secret = os.getenv("JWT_SECRET_KEY")
 if not jwt_secret:
