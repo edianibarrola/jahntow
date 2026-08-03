@@ -5,7 +5,6 @@ import os
 from datetime import timedelta
 from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
-from flask_swagger import swagger
 from flask_cors import CORS
 from api.extensions import limiter
 from api.utils import APIException, generate_sitemap
