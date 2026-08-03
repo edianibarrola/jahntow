@@ -70,11 +70,19 @@ const MissionsComponent = () => {
                       <li>Required Equipment:</li>
                       <ul>
                         {Object.entries(missionData.requiredEquipment).map(
-                          ([equipment, quantity]) => (
-                            <li key={equipment}>
-                              {equipment} x{quantity}
-                            </li>
-                          )
+                          ([equipment, quantity]) => {
+                            const owned =
+                              player.equipment[equipment]?.quantity || 0;
+                            const met = owned >= quantity;
+                            return (
+                              <li
+                                key={equipment}
+                                style={{ color: met ? "#8aff8a" : "#ff8a8a" }}
+                              >
+                                {equipment} x{quantity} (Owned: {owned})
+                              </li>
+                            );
+                          }
                         )}
                       </ul>
                     </ul>

@@ -1647,8 +1647,15 @@ const getState = ({ getStore, getActions, setStore }) => {
           body: { item_name: itemName, quantity },
         }).then((data) => {
           applyPlayerResult(data);
+          const profit = data.realized_profit || 0;
+          const profitText =
+            profit > 0
+              ? ` (+${profit} profit)`
+              : profit < 0
+              ? ` (${profit} loss)`
+              : "";
           getActions().updateTransactions(
-            `Sold ${quantity}x ${itemName} for ${data.total_value} credits.`
+            `Sold ${quantity}x ${itemName} for ${data.total_value} credits${profitText}.`
           );
           return data;
         });
