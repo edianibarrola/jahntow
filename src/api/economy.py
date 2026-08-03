@@ -174,13 +174,28 @@ def apply_passive_tick(player):
                 continue
             generated_item = property_data["Item Generated"]
             rate = property_data["Generation Rate"]
-            current_qty = inventory.get(generated_item, {}).get("quantity", 0)
+            existing_entry = inventory.get(generated_item, {})
+            current_qty = existing_entry.get("quantity", 0)
+            current_avg_cost = existing_entry.get("avg_cost", 0)
             if current_qty >= player.maxInventoryCount:
                 continue
             gained = owned_qty * rate * production_ticks
             new_qty = min(player.maxInventoryCount, current_qty + gained)
             if new_qty != current_qty:
-                inventory[generated_item] = {"quantity": new_qty}
+                # Passively generated units are free (already paid for via
+                # the property itself) - blend them into the average cost
+                # at $0 rather than overwriting the whole entry, which
+                # would silently wipe any avg_cost tracked from market
+                # purchases of the same item.
+                new_avg_cost = (
+                    round((current_avg_cost * current_qty) / new_qty, 2)
+                    if new_qty > 0
+                    else 0
+                )
+                inventory[generated_item] = {
+                    "quantity": new_qty,
+                    "avg_cost": new_avg_cost,
+                }
                 changed = True
         if changed:
             player.inventory = inventory
@@ -297,7 +312,13 @@ def resolve_mission(player, mission):
         player.credits += mission["Reward"]
         player.experience += mission["Experience"]
         player.energy = min(player.maxEnergy, player.energy + mission["Required Energy"] // 2)
-        message = mission["successMessage"]
+        # successMessage is a template ("...gaining {reward} credits and
+        # {experience} experience.") formatted from the mission's own live
+        # values, so the flavor text can never drift out of sync with what
+        # was actually awarded - including after any future rebalance.
+        message = mission["successMessage"].format(
+            reward=mission["Reward"], experience=mission["Experience"]
+        )
     else:
         player.health -= mission["Health Effect"]
         player.energy = min(player.maxEnergy, player.energy + mission["Required Energy"] // 8)
