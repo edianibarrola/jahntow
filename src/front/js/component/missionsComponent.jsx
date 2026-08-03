@@ -30,7 +30,7 @@ const MissionsComponent = () => {
       <div className="row  sticky-top holo text-center">
         <div className="row pt-2 pb-1 m-0 mb-1 justify-content-around text-center">
           <HealthComponent health={player.health} maxHealth={player.maxHealth} />
-          <EnergyComponent energy={player.energy} />
+          <EnergyComponent energy={player.energy} maxEnergy={player.maxEnergy} />
           <CreditsComponent credits={player.credits} />
         </div>
 
@@ -75,7 +75,7 @@ const MissionsComponent = () => {
                         </li>
                         <li>Required Equipment:</li>
                         <ul>
-                          {Object.entries(missionData.requiredEquipment).map(
+                          {Object.entries(missionData.requiredEquipment || {}).map(
                             ([equipment, quantity]) => {
                               const owned =
                                 player.equipment[equipment]?.quantity || 0;

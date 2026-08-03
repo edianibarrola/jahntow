@@ -3,10 +3,11 @@ import { Context } from "../store/appContext";
 import HealthComponent from "./healthComponent";
 import EnergyComponent from "./energyComponent";
 import CreditsComponent from "./creditsComponent";
+import PriceSparkline from "./priceSparkline";
 
 const ItemsComponent = () => {
   const { store, actions } = useContext(Context);
-  const { player, marketPrices, gameData } = store;
+  const { player, marketPrices, gameData, priceHistory } = store;
   const [quantities, setQuantities] = useState({});
   const [pendingItem, setPendingItem] = useState(null);
 
@@ -57,7 +58,7 @@ const ItemsComponent = () => {
       <div className="row mb-2 holo sticky-top">
         <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
           <HealthComponent health={player.health} maxHealth={player.maxHealth} />
-          <EnergyComponent energy={player.energy} />
+          <EnergyComponent energy={player.energy} maxEnergy={player.maxEnergy} />
           <CreditsComponent credits={player.credits} />
         </div>
 
@@ -72,7 +73,15 @@ const ItemsComponent = () => {
             <h4 className="text-center">{category}</h4>
             <ul>
               {items
-                .filter((item) => rankByItem[item.item_name] <= player.level)
+                // Items above the player's rank can't be *bought*, but they
+                // can still be held (properties generate them) - so they
+                // stay listed and sellable rather than becoming invisible
+                // and unsellable stock.
+                .filter(
+                  (item) =>
+                    rankByItem[item.item_name] <= player.level ||
+                    (player.inventory[item.item_name]?.quantity || 0) > 0
+                )
                 .map((item) => {
                   const holding = player.inventory[item.item_name];
                   const owned = holding?.quantity || 0;
@@ -84,6 +93,9 @@ const ItemsComponent = () => {
                         ) / 100
                       : 0;
                   const quantity = getQuantity(item.item_name);
+                  const locked = rankByItem[item.item_name] > player.level;
+                  const eventMultiplier = item.event_multiplier || 1;
+                  const hasEvent = Math.abs(eventMultiplier - 1) > 0.001;
                   return (
                     <li
                       key={item.item_name}
@@ -92,6 +104,20 @@ const ItemsComponent = () => {
                       <span>
                         {item.item_name}: Base: {item.base_cost.toFixed(0)},
                         Current Cost: {item.current_cost.toFixed(1)}
+                        {hasEvent && (
+                          <span className={eventMultiplier > 1 ? "tx-price-up" : "tx-price-down"}>
+                            {" "}⚡{eventMultiplier > 1 ? "+" : ""}
+                            {Math.round((eventMultiplier - 1) * 100)}%
+                          </span>
+                        )}
+                        {locked && (
+                          <span className="tx-info"> (rank {rankByItem[item.item_name]} — sell only)</span>
+                        )}
+                        {" "}
+                        <PriceSparkline
+                          series={priceHistory[item.item_name]}
+                          baseCost={item.base_cost}
+                        />
                         {owned > 0 && (
                           <>
                             {" "}
@@ -100,8 +126,8 @@ const ItemsComponent = () => {
                                 high-value items) - floor for display only,
                                 the true fractional amount is still what's
                                 compared against for selling. */}
-                            (Owned: {Math.floor(owned)}, Avg Cost:{" "}
-                            {avgCost.toFixed(2)},{" "}
+                            (Owned: {Math.floor(owned)}/{player.maxInventoryCount},
+                            Avg Cost: {avgCost.toFixed(2)},{" "}
                             <span
                               style={{
                                 color:
@@ -136,7 +162,11 @@ const ItemsComponent = () => {
                         <button
                           className="ms-2"
                           onClick={() => handleBuy(item.item_name)}
-                          disabled={pendingItem !== null}
+                          disabled={
+                            pendingItem !== null ||
+                            locked ||
+                            owned + quantity > player.maxInventoryCount
+                          }
                         >
                           {pendingItem === item.item_name ? "..." : "Buy"}
                         </button>

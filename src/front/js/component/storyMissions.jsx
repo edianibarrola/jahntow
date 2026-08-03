@@ -35,7 +35,7 @@ const StoryMissions = () => {
       <div className="row  sticky-top holo text-center">
         <div className="row pt-2 pb-1 m-0 mb-1 justify-content-around text-center">
           <HealthComponent health={player.health} maxHealth={player.maxHealth} />
-          <EnergyComponent energy={player.energy} />
+          <EnergyComponent energy={player.energy} maxEnergy={player.maxEnergy} />
           <CreditsComponent credits={player.credits} />
         </div>
         <div className="col-12 text-center">
@@ -87,7 +87,7 @@ const StoryMissions = () => {
                           <li>Required Equipment:</li>
                           <ul>
                             {Object.entries(
-                              storyMissionData.requiredEquipment
+                              storyMissionData.requiredEquipment || {}
                             ).map(([equipment, quantity]) => {
                               const owned =
                                 player.equipment[equipment]?.quantity || 0;

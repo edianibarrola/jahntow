@@ -4,16 +4,23 @@
 // how their level/gear affects their odds before committing - the server
 // recomputes and enforces the real chance at attempt time regardless of
 // what this shows.
-const BASE_SUCCESS_CHANCE = 0.5;
-const SUCCESS_PER_LEVEL_ADVANTAGE = 0.03;
+const BASE_SUCCESS_CHANCE = 0.42;
+const SUCCESS_PER_LEVEL_ADVANTAGE = 0.035;
 const SUCCESS_PER_EXTRA_EQUIPMENT = 0.02;
 const MAX_EQUIPMENT_BONUS = 0.1;
-const MIN_SUCCESS_CHANCE = 0.15;
+const MAX_LEVEL_ADVANTAGE_BONUS = 0.22;
+const MIN_SUCCESS_CHANCE = 0.1;
 const MAX_SUCCESS_CHANCE = 0.92;
 
 export const previewSuccessChance = (player, mission) => {
   const levelAdvantage = player.level - mission.Rank;
-  let chance = BASE_SUCCESS_CHANCE + levelAdvantage * SUCCESS_PER_LEVEL_ADVANTAGE;
+  // Only the upside is capped, matching the server: being under-levelled
+  // still hurts without limit.
+  const advantageBonus = Math.min(
+    levelAdvantage * SUCCESS_PER_LEVEL_ADVANTAGE,
+    MAX_LEVEL_ADVANTAGE_BONUS
+  );
+  let chance = BASE_SUCCESS_CHANCE + advantageBonus;
 
   const equipment = player.equipment || {};
   let equipmentBonus = 0;
