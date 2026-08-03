@@ -18,6 +18,7 @@ import HealthRecoveryComponent from "../component/healthRecoveryComponent";
 import PropertiesComponent from "../component/propertiesComponent";
 import InventoryUpgradeComponent from "../component/inventoryUpgradeComponent";
 import EquipmentStore from "../component/equipmentStore";
+import LeaderboardComponent from "../component/leaderboardComponent";
 import ActivityToast from "../component/ActivityToast";
 
 import StoryMissions from "../component/storyMissions";
@@ -44,10 +45,12 @@ export const Home = () => {
   useEffect(() => {
     actions.fetchGameData();
     actions.fetchMarketPrices();
+    actions.fetchLeaderboard();
 
     const intervalId = setInterval(() => {
       actions.fetchMarketPrices();
       actions.fetchPlayerData();
+      actions.fetchLeaderboard();
     }, POLL_INTERVAL_MS);
 
     return () => clearInterval(intervalId);
@@ -108,6 +111,10 @@ export const Home = () => {
             <div className="mb-5 text-center">
               <InventoryUpgradeComponent />
             </div>
+          </Tab>
+
+          <Tab eventKey="leaderboard" title="Leaderboard" className="ship">
+            <LeaderboardComponent />
           </Tab>
         </Tabs>
 

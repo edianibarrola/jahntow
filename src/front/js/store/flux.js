@@ -1571,6 +1571,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       player: player,
       gameData: defaultGameData,
       marketPrices: [],
+      leaderboard: [],
       notifications: notificationsFromLocalStorage,
       transactions: transactionsFromLocalStorage,
       charactersImages: charactersImages,
@@ -1585,6 +1586,17 @@ const getState = ({ getStore, getActions, setStore }) => {
           })
           .catch((error) => {
             console.error("Error fetching game data:", error);
+          });
+      },
+
+      fetchLeaderboard: () => {
+        return apiRequest("/api/leaderboard", { auth: false })
+          .then((data) => {
+            setStore({ leaderboard: data.players });
+            return data.players;
+          })
+          .catch((error) => {
+            console.error("Error fetching leaderboard:", error);
           });
       },
 
