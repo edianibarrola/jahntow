@@ -4,16 +4,18 @@ import { Context } from "../store/appContext";
 
 const VISIBLE_MS = 4500;
 
-// Shows the most recent entry from store.transactions as a brief toast,
-// regardless of which tab is active - so a mission/buy/sell/upgrade result
-// is always noticed immediately, not just visible if you happen to be on
-// the Market tab (where the full Recent Activity log lives).
+// Shows entries from store.transactions as brief toasts, regardless of
+// which tab is active - so a mission/buy/sell/upgrade result is always
+// noticed immediately, not just visible if you happen to be on the Market
+// tab (where the full Recent Activity log lives). Each toast is stacked
+// independently rather than overwriting whatever's already showing, so a
+// burst of events (a mission chain, several quick trades) can't hide an
+// earlier one - e.g. a failure toast getting silently replaced by an
+// unrelated success toast a moment later.
 const ActivityToast = () => {
   const { store } = useContext(Context);
   const latest = store.transactions[0];
-  const [visibleMessage, setVisibleMessage] = useState(null);
-  const [visibleType, setVisibleType] = useState("info");
-  const [extraCount, setExtraCount] = useState(0);
+  const [toasts, setToasts] = useState([]);
   // The activity log is now persisted across reloads, so on first mount
   // "latest" may already be yesterday's last transaction, not something
   // that just happened. Skip toasting it once so a fresh page load
@@ -23,11 +25,10 @@ const ActivityToast = () => {
   // to skip), the very first live transaction must still toast.
   const isFirstRun = useRef(true);
   const initialLatestId = useRef(latest?.id);
-  // True while a toast is on screen (timer hasn't fired yet). Read at the
-  // start of the next effect run to tell "a new event arrived while the
-  // last toast was still showing" apart from "the last toast had already
-  // faded" - the former bumps the +N counter instead of resetting it.
-  const isActiveRef = useRef(false);
+  // Each toast's dismiss timer is independent of the others, so pending
+  // timers are only ever torn down on unmount - not whenever a new
+  // transaction arrives, which would cancel earlier toasts' own removal.
+  const timersRef = useRef(new Map());
 
   useEffect(() => {
     if (!latest) return;
@@ -35,21 +36,27 @@ const ActivityToast = () => {
       isFirstRun.current = false;
       if (latest.id === initialLatestId.current) return;
     }
-    setExtraCount((prev) => (isActiveRef.current ? prev + 1 : 0));
-    setVisibleMessage(latest.message);
-    setVisibleType(latest.type || "info");
-    isActiveRef.current = true;
+    const toast = { id: latest.id, message: latest.message, type: latest.type || "info" };
+    setToasts((prev) => [...prev, toast]);
     const timer = setTimeout(() => {
-      setVisibleMessage(null);
-      isActiveRef.current = false;
+      setToasts((prev) => prev.filter((t) => t.id !== toast.id));
+      timersRef.current.delete(toast.id);
     }, VISIBLE_MS);
-    return () => clearTimeout(timer);
+    timersRef.current.set(toast.id, timer);
     // Keyed on the transaction's id, not its text: two consecutive events
     // with identical wording (e.g. failing the same mission twice) still
-    // need to reset the timer and re-show the toast each time.
+    // need their own toast and timer each time.
   }, [latest?.id]);
 
-  if (!visibleMessage) return null;
+  useEffect(() => {
+    const timers = timersRef.current;
+    return () => {
+      timers.forEach(clearTimeout);
+      timers.clear();
+    };
+  }, []);
+
+  if (toasts.length === 0) return null;
 
   // Rendered via a portal straight onto <body>, bypassing the component
   // tree entirely. Several ancestors (e.g. .holobg's backdrop-filter) use
@@ -59,14 +66,12 @@ const ActivityToast = () => {
   // instead of the actual viewport, and disappears above the fold as soon
   // as the page is scrolled. A portal sidesteps that entirely.
   return createPortal(
-    <div
-      className={`activity-toast holo tx-${visibleType}`}
-      role="status"
-    >
-      {visibleMessage}
-      {extraCount > 0 && (
-        <span className="activity-toast-count">+{extraCount} more</span>
-      )}
+    <div className="activity-toast-stack">
+      {toasts.map((t) => (
+        <div key={t.id} className={`activity-toast holo tx-${t.type}`} role="status">
+          {t.message}
+        </div>
+      ))}
     </div>,
     document.body
   );
