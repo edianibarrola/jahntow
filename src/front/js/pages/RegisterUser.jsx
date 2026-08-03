@@ -12,7 +12,7 @@ export function RegisterUser() {
     <div className="container vh-100 charactersand">
       <h3>Register User</h3>
       {store.authError && (
-        <div className="alert alert-danger">Authentication Error</div>
+        <div className="alert alert-danger">{store.authError}</div>
       )}
 
       <div className=" mb-3">
