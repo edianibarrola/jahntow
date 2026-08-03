@@ -21,6 +21,7 @@ import InventoryUpgradeComponent from "../component/inventoryUpgradeComponent";
 import EquipmentStore from "../component/equipmentStore";
 import InventoryComponent from "../component/inventoryComponent";
 import LeaderboardComponent from "../component/leaderboardComponent";
+import GoalsComponent from "../component/goalsComponent";
 import ActiveEventBanner from "../component/activeEventBanner";
 import ActivityToast from "../component/ActivityToast";
 
@@ -136,6 +137,10 @@ export const Home = () => {
             <div className="mb-5 text-center">
               <InventoryUpgradeComponent />
             </div>
+          </Tab>
+
+          <Tab eventKey="goals" title="Goals" className="ship">
+            <GoalsComponent />
           </Tab>
 
           <Tab eventKey="leaderboard" title="Leaderboard" className="ship">

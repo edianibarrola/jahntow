@@ -42,6 +42,9 @@ const LeaderboardComponent = () => {
               >
                 <span>
                   #{index + 1} {entry.name}
+                  {entry.title && (
+                    <span className="tx-achievement"> "{entry.title}"</span>
+                  )}
                   {isMe(entry) && <span className="tx-sell"> (you)</span>}
                   {entry.prestigeLevel > 0 && (
                     <span className="tx-prestige"> (Prestige {entry.prestigeLevel})</span>

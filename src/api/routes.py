@@ -127,6 +127,13 @@ def get_player_info():
     streak_bonus = economy.apply_login_streak(player)
 
     activities = []
+    # New UTC day -> fresh daily contracts (same lazy pattern as the login
+    # streak above). Also sweep achievements here so thresholds that moved
+    # outside bump_stats (credit trickle, level from any source) still land.
+    contract_entry = economy.ensure_daily_contracts(player)
+    if contract_entry:
+        activities.append(contract_entry)
+    activities.extend(economy.check_achievements(player))
     if streak_bonus > 0:
         activities.append(economy.log_activity(
             player,

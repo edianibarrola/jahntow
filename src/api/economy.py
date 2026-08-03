@@ -188,6 +188,13 @@ MERCHANT_PRICE_FACTOR_MAX = 0.60  # 40% off
 MERCHANT_DURATION_MIN = timedelta(minutes=3)
 MERCHANT_DURATION_MAX = timedelta(minutes=6)
 
+# Goals: lifetime stat counters, daily contracts, achievements.
+# Only these keys are persisted into Player.stats; other delta keys passed
+# to bump_stats (e.g. missions_won_at_level) still tick matching contracts
+# but aren't stored - they're contextual, not lifetime counters.
+TRACKED_STATS = ("missions_won", "missions_failed", "items_sold", "credits_earned")
+DAILY_CONTRACT_COUNT = 3
+
 # Server-side activity log / notification feed. Player history is capped
 # at ACTIVITY_LOG_CAP entries (only ever trimmed on read, rows aren't
 # deleted), global price-notification feed at NOTIFICATION_LOG_CAP.
@@ -830,6 +837,170 @@ def apply_login_streak(player):
     return bonus
 
 
+def _achievement_metric_value(player, metric):
+    if metric.startswith("stat:"):
+        return (player.stats or {}).get(metric[len("stat:"):], 0)
+    if metric == "level":
+        return player.level
+    if metric == "prestige":
+        return player.prestige_level or 0
+    if metric == "storyWins":
+        return player.storyWins or 0
+    if metric == "credits":
+        return player.credits
+    if metric == "properties_owned":
+        return len(player.properties or {})
+    return 0
+
+
+def check_achievements(player):
+    """
+    Earn any achievement whose threshold the player now meets. Cheap: only
+    unearned entries are evaluated, against values already on the player
+    row. Returns the ActivityLogEntry rows created so endpoints can
+    surface them as toasts.
+    """
+    earned = list(player.achievements or [])
+    earned_set = set(earned)
+    entries = []
+    for ach in game_data.ACHIEVEMENTS:
+        if ach["id"] in earned_set:
+            continue
+        if _achievement_metric_value(player, ach["metric"]) >= ach["threshold"]:
+            earned.append(ach["id"])
+            title_note = f" Title earned: {ach['title']}." if ach.get("title") else ""
+            entries.append(log_activity(
+                player,
+                f"🏆 Achievement unlocked: {ach['name']} - {ach['desc']}.{title_note}",
+                "achievement",
+            ))
+    if entries:
+        player.achievements = earned
+        db.session.add(player)
+    return entries
+
+
+def _tick_contracts(player, deltas):
+    """
+    Advance today's contracts by whatever just happened (contract kinds
+    are bump_stats delta keys). A completed contract auto-grants its
+    reward immediately - no claim button between the player and the payoff.
+    """
+    data = player.daily_contracts or {}
+    contracts = data.get("contracts") or []
+    if not contracts:
+        return []
+    entries = []
+    changed = False
+    updated = []
+    for contract in contracts:
+        c = dict(contract)
+        delta = deltas.get(c.get("kind"), 0)
+        if not c.get("done") and delta:
+            c["progress"] = min(c["goal"], c.get("progress", 0) + delta)
+            changed = True
+            if c["progress"] >= c["goal"]:
+                c["done"] = True
+                player.credits += c["reward"]
+                entries.append(log_activity(
+                    player,
+                    f"📋 Contract complete: {c['desc']}. +{c['reward']} credits!",
+                    "contract",
+                ))
+        updated.append(c)
+    if changed:
+        player.daily_contracts = {**data, "contracts": updated}
+    return entries
+
+
+def bump_stats(player, best_win_streak=None, **deltas):
+    """
+    The single funnel for "something countable happened": persists lifetime
+    counters (TRACKED_STATS only), ticks matching daily contracts, then
+    runs the achievement check. best_win_streak is a high-water mark, not
+    a delta. Returns every ActivityLogEntry created (contract completions,
+    achievements) so the calling endpoint can include them in its response
+    for immediate toasting instead of waiting for the next activity poll.
+    """
+    stats = dict(player.stats or {})
+    for key, delta in deltas.items():
+        if key in TRACKED_STATS and delta:
+            stats[key] = stats.get(key, 0) + delta
+    if best_win_streak is not None:
+        stats["best_win_streak"] = max(stats.get("best_win_streak", 0), best_win_streak)
+    player.stats = stats
+
+    entries = _tick_contracts(player, deltas)
+    entries.extend(check_achievements(player))
+    db.session.add(player)
+    return entries
+
+
+def _reference_mission_reward(level):
+    """
+    The biggest non-Guaranteed mission reward available at this level -
+    the yardstick contract goals and rewards scale against, so a day's
+    contracts stay worth roughly 2-3 at-level missions at any level.
+    """
+    rewards = [
+        m["Reward"] for m in game_data.MISSIONS.values()
+        if not m.get("Guaranteed") and m["Rank"] <= level
+    ]
+    return max(rewards) if rewards else 500
+
+
+def ensure_daily_contracts(player):
+    """
+    (Re)generate the player's three daily contracts the first time they're
+    seen on a new UTC calendar day. Called from GET /player beside
+    apply_login_streak - same lazy pattern, no scheduler. Seeded by
+    (player id, date) so a refresh can never reroll the day's contracts.
+    Returns the "new contracts" ActivityLogEntry, or None if today's
+    contracts already exist.
+    """
+    today = utcnow().date().isoformat()
+    data = player.daily_contracts or {}
+    if data.get("date") == today:
+        return None
+
+    rng = random.Random(f"{player.id}:{today}")
+    base = _reference_mission_reward(player.level)
+
+    def credits_of(fraction, floor=50):
+        return max(floor, int(round(base * fraction / 10.0)) * 10)
+
+    win_goal = rng.randint(3, 6)
+    sell_goal = rng.randint(5, 12)
+    earn_goal = credits_of(1.5, floor=200)
+    pool = [
+        {"id": "win-missions", "kind": "missions_won",
+         "desc": f"Win {win_goal} missions", "goal": win_goal,
+         "reward": credits_of(0.9)},
+        {"id": "sell-items", "kind": "items_sold",
+         "desc": f"Sell {sell_goal} items on the market", "goal": sell_goal,
+         "reward": credits_of(0.6)},
+        {"id": "earn-credits", "kind": "credits_earned",
+         "desc": f"Earn {earn_goal} credits", "goal": earn_goal,
+         "reward": credits_of(0.8)},
+        {"id": "win-at-level", "kind": "missions_won_at_level",
+         "desc": "Win a mission at or above your level", "goal": 1,
+         "reward": credits_of(1.0)},
+        {"id": "use-recovery", "kind": "recovery_items_used",
+         "desc": "Use a Medlab recovery item", "goal": 1,
+         "reward": credits_of(0.4)},
+    ]
+    contracts = rng.sample(pool, DAILY_CONTRACT_COUNT)
+    for contract in contracts:
+        contract["progress"] = 0
+        contract["done"] = False
+
+    player.daily_contracts = {"date": today, "contracts": contracts}
+    db.session.add(player)
+    return log_activity(
+        player, "📋 New daily contracts are in - check the Goals tab.", "contract"
+    )
+
+
 def apply_level_ups(player):
     """
     Grant every level the player's current experience qualifies for (fixes
@@ -973,6 +1144,9 @@ def resolve_mission(player, mission, mission_name=None):
     player_meets_requirements already refuses to start a mission whose
     Health Effect could take the player to 0 - so a mission attempt can
     never end in death.
+
+    Returns (success, message, goal_entries) where goal_entries are any
+    contract/achievement ActivityLogEntry rows created by bump_stats.
     """
     player.credits -= mission["Required Credits"]
     player.energy -= mission["Required Energy"]
@@ -1050,6 +1224,20 @@ def resolve_mission(player, mission, mission_name=None):
     player.energy = max(0, player.energy)
     apply_level_ups(player)
 
+    # Stats/contracts/achievements run after apply_level_ups so a level
+    # gained by this very mission already counts for level-threshold
+    # achievements.
+    if success:
+        goal_entries = bump_stats(
+            player,
+            missions_won=1,
+            credits_earned=reward,
+            missions_won_at_level=1 if mission["Rank"] >= player.level else 0,
+            best_win_streak=player.win_streak or 0,
+        )
+    else:
+        goal_entries = bump_stats(player, missions_failed=1)
+
     # Appended here (rather than client-side after the fact) since health
     # only ever drops from this one source - the server already knows the
     # real post-mutation value, so the stored/toasted message is complete
@@ -1057,4 +1245,4 @@ def resolve_mission(player, mission, mission_name=None):
     if player.maxHealth and player.health / player.maxHealth <= LOW_HEALTH_RATIO:
         message = f"{message} ⚠ Health critically low ({player.health}/{player.maxHealth})."
 
-    return success, message
+    return success, message, goal_entries

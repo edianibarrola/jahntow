@@ -1498,6 +1498,11 @@ const getState = ({ getStore, getActions, setStore }) => {
       setStore({ player: data.player });
       updatePlayerInLocalStorage(data.player);
     }
+    // Contract completions and achievements earned as a side effect of the
+    // action (server includes them as extra_activities) toast right away -
+    // every action handler funnels through here, so this one hook covers
+    // missions, sells, recovery, and property buys alike.
+    (data?.extra_activities || []).forEach(appendActivityEntry);
     return data;
   };
 

@@ -76,6 +76,10 @@ def get_game_data():
         "properties": game_data.PROPERTIES,
         "equipment": game_data.EQUIPMENT,
         "healthRecoveryItems": game_data.HEALTH_RECOVERY_ITEMS,
+        # Static achievement catalog - the client needs it to render the
+        # locked entries in the Goals tab (the player row only carries
+        # earned ids).
+        "achievements": game_data.ACHIEVEMENTS,
     }), 200
 
 
@@ -249,6 +253,9 @@ def market_sell():
         f"Sold {quantity}x {item_name} for {total_value} credits{profit_text}.",
         "sell",
     )
+    goal_entries = economy.bump_stats(
+        player, items_sold=quantity, credits_earned=total_value
+    )
 
     db.session.commit()
     return jsonify({
@@ -256,6 +263,7 @@ def market_sell():
         "total_value": total_value,
         "realized_profit": realized_profit,
         "activity": activity.serialize(),
+        "extra_activities": [e.serialize() for e in goal_entries],
     }), 200
 
 
@@ -405,11 +413,15 @@ def properties_buy():
     activity = economy.log_activity(
         player, f"Purchased {property_name} for {cost} credits.", "property"
     )
+    # No stat counter moves on a property buy, but properties_owned
+    # achievements need a check right when the count changes.
+    goal_entries = economy.check_achievements(player)
     db.session.commit()
     return jsonify({
         "player": player.serialize(),
         "total_cost": cost,
         "activity": activity.serialize(),
+        "extra_activities": [e.serialize() for e in goal_entries],
     }), 200
 
 
@@ -449,7 +461,9 @@ def mission_start():
     if err:
         return err
 
-    success, message = economy.resolve_mission(player, mission, mission_name=mission_name)
+    success, message, goal_entries = economy.resolve_mission(
+        player, mission, mission_name=mission_name
+    )
     activity = economy.log_activity(
         player, message, "mission-success" if success else "mission-fail"
     )
@@ -460,6 +474,10 @@ def mission_start():
         "message": message,
         "player": player.serialize(),
         "activity": activity.serialize(),
+        # Contract completions / achievements earned by this very action -
+        # included so they toast immediately instead of arriving as
+        # "historical" entries on the next activity poll.
+        "extra_activities": [e.serialize() for e in goal_entries],
     }), 200
 
 
@@ -478,10 +496,13 @@ def story_mission_start():
     if err:
         return err
 
-    success, message = economy.resolve_mission(player, mission)
+    success, message, goal_entries = economy.resolve_mission(player, mission)
 
     if success:
         player.storyWins += 1
+        # storyWins moved after resolve_mission's own bump_stats ran, so
+        # re-check achievements for story-win thresholds crossed just now.
+        goal_entries.extend(economy.check_achievements(player))
 
     activity = economy.log_activity(
         player, message, "mission-success" if success else "mission-fail"
@@ -493,6 +514,7 @@ def story_mission_start():
         "message": message,
         "player": player.serialize(),
         "activity": activity.serialize(),
+        "extra_activities": [e.serialize() for e in goal_entries],
     }), 200
 
 
@@ -553,12 +575,14 @@ def recovery_use():
         f"Used {item_name}: +{health_gain} health, +{energy_gain} energy.",
         "recovery",
     )
+    goal_entries = economy.bump_stats(player, recovery_items_used=1)
     db.session.commit()
     return jsonify({
         "player": player.serialize(),
         "health_gained": health_gain,
         "energy_gained": energy_gain,
         "activity": activity.serialize(),
+        "extra_activities": [e.serialize() for e in goal_entries],
     }), 200
 
 
@@ -639,6 +663,12 @@ def _reset_player(player):
     player.win_streak = 0
     player.item_cooldowns = {}
     player.upgrade_steps = {}
+    # A full reset wipes meta-progression too - unlike prestige, which
+    # deliberately keeps stats/achievements (they're the meta-progression
+    # axis a rebirth is supposed to preserve).
+    player.stats = {}
+    player.daily_contracts = {}
+    player.achievements = []
     _reset_tick_clocks(player)
 
 
