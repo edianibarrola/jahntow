@@ -6,6 +6,7 @@ import { Tabs, Tab } from "react-bootstrap";
 import LevelComponent from "../component/levelComponent";
 import ExperienceComponent from "../component/experienceComponent";
 import LoginStreakComponent from "../component/loginStreakComponent";
+import WinStreakComponent from "../component/winStreakComponent";
 import HealthComponent from "../component/healthComponent";
 import EnergyComponent from "../component/energyComponent";
 import CreditsComponent from "../component/creditsComponent";
@@ -85,6 +86,7 @@ export const Home = () => {
           <LevelComponent level={player.level} />
           <ExperienceComponent experience={player.experience} xpForNextLevel={player.xpForNextLevel} />
           <LoginStreakComponent streak={player.loginStreak} />
+          <WinStreakComponent streak={player.winStreak} />
         </div>
         <div className="row pb-2 m-0 justify-content-around text-center">
           <ActiveEventBanner events={store.activeEvents} />

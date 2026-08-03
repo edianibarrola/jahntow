@@ -8,9 +8,13 @@ import { successBreakdown } from "../missionOdds";
 
 const MissionsComponent = () => {
   const { store, actions } = useContext(Context);
-  const { player, gameData } = store;
+  const { player, gameData, activeEvents } = store;
   const missionsData = gameData.missions || {};
   const [runningMission, setRunningMission] = useState(null);
+
+  // Mirrors economy.WIN_STREAK_BONUS_PER_WIN / WIN_STREAK_CAP - the server
+  // is what actually applies the bonus.
+  const streakBonusPct = Math.min(player.winStreak || 0, 10) * 3;
 
   const runMission = (missionName) => {
     setRunningMission(missionName);
@@ -35,7 +39,15 @@ const MissionsComponent = () => {
         </div>
 
         <div className="col-12  text-center  ">
-          <p>Missions:</p>
+          <p>
+            Missions:
+            {streakBonusPct > 0 && (
+              <span className="tx-streak">
+                {" "}🎯 Win streak {player.winStreak} — +{streakBonusPct}% credits
+                on your next win
+              </span>
+            )}
+          </p>
         </div>
       </div>
 
@@ -55,17 +67,32 @@ const MissionsComponent = () => {
               const bailoutLocked =
                 missionData.AvailableBelowCredits != null &&
                 player.credits >= missionData.AvailableBelowCredits;
+              // An active bounty event targets one mission by name and
+              // multiplies its credit reward server-side.
+              const bounty = (activeEvents || []).find(
+                (e) => e.kind === "bounty" && e.category === missionName
+              );
               return (
                 <Accordion.Item
                   className="holo"
                   eventKey={index.toString()}
                   key={missionName}
                 >
-                  <Accordion.Header>{missionName}</Accordion.Header>
+                  <Accordion.Header>
+                    {missionName}
+                    {bounty && <span className="tx-bounty ms-2">⭐ Bounty!</span>}
+                  </Accordion.Header>
                   <Accordion.Body>
                     <div className="col-12 pl-5 pr-5 text-center">
                       <ul className="holo">
-                        <li>Reward: {missionData.Reward}</li>
+                        <li>
+                          Reward: {missionData.Reward}
+                          {bounty && (
+                            <span className="tx-bounty">
+                              {" "}⭐ Bounty active: {bounty.multiplier}x!
+                            </span>
+                          )}
+                        </li>
                         <li>
                           Required Credits: {missionData["Required Credits"]}
                         </li>

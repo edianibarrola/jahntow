@@ -99,6 +99,11 @@ class Player(db.Model):
     last_login_at = db.Column(db.DateTime(), nullable=True)
     login_streak = db.Column(db.Integer, default=0)
 
+    # Consecutive successful (non-Guaranteed) mission wins. Feeds a small
+    # credit-reward bonus per win (see economy.WIN_STREAK_*) and resets to
+    # zero on any mission failure.
+    win_streak = db.Column(db.Integer, default=0)
+
     # Number of times this player has rebirthed at max level. Each prestige
     # permanently raises the maxHealth/maxEnergy/maxInventoryCount floor
     # (see economy.PRESTIGE_MAX_*_BONUS) in exchange for resetting level,
@@ -133,6 +138,7 @@ class Player(db.Model):
             "maxEquipmentCount": self.maxEquipmentCount,
             "storyWins": self.storyWins,
             "loginStreak": self.login_streak,
+            "winStreak": self.win_streak or 0,
             "prestigeLevel": self.prestige_level,
             # The level-up threshold lives server-side; without sending it
             # the client literally cannot show progress toward the next level.
