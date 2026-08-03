@@ -2,6 +2,8 @@ from datetime import datetime, timezone
 
 from flask_sqlalchemy import SQLAlchemy
 
+from api import game_data
+
 db = SQLAlchemy()
 
 # XP needed to reach the next level = level * XP_PER_LEVEL. Lives here
@@ -104,6 +106,22 @@ class Player(db.Model):
     # zero on any mission failure.
     win_streak = db.Column(db.Integer, default=0)
 
+    # Lifetime counters (missions_won, missions_failed, items_sold,
+    # credits_earned, best_win_streak) maintained by economy.bump_stats.
+    # They feed daily-contract progress and achievement thresholds, and
+    # deliberately survive prestige - they're meta-progression.
+    stats = db.Column(db.JSON, default=dict)
+
+    # Today's contracts: {"date": "YYYY-MM-DD", "contracts": [...]}.
+    # Regenerated lazily by economy.ensure_daily_contracts the first time
+    # the player is seen on a new UTC day - same request-driven pattern as
+    # the login streak, no scheduler.
+    daily_contracts = db.Column(db.JSON, default=dict)
+
+    # Earned achievement ids, in the order they were earned (which is what
+    # makes "newest title" well-defined). Catalog in game_data.ACHIEVEMENTS.
+    achievements = db.Column(db.JSON, default=list)
+
     # Number of times this player has rebirthed at max level. Each prestige
     # permanently raises the maxHealth/maxEnergy/maxInventoryCount floor
     # (see economy.PRESTIGE_MAX_*_BONUS) in exchange for resetting level,
@@ -119,6 +137,20 @@ class Player(db.Model):
 
     def __repr__(self):
         return f'<Player {self.name}>'
+
+    def current_title(self):
+        """
+        The most recently earned achievement title (or None). Earn order is
+        the order of the achievements list, so a newly earned title
+        replaces an older one rather than the catalog deciding.
+        """
+        by_id = {a["id"]: a for a in game_data.ACHIEVEMENTS}
+        title = None
+        for ach_id in (self.achievements or []):
+            ach = by_id.get(ach_id)
+            if ach and ach.get("title"):
+                title = ach["title"]
+        return title
 
     def serialize(self):
         return {
@@ -147,6 +179,10 @@ class Player(db.Model):
             # surfacing a 429 error after the player clicks.
             "itemCooldowns": self.item_cooldowns or {},
             "upgradeSteps": self.upgrade_steps or {},
+            "stats": self.stats or {},
+            "dailyContracts": self.daily_contracts or {},
+            "achievements": self.achievements or [],
+            "title": self.current_title(),
         }
 
     def serialize_public(self):
@@ -160,6 +196,9 @@ class Player(db.Model):
             "credits": self.credits,
             "storyWins": self.storyWins,
             "prestigeLevel": self.prestige_level,
+            # Achievement titles are earned flair - exactly the kind of
+            # thing a leaderboard exists to show off.
+            "title": self.current_title(),
         }
 
 
