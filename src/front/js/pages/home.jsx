@@ -20,15 +20,8 @@ import EquipmentStore from "../component/equipmentStore";
 
 import StoryMissions from "../component/storyMissions";
 
-import rigoImage from "../../img/rigo-baby.jpg";
 import "../../styles/home.css";
 import { Navigate, useNavigate } from "react-router-dom";
-
-// HOW TO REDEPLOY TO GH <PAGES>
-// change env to = /textgame
-// npm install gh-pages -g
-// then run these two together
-// npm run build && gh-pages -d public
 
 // i like this for the Ai Robot that helps the player (tells him about the missions)
 //  Eco-conscious Consultant for Habitability Optimization:

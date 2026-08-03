@@ -5,7 +5,6 @@ import { BackendURL } from "./component/backendURL";
 import { Context } from "./store/appContext";
 
 import { Home } from "./pages/home";
-import { Single } from "./pages/single";
 import injectContext from "./store/appContext";
 
 import { Navbar } from "./component/navbar";
@@ -60,8 +59,7 @@ const RouteManager = () => {
           }
           path="/dashboard"
         />
-        <Route element={<Single />} path="/single/:theid" />
-        <Route element={<h1>Not found!</h1>} />
+        <Route element={<h1>Not found!</h1>} path="*" />
       </Routes>
     </>
   );
@@ -70,8 +68,11 @@ const RouteManager = () => {
 const Layout = () => {
   const basename = process.env.BASENAME || "";
 
-  if (!process.env.BACKEND_URL || process.env.BACKEND_URL === "")
-    return <BackendURL />;
+  // In dev, frontend (:3000) and backend (:3001) are different origins, so
+  // BACKEND_URL must be set explicitly. In production the Flask app serves
+  // both from the same origin, so an unset BACKEND_URL is fine - it just
+  // means "fetch relative to this origin" (see flux.js's fetch calls).
+  if (import.meta.env.DEV && !process.env.BACKEND_URL) return <BackendURL />;
 
   return (
     <div>

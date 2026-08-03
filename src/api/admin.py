@@ -66,7 +66,7 @@ def setup_admin(app):
             return
 
     admin = Admin(
-        app, name='4Geeks Admin',
+        app, name='Jahntow Admin',
         theme=Bootstrap4Theme(swatch='cerulean'),
         index_view=SecureAdminIndexView(),
     )

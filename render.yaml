@@ -11,9 +11,14 @@ services:
     plan: free # optional; defaults to starter
     numInstances: 1
     envVars:
-      - key: BASENAME # Imported from Heroku app
+      - key: BASENAME
         value: /
-      - key: FLASK_APP # Imported from Heroku app
+      # Left empty on purpose: Flask serves both the API and the built
+      # frontend from this same service, so relative fetches ("/api/...")
+      # already reach the right place without a full URL.
+      - key: BACKEND_URL
+        value: ""
+      - key: FLASK_APP
         value: src/app.py
       - key: FLASK_ENV
         value: production

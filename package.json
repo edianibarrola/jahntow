@@ -1,31 +1,16 @@
 {
-	"name": "react-hello-webapp",
+	"name": "jahntow",
 	"engines": {
 		"node": "20.x"
 	},
-	"version": "1.0.1",
-	"description": "",
-	"main": "index.js",
+	"version": "1.0.0",
+	"description": "Jahntow - a browser-based space trading/mission game",
+	"private": true,
 	"type": "module",
 	"scripts": {
 		"start": "vite",
 		"build": "vite build"
 	},
-	"author": {
-		"name": "Alejandro Sanchez",
-		"url": "http://alesanchezr.com/"
-	},
-	"contributors": [
-		{
-			"name": "Alejandro Sanchez",
-			"url": "http://alesanchezr.com/"
-		},
-		{
-			"name": "Ignacio Cordoba",
-			"url": "http://github.com/nachovz"
-		}
-	],
-	"license": "ISC",
 	"devDependencies": {
 		"@vitejs/plugin-react": "^6.0.5",
 		"eslint": "^8.4.0",

@@ -1,81 +1,115 @@
-# WebApp boilerplate with React JS and Flask API
+# Jahntow
 
-Build web applications using React.js for the front end and python/flask for your backend API.
+A browser-based space trading / mission game. React (Vite) frontend, Flask
+backend. The backend is the single source of truth for all game state —
+prices, mission outcomes, XP, inventory, etc. are all computed and validated
+server-side; the frontend just renders whatever the API returns and sends
+player intent ("buy 2x Alpha Core", "start Asteroid Mining").
 
-- Documentation can be found here: https://start.4geeksacademy.com/starters/react-flask
-- Here is a video on [how to use this template](https://www.loom.com/share/f37c6838b3f1496c95111e515e83dd9b)
-- Integrated with Pipenv for package managing.
-- Fast deployment to heroku [in just a few steps here](https://start.4geeksacademy.com/backend/deploy-heroku-posgres).
-- Use of .env file.
-- SQLAlchemy integration for database abstraction.
+## Project layout
 
-### 1) Installation:
+```
+src/api/           Flask backend
+  models.py           Player/User/MarketPrice DB models
+  routes.py            auth + basic player endpoints
+  game_routes.py        market/mission/equipment/property/recovery/upgrade endpoints
+  economy.py            all game math: prices, mission resolution, levelling, passive regen
+  game_data.py           the item/mission/property/equipment/recovery catalog (single source
+                          of truth - the frontend fetches this via GET /api/game-data)
+  admin.py               Flask-Admin panel (see below)
+src/front/js/       React app (Vite)
+  store/flux.js         narrative/flavor content (story arc text) + local UI state helpers
+  pages/, component/    UI
+migrations/         Alembic DB migrations
+```
 
-> If you use Github Codespaces (recommended) or Gitpod this template will already come with Python, Node and the Posgres Database installed. If you are working locally make sure to install Python 3.10, Node 
+## Prerequisites
 
-It is recomended to install the backend first, make sure you have Python 3.8, Pipenv and a database engine (Posgress recomended)
+- Python 3.10+
+- Node 20.x
+- [pipenv](https://pipenv.pypa.io/) (`pip install pipenv`)
 
-1. Install the python packages: `$ pipenv install`
-2. Create a .env file based on the .env.example: `$ cp .env.example .env`
-3. Install your database engine and create your database, depending on your database you have to create a DATABASE_URL variable with one of the possible values, make sure you replace the valudes with your database information:
-
-| Engine    | DATABASE_URL                                        |
-| --------- | --------------------------------------------------- |
-| SQLite    | sqlite:////test.db                                  |
-| MySQL     | mysql://username:password@localhost:port/example    |
-| Postgress | postgres://username:password@localhost:5432/example |
-
-4. Migrate the migrations: `$ pipenv run migrate` (skip if you have not made changes to the models on the `./src/api/models.py`)
-5. Run the migrations: `$ pipenv run upgrade`
-6. Run the application: `$ pipenv run start`
-
-> Note: Codespaces users can connect to psql by typing: `psql -h localhost -U gitpod example`
-
-### Undo a migration
-
-You are also able to undo a migration by running
+## Local setup
 
 ```sh
-$ pipenv run downgrade
+cp .env.example .env
 ```
 
-### Backend Populate Table Users
+Open `.env` and fill in what you need (see the table below - the defaults
+work for local development against SQLite with no changes needed except
+`BACKEND_URL`).
 
-To insert test users in the database execute the following command:
+**Backend:**
 
 ```sh
-$ flask insert-test-users 5
+pipenv install
+pipenv run upgrade       # applies DB migrations
+pipenv run start         # runs Flask on http://localhost:3001
 ```
 
-And you will see the following message:
+**Frontend** (separate terminal):
 
-```
-  Creating test users
-  test_user1@test.com created.
-  test_user2@test.com created.
-  test_user3@test.com created.
-  test_user4@test.com created.
-  test_user5@test.com created.
-  Users created successfully!
+```sh
+npm install
+npm start                # runs the Vite dev server on http://localhost:3000
 ```
 
-### **Important note for the database and the data inside it**
+Open `http://localhost:3000`.
 
-Every Github codespace environment will have **its own database**, so if you're working with more people eveyone will have a different database and different records inside it. This data **will be lost**, so don't spend too much time manually creating records for testing, instead, you can automate adding records to your database by editing ```commands.py``` file inside ```/src/api``` folder. Edit line 32 function ```insert_test_data``` to insert the data according to your model (use the function ```insert_test_users``` above as an example). Then, all you need to do is run ```pipenv run insert-test-data```.
+## Environment variables
 
-### Front-End Manual Installation:
+| Variable | Required | Default / notes |
+| --- | --- | --- |
+| `DATABASE_URL` | No | Falls back to a local SQLite file if unset. Format for Postgres: `postgres://user:pass@host:5432/dbname` |
+| `FLASK_APP` | Yes | `src/app.py` |
+| `FLASK_ENV` | Yes | `development` locally (relaxes CORS, enables the `/` sitemap page, allows insecure default secrets). Use `production` everywhere else. |
+| `FLASK_APP_KEY` | Only in production | Flask session secret key. Generate with `python -c "import secrets; print(secrets.token_hex(32))"` |
+| `JWT_SECRET_KEY` | Only in production | Signs auth tokens. Generate the same way as above. **Never reuse the same value for both.** |
+| `CORS_ORIGINS` | No | Comma-separated allowed frontend origins in production, e.g. `https://yourdomain.com`. Not needed locally (dev mode allows any origin); not needed in production either if the frontend is served by this same Flask app, which is the default setup. |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | No | Set both to enable the `/admin` panel (HTTP Basic Auth). Leave unset to keep it fully disabled - recommended unless you actually need it. |
+| `BASENAME` | Yes | Frontend router base path. `/` unless you're deploying under a subpath. |
+| `BACKEND_URL` | Only in dev | Where the frontend should send API requests, e.g. `http://localhost:3001` locally, where the frontend (:3000) and backend (:3001) are different origins. In production leave it empty - Flask serves both the API and the built frontend from one origin, so relative requests already reach the right place. |
 
--   Make sure you are using node version 14+ and that you have already successfully installed and runned the backend.
+In production, `FLASK_APP_KEY` and `JWT_SECRET_KEY` are **required** - the
+app refuses to start without them rather than falling back to an insecure
+default.
 
-1. Install the packages: `$ npm install`
-2. Start coding! start the webpack dev server `$ npm run start`
+## Database migrations
 
-## Publish your website!
+```sh
+pipenv run migrate     # generate a new migration after changing src/api/models.py
+pipenv run upgrade      # apply migrations
+pipenv run downgrade    # roll back one migration
+```
 
-This boilerplate it's 100% read to deploy with Render.com and Heroku in a matter of minutes. Please read the [official documentation about it](https://start.4geeksacademy.com/deploy).
+## Seeding test accounts
 
-### Contributors
+```sh
+pipenv run flask insert-test-users 5
+```
 
-This template was built as part of the 4Geeks Academy [Coding Bootcamp](https://4geeksacademy.com/us/coding-bootcamp) by [Alejandro Sanchez](https://twitter.com/alesanchezr) and many other contributors. Find out more about our [Full Stack Developer Course](https://4geeksacademy.com/us/coding-bootcamps/part-time-full-stack-developer), and [Data Science Bootcamp](https://4geeksacademy.com/us/coding-bootcamps/datascience-machine-learning).
+Creates 5 accounts (`test_user1@test.com` .. `test_user5@test.com`,
+password `123456`), each with a playable default `Player`.
 
-You can find other templates and resources like this at the [school github page](https://github.com/4geeksacademy/).
+## Admin panel
+
+`/admin` (Flask-Admin) lets you view/edit `User` and `Player` rows directly.
+It's disabled unless both `ADMIN_USERNAME` and `ADMIN_PASSWORD` are set, and
+even then it's gated behind HTTP Basic Auth. Password hashes are never
+exposed through it.
+
+## Production build
+
+```sh
+npm run build
+```
+
+Outputs to `public/`, which the Flask app serves directly (no separate
+static host needed). This is what `render_build.sh` runs on deploy.
+
+## Deploying
+
+`render.yaml` targets [Render](https://render.com). `FLASK_APP_KEY`,
+`JWT_SECRET_KEY`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and `CORS_ORIGINS` are
+marked `sync: false` there on purpose - set them in the Render dashboard
+rather than committing them.
