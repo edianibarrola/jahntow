@@ -10,11 +10,7 @@ const HealthRecoveryComponent = () => {
   const healthRecoveryItems = gameData.healthRecoveryItems || {};
 
   const handleButtonClick = (item) => {
-    actions.useRecoveryItem(item).then((data) => {
-      alert(
-        `You used ${item}! Your health increased by ${data.health_gained} and you gained ${data.energy_gained} energy.`
-      );
-    }).catch((error) => {
+    actions.useRecoveryItem(item).catch((error) => {
       if (error.status === 429) {
         alert(
           `This item is on cooldown. Try again in ${Math.ceil(

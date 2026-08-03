@@ -10,24 +10,19 @@ const StoryMissions = () => {
   const { store, actions } = useContext(Context);
   const { player, gameData } = store;
   const storyMissionsData = gameData.storyMissions || {};
-  const [selectedStoryMission, setSelectedStoryMission] = useState("");
   const [isStoryMissionRunning, setStoryMissionRunning] = useState(false);
 
-  const startStoryMission = () => {
-    if (!selectedStoryMission) {
-      alert("Please select a StoryMission!");
-      return;
-    }
+  const availableMissionIndex = Math.floor(player.storyWins / 5);
+  const availableMissionName =
+    Object.keys(storyMissionsData)[availableMissionIndex];
 
+  const runStoryMission = (missionName) => {
     setStoryMissionRunning(true);
     actions
-      .startStoryMission(selectedStoryMission)
+      .startStoryMission(missionName)
       .then((data) => {
-        alert(data.message);
         if (data.died) {
           alert("Game Over - your progress has been reset.");
-        } else if (data.success) {
-          setSelectedStoryMission("");
         }
       })
       .catch((error) => {
@@ -38,10 +33,6 @@ const StoryMissions = () => {
       });
   };
 
-  const availableMissionIndex = Math.floor(player.storyWins / 5);
-  const availableMissionName =
-    Object.keys(storyMissionsData)[availableMissionIndex];
-
   return (
     <div className="row mb-3">
       <div className="row  sticky-top holo text-center">
@@ -51,23 +42,7 @@ const StoryMissions = () => {
           <CreditsComponent credits={player.credits} />
         </div>
         <div className="col-12 text-center">
-          <select
-            onChange={(e) => setSelectedStoryMission(e.target.value)}
-            value={selectedStoryMission}
-            disabled={isStoryMissionRunning}
-          >
-            <option value="">Select a story mission</option>
-            {availableMissionName && (
-              <option key={availableMissionName} value={availableMissionName}>
-                {availableMissionName}
-              </option>
-            )}
-          </select>
-          <button onClick={startStoryMission} disabled={isStoryMissionRunning}>
-            {isStoryMissionRunning
-              ? "Story Mission in progress..."
-              : "Start Mission"}
-          </button>
+          <p>Story Missions:</p>
         </div>
       </div>
       <div className="row mb-5">
@@ -80,6 +55,7 @@ const StoryMissions = () => {
                 player.storyWins >= startWin &&
                 player.storyWins < startWin + 5
               ) {
+                const isRunnable = storyMissionName === availableMissionName;
                 return (
                   <Accordion.Item
                     className="holo"
@@ -113,6 +89,21 @@ const StoryMissions = () => {
                             ))}
                           </ul>
                         </ul>
+                        {isRunnable ? (
+                          <button
+                            onClick={() => runStoryMission(storyMissionName)}
+                            disabled={isStoryMissionRunning}
+                          >
+                            {isStoryMissionRunning
+                              ? "Running..."
+                              : "Run Mission"}
+                          </button>
+                        ) : (
+                          <p className="text-muted">
+                            Complete "{availableMissionName}" first to unlock
+                            this one.
+                          </p>
+                        )}
                       </div>
                     </Accordion.Body>
                   </Accordion.Item>

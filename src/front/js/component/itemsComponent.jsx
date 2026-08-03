@@ -7,8 +7,8 @@ import CreditsComponent from "./creditsComponent";
 const ItemsComponent = () => {
   const { store, actions } = useContext(Context);
   const { player, marketPrices, gameData } = store;
-  const [selectedItem, setSelectedItem] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const [quantities, setQuantities] = useState({});
+  const [pendingItem, setPendingItem] = useState(null);
 
   const rankByItem = {};
   Object.values(gameData.items || {}).forEach((items) => {
@@ -25,32 +25,35 @@ const ItemsComponent = () => {
     pricesByCategory[price.category].push(price);
   });
 
-  const handleBuy = () => {
-    if (!selectedItem) {
-      alert("Please select an item!");
-      return;
-    }
-    actions.buyItem(selectedItem, quantity).catch((error) => {
-      alert(error.message || "Failed to buy item");
-    });
+  const getQuantity = (itemName) => quantities[itemName] || 1;
+
+  const adjustQuantity = (itemName, delta) => {
+    setQuantities((prev) => ({
+      ...prev,
+      [itemName]: Math.max(1, (prev[itemName] || 1) + delta),
+    }));
   };
 
-  const handleSell = () => {
-    if (!selectedItem) {
-      alert("Please select an item!");
-      return;
-    }
-    actions.sellItem(selectedItem, quantity).catch((error) => {
-      alert(error.message || "Failed to sell item");
-    });
+  const handleBuy = (itemName) => {
+    const quantity = getQuantity(itemName);
+    setPendingItem(itemName);
+    actions
+      .buyItem(itemName, quantity)
+      .catch((error) => {
+        alert(error.message || "Failed to buy item");
+      })
+      .finally(() => setPendingItem(null));
   };
 
-  const handleSelectChange = (e) => {
-    setSelectedItem(e.target.value);
-  };
-
-  const handleQuantityChange = (e) => {
-    setQuantity(parseInt(e.target.value, 10));
+  const handleSell = (itemName) => {
+    const quantity = getQuantity(itemName);
+    setPendingItem(itemName);
+    actions
+      .sellItem(itemName, quantity)
+      .catch((error) => {
+        alert(error.message || "Failed to sell item");
+      })
+      .finally(() => setPendingItem(null));
   };
 
   return (
@@ -63,29 +66,7 @@ const ItemsComponent = () => {
         </div>
 
         <div className="col-12  text-center  ">
-          <p>Buy/Sell an item:</p>
-        </div>
-        <div className="col-12  text-center ">
-          <select onChange={handleSelectChange} value={selectedItem}>
-            <option value="">Select an item</option>
-            {Object.entries(pricesByCategory).map(([category, items]) =>
-              items
-                .filter((item) => rankByItem[item.item_name] <= player.level)
-                .map((item) => (
-                  <option key={item.item_name} value={item.item_name}>
-                    {item.item_name}
-                  </option>
-                ))
-            )}
-          </select>
-          <input
-            type="number"
-            min="1"
-            value={quantity}
-            onChange={handleQuantityChange}
-          />
-          <button onClick={handleBuy}>Buy</button>
-          <button onClick={handleSell}>Sell</button>
+          <p>Market:</p>
         </div>
       </div>
 
@@ -96,22 +77,52 @@ const ItemsComponent = () => {
             <ul>
               {items
                 .filter((item) => rankByItem[item.item_name] <= player.level)
-                .map((item) => (
-                  <li
-                    key={item.item_name}
-                    className="d-flex justify-content-between align-items-center"
-                  >
-                    <span>
-                      {item.item_name}: Base: {item.base_cost.toFixed(0)},
-                      Current Cost: {item.current_cost.toFixed(1)}
-                    </span>
-                    {player.inventory[item.item_name] && (
-                      <span className="ml-auto">
-                        Qty: {player.inventory[item.item_name].quantity}
+                .map((item) => {
+                  const owned =
+                    player.inventory[item.item_name]?.quantity || 0;
+                  const quantity = getQuantity(item.item_name);
+                  return (
+                    <li
+                      key={item.item_name}
+                      className="d-flex justify-content-between align-items-center flex-wrap"
+                    >
+                      <span>
+                        {item.item_name}: Base: {item.base_cost.toFixed(0)},
+                        Current Cost: {item.current_cost.toFixed(1)}
+                        {owned > 0 && <> (Owned: {owned})</>}
                       </span>
-                    )}
-                  </li>
-                ))}
+                      <span className="d-flex align-items-center">
+                        <button
+                          onClick={() => adjustQuantity(item.item_name, -1)}
+                          disabled={pendingItem === item.item_name}
+                        >
+                          -
+                        </button>
+                        <span className="mx-2">{quantity}</span>
+                        <button
+                          onClick={() => adjustQuantity(item.item_name, 1)}
+                          disabled={pendingItem === item.item_name}
+                        >
+                          +
+                        </button>
+                        <button
+                          className="ms-2"
+                          onClick={() => handleBuy(item.item_name)}
+                          disabled={pendingItem !== null}
+                        >
+                          {pendingItem === item.item_name ? "..." : "Buy"}
+                        </button>
+                        <button
+                          className="ms-1"
+                          onClick={() => handleSell(item.item_name)}
+                          disabled={pendingItem !== null || owned < quantity}
+                        >
+                          Sell
+                        </button>
+                      </span>
+                    </li>
+                  );
+                })}
             </ul>
           </div>
         ))}

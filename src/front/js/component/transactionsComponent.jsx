@@ -8,7 +8,7 @@ const TransactionsComponent = () => {
   return (
     <div className="scrolldiv holo">
       <div>
-        <h2>Recent Transactions:</h2>
+        <h2>Recent Activity:</h2>
         <ul>
           {transactions.map((transaction, i) => (
             <li key={i}>{transaction}</li>

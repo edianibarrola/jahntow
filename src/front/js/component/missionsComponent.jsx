@@ -9,20 +9,13 @@ const MissionsComponent = () => {
   const { store, actions } = useContext(Context);
   const { player, gameData } = store;
   const missionsData = gameData.missions || {};
-  const [selectedMission, setSelectedMission] = useState("");
-  const [isMissionRunning, setMissionRunning] = useState(false);
+  const [runningMission, setRunningMission] = useState(null);
 
-  const startMission = () => {
-    if (!selectedMission) {
-      alert("Please select a mission!");
-      return;
-    }
-
-    setMissionRunning(true);
+  const runMission = (missionName) => {
+    setRunningMission(missionName);
     actions
-      .startMission(selectedMission)
+      .startMission(missionName)
       .then((data) => {
-        alert(data.message);
         if (data.died) {
           alert("Game Over - your progress has been reset.");
         }
@@ -31,7 +24,7 @@ const MissionsComponent = () => {
         alert(error.message || "Failed to start mission");
       })
       .finally(() => {
-        setMissionRunning(false);
+        setRunningMission(null);
       });
   };
 
@@ -46,26 +39,6 @@ const MissionsComponent = () => {
 
         <div className="col-12  text-center  ">
           <p>Missions:</p>
-        </div>
-        <div className="col-12  text-center">
-          <select
-            onChange={(e) => setSelectedMission(e.target.value)}
-            value={selectedMission}
-          >
-            <option value="">Select a mission</option>
-            {Object.keys(missionsData)
-              .filter(
-                (missionName) => missionsData[missionName].Rank <= player.level
-              )
-              .map((missionName) => (
-                <option key={missionName} value={missionName}>
-                  {missionName}
-                </option>
-              ))}
-          </select>
-          <button onClick={startMission} disabled={isMissionRunning}>
-            {isMissionRunning ? "Mission in progress..." : "Start Mission"}
-          </button>
         </div>
       </div>
 
@@ -100,6 +73,14 @@ const MissionsComponent = () => {
                         )}
                       </ul>
                     </ul>
+                    <button
+                      onClick={() => runMission(missionName)}
+                      disabled={runningMission !== null}
+                    >
+                      {runningMission === missionName
+                        ? "Running..."
+                        : "Run Mission"}
+                    </button>
                   </div>
                 </Accordion.Body>
               </Accordion.Item>

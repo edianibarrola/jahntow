@@ -8,18 +8,27 @@ const EquipmentShopComponent = () => {
   const { store, actions } = useContext(Context);
   const { player, gameData } = store;
   const equipmentItems = gameData.equipment || {};
-  const [selectedItem, setSelectedItem] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const [quantities, setQuantities] = useState({});
+  const [buyingItem, setBuyingItem] = useState(null);
 
-  const handleBuyEquipment = () => {
-    if (!selectedItem) {
-      alert("Please select an equipment!");
-      return;
-    }
+  const getQuantity = (itemName) => quantities[itemName] || 1;
 
-    actions.buyEquipment(selectedItem, quantity).catch((error) => {
-      alert(error.message || "Failed to buy equipment");
-    });
+  const adjustQuantity = (itemName, delta) => {
+    setQuantities((prev) => ({
+      ...prev,
+      [itemName]: Math.max(1, (prev[itemName] || 1) + delta),
+    }));
+  };
+
+  const handleBuyEquipment = (itemName) => {
+    const quantity = getQuantity(itemName);
+    setBuyingItem(itemName);
+    actions
+      .buyEquipment(itemName, quantity)
+      .catch((error) => {
+        alert(error.message || "Failed to buy equipment");
+      })
+      .finally(() => setBuyingItem(null));
   };
 
   // Filter the equipment items based on the player's level
@@ -36,14 +45,6 @@ const EquipmentShopComponent = () => {
     {}
   );
 
-  const handleSelectChange = (e) => {
-    setSelectedItem(e.target.value);
-  };
-
-  const handleQuantityChange = (e) => {
-    setQuantity(parseInt(e.target.value, 10));
-  };
-
   return (
     <div className="row  mb-3">
       <div className="row  sticky-top holo text-center">
@@ -55,32 +56,9 @@ const EquipmentShopComponent = () => {
         <div className="col-12 text-center">
           <p>Equipment:</p>
         </div>
-
-        <div className="col-12 text-center">
-          {/* Display buy menu */}
-
-          <select onChange={handleSelectChange} value={selectedItem}>
-            <option value="">Select an equipment</option>
-            {Object.entries(unlockedEquipmentItems).map(([category, items]) =>
-              Object.entries(items).map(([itemName]) => (
-                <option key={itemName} value={itemName}>
-                  {itemName}
-                </option>
-              ))
-            )}
-          </select>
-          <input
-            type="number"
-            min="1"
-            value={quantity}
-            onChange={handleQuantityChange}
-          />
-          <button onClick={handleBuyEquipment}>Buy</button>
-        </div>
       </div>
 
       <div className="row">
-        {/* Display unlocked equipment items */}
         {Object.entries(unlockedEquipmentItems).map(([category, items]) => (
           <div
             className="col-12 col-md-6 pl-5 pr-5 text-center holo"
@@ -91,17 +69,37 @@ const EquipmentShopComponent = () => {
               {Object.entries(items).map(([itemName, data]) => (
                 <li
                   key={itemName}
-                  className="d-flex justify-content-between align-items-center"
+                  className="d-flex justify-content-between align-items-center flex-wrap"
                 >
                   <span>
                     {itemName}: Cost:{" "}
                     {parseFloat(data["Base Cost"]).toFixed(2)}
+                    {player.equipment[itemName] && (
+                      <> (Owned: {player.equipment[itemName].quantity})</>
+                    )}
                   </span>
-                  {player.equipment[itemName] && (
-                    <span className="ml-auto">
-                      Qty: {player.equipment[itemName].quantity}
-                    </span>
-                  )}
+                  <span className="d-flex align-items-center">
+                    <button
+                      onClick={() => adjustQuantity(itemName, -1)}
+                      disabled={buyingItem === itemName}
+                    >
+                      -
+                    </button>
+                    <span className="mx-2">{getQuantity(itemName)}</span>
+                    <button
+                      onClick={() => adjustQuantity(itemName, 1)}
+                      disabled={buyingItem === itemName}
+                    >
+                      +
+                    </button>
+                    <button
+                      className="ms-2"
+                      onClick={() => handleBuyEquipment(itemName)}
+                      disabled={buyingItem !== null}
+                    >
+                      {buyingItem === itemName ? "Buying..." : "Buy"}
+                    </button>
+                  </span>
                 </li>
               ))}
             </ul>

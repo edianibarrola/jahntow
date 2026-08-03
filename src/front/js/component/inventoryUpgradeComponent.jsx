@@ -19,15 +19,10 @@ const InventoryUpgradeComponent = () => {
     return Math.floor(BASE_COST * Math.pow(COST_MULTIPLIER, currentValue / 10));
   };
 
-  const handleUpgrade = (stat, label) => {
-    actions
-      .upgradeStat(stat)
-      .then((data) => {
-        alert(`${label} upgraded for ${data.cost} credits!`);
-      })
-      .catch((error) => {
-        alert(error.message || "Failed to upgrade");
-      });
+  const handleUpgrade = (stat) => {
+    actions.upgradeStat(stat).catch((error) => {
+      alert(error.message || "Failed to upgrade");
+    });
   };
 
   return (
@@ -40,7 +35,7 @@ const InventoryUpgradeComponent = () => {
         </div>
 
         <div className="col-12 text-center">
-          <p>Recovery</p>
+          <p>Upgrades</p>
         </div>
       </div>
       <div className="row ">
@@ -48,7 +43,7 @@ const InventoryUpgradeComponent = () => {
           <p>
             You can currently store {player.maxInventoryCount} of each item.
           </p>
-          <button onClick={() => handleUpgrade("inventory", "Inventory")}>
+          <button onClick={() => handleUpgrade("inventory")}>
             Upgrade Inventory for {calculateUpgradeCost(player.maxInventoryCount)}{" "}
             credits
           </button>
@@ -56,14 +51,14 @@ const InventoryUpgradeComponent = () => {
 
         <div className="col-12 mb-5 holo">
           <p>Your Max Health is {player.maxHealth}.</p>
-          <button onClick={() => handleUpgrade("health", "Health")}>
+          <button onClick={() => handleUpgrade("health")}>
             Upgrade Health for {calculateUpgradeCost(player.maxHealth)} credits
           </button>
         </div>
 
         <div className="col-12 mb-5 holo">
           <p>Your Max Energy is {player.maxEnergy}.</p>
-          <button onClick={() => handleUpgrade("energy", "Energy")}>
+          <button onClick={() => handleUpgrade("energy")}>
             Upgrade Energy for {calculateUpgradeCost(player.maxEnergy)} credits
           </button>
         </div>

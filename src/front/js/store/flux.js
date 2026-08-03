@@ -1673,6 +1673,9 @@ const getState = ({ getStore, getActions, setStore }) => {
           body: { property_name: propertyName },
         }).then((data) => {
           applyPlayerResult(data);
+          getActions().updateTransactions(
+            `Purchased ${propertyName} for ${data.total_cost} credits.`
+          );
           return data;
         });
       },
@@ -1683,6 +1686,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           body: { mission_name: missionName },
         }).then((data) => {
           applyPlayerResult(data);
+          getActions().updateTransactions(data.message);
           return data;
         });
       },
@@ -1693,6 +1697,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           body: { mission_name: missionName },
         }).then((data) => {
           applyPlayerResult(data);
+          getActions().updateTransactions(data.message);
           return data;
         });
       },
@@ -1703,6 +1708,9 @@ const getState = ({ getStore, getActions, setStore }) => {
           body: { item_name: itemName },
         }).then((data) => {
           applyPlayerResult(data);
+          getActions().updateTransactions(
+            `Used ${itemName}: +${data.health_gained} health, +${data.energy_gained} energy.`
+          );
           return data;
         });
       },
@@ -1713,6 +1721,9 @@ const getState = ({ getStore, getActions, setStore }) => {
           body: { stat },
         }).then((data) => {
           applyPlayerResult(data);
+          getActions().updateTransactions(
+            `Upgraded ${stat} for ${data.cost} credits.`
+          );
           return data;
         });
       },
