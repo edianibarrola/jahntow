@@ -304,7 +304,7 @@ input.form-control {
   overflow: auto; /* Allows scrolling if elements exceed container width */
 }
 
-.activity-toast {
+.activity-toast-stack {
   position: fixed;
   top: 12px;
   left: 50%;
@@ -312,31 +312,31 @@ input.form-control {
   z-index: 1050;
   max-width: 90vw;
   width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  /* Lets clicks reach the page through the gaps between stacked toasts;
+     each toast opts back into being interactive itself below. */
+  pointer-events: none;
+}
+
+.activity-toast {
+  width: 100%;
   text-align: center;
   padding: 12px 20px;
   animation: activity-toast-fade 4.5s ease forwards;
-}
-
-.activity-toast-count {
-  display: inline-block;
-  margin-left: 10px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.25);
-  font-size: 0.8em;
-  font-weight: 600;
-  white-space: nowrap;
-  vertical-align: middle;
+  pointer-events: auto;
 }
 
 @keyframes activity-toast-fade {
   0% {
     opacity: 0;
-    transform: translate(-50%, -10px);
+    transform: translateY(-10px);
   }
   8% {
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
   85% {
     opacity: 1;
