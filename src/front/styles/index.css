@@ -303,3 +303,33 @@ input.form-control {
   flex-wrap: nowrap; /* Prevents wrapping */
   overflow: auto; /* Allows scrolling if elements exceed container width */
 }
+
+.activity-toast {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1050;
+  max-width: 90vw;
+  width: 500px;
+  text-align: center;
+  padding: 12px 20px;
+  animation: activity-toast-fade 4.5s ease forwards;
+}
+
+@keyframes activity-toast-fade {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  8% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

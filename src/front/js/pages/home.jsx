@@ -17,6 +17,7 @@ import HealthRecoveryComponent from "../component/healthRecoveryComponent";
 import PropertiesComponent from "../component/propertiesComponent";
 import InventoryUpgradeComponent from "../component/inventoryUpgradeComponent";
 import EquipmentStore from "../component/equipmentStore";
+import ActivityToast from "../component/ActivityToast";
 
 import StoryMissions from "../component/storyMissions";
 
@@ -57,6 +58,7 @@ export const Home = () => {
 
   return (
     <div className="mt-2 container holobg">
+      <ActivityToast />
       <div className="row mb-2 holo ">
         <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
           <div className="col-4">{player.name}</div>
@@ -76,16 +78,6 @@ export const Home = () => {
         <Tabs defaultActiveKey="items" id="game-tabs">
           <Tab eventKey="items" title="Market" className="marketplace ">
             <ItemsComponent />
-
-            <div className="row heightControl">
-              <div className="col-12 col-md-6">
-                <NotificationsComponent />
-              </div>
-
-              <div className="col-12 col-md-6 mb-5">
-                <TransactionsComponent />
-              </div>
-            </div>
           </Tab>
 
           <Tab eventKey="missions" title="Missions" className="ship">
@@ -116,6 +108,17 @@ export const Home = () => {
             </div>
           </Tab>
         </Tabs>
+
+        <div className="row heightControl">
+          <div className="col-12 col-md-6">
+            <NotificationsComponent />
+          </div>
+
+          <div className="col-12 col-md-6 mb-5">
+            <TransactionsComponent />
+          </div>
+        </div>
+
         <div className="col-12 text-center">
           <button onClick={handleNavigate}>to dashboard</button>
         </div>
