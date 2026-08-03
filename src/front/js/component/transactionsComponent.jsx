@@ -9,7 +9,7 @@ const FILTERS = {
   trading: { label: "Trading (Buy/Sell)", types: ["buy", "sell"] },
   missions: {
     label: "Missions",
-    types: ["mission-success", "mission-fail", "death"],
+    types: ["mission-success", "mission-fail"],
   },
   purchases: {
     label: "Purchases (Equipment/Property/Upgrades)",

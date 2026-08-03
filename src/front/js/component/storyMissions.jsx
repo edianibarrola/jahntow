@@ -52,7 +52,12 @@ const StoryMissions = () => {
                 player.storyWins >= startWin &&
                 player.storyWins < startWin + 5
               ) {
-                const isRunnable = storyMissionName === availableMissionName;
+                const isUnlocked = storyMissionName === availableMissionName;
+                // Mirrors the backend's own gate in player_meets_requirements:
+                // a failed attempt costs "Health Effect" health, so refuse to
+                // even offer a mission that could drop the player to 0.
+                const wouldSurvive =
+                  player.health - storyMissionData["Health Effect"] > 0;
                 return (
                   <Accordion.Item
                     className="holo"
@@ -72,7 +77,7 @@ const StoryMissions = () => {
                             Required Energy:{" "}
                             {storyMissionData["Required Energy"]}
                           </li>
-                          <li>
+                          <li style={{ color: wouldSurvive ? undefined : "#ff8a8a" }}>
                             Health Risk: -{storyMissionData["Health Effect"]}
                           </li>
                           <li>
@@ -100,7 +105,17 @@ const StoryMissions = () => {
                             })}
                           </ul>
                         </ul>
-                        {isRunnable ? (
+                        {!isUnlocked ? (
+                          <p className="text-muted">
+                            Complete "{availableMissionName}" first to unlock
+                            this one.
+                          </p>
+                        ) : !wouldSurvive ? (
+                          <p className="tx-error">
+                            Your health is too low to survive a failed
+                            attempt. Recover first.
+                          </p>
+                        ) : (
                           <button
                             onClick={() => runStoryMission(storyMissionName)}
                             disabled={isStoryMissionRunning}
@@ -109,11 +124,6 @@ const StoryMissions = () => {
                               ? "Running..."
                               : "Run Mission"}
                           </button>
-                        ) : (
-                          <p className="text-muted">
-                            Complete "{availableMissionName}" first to unlock
-                            this one.
-                          </p>
                         )}
                       </div>
                     </Accordion.Body>
