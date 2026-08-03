@@ -333,3 +333,12 @@ input.form-control {
     opacity: 0;
   }
 }
+
+/* Bootstrap's default .nav-link.active is near-black text, meant for a
+   light page background. This app is dark throughout, which made the
+   selected tab's label invisible (black text on a near-black background) -
+   only noticeable now that Bootstrap's real CSS is actually loading
+   (previously bundled from an unreachable-in-testing CDN). */
+.nav-tabs .nav-link.active {
+  color: #fff;
+}
