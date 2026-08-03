@@ -6,8 +6,16 @@ import CreditsComponent from "./creditsComponent";
 
 const EquipmentShopComponent = () => {
   const { store, actions } = useContext(Context);
-  const { player, gameData } = store;
+  const { player, gameData, activeEvents } = store;
   const equipmentItems = gameData.equipment || {};
+
+  // A traveling-merchant event discounts one category's Base Cost; the
+  // multiplier is the fraction actually charged (mirrors the server's
+  // pricing in the equipment-buy endpoint).
+  const merchantFor = (category) =>
+    (activeEvents || []).find(
+      (e) => e.kind === "merchant" && e.category === category
+    );
   const [quantities, setQuantities] = useState({});
   const [buyingItem, setBuyingItem] = useState(null);
 
@@ -81,16 +89,29 @@ const EquipmentShopComponent = () => {
       </div>
 
       <div className="row">
-        {Object.entries(unlockedEquipmentItems).map(([category, items]) => (
+        {Object.entries(unlockedEquipmentItems).map(([category, items]) => {
+          const merchant = merchantFor(category);
+          const offPct = merchant
+            ? Math.round((1 - merchant.multiplier) * 100)
+            : 0;
+          return (
           <div
             className="col-12 col-md-6 pl-5 pr-5 text-center holo"
             key={category}
           >
-            <h4 className="text-center">{category}</h4>
+            <h4 className="text-center">
+              {category}
+              {merchant && (
+                <span className="tx-merchant ms-2">🛒 {offPct}% off!</span>
+              )}
+            </h4>
             <ul>
               {Object.entries(items).map(([itemName, data]) => {
                 const owned = player.equipment[itemName]?.quantity || 0;
                 const qty = getQuantity(itemName);
+                const cost = merchant
+                  ? Math.max(1, Math.round(data["Base Cost"] * merchant.multiplier))
+                  : data["Base Cost"];
                 return (
                 <li
                   key={itemName}
@@ -98,7 +119,18 @@ const EquipmentShopComponent = () => {
                 >
                   <span>
                     {itemName}: Cost:{" "}
-                    {parseFloat(data["Base Cost"]).toFixed(2)}
+                    {merchant ? (
+                      <>
+                        <s className="tx-info">
+                          {parseFloat(data["Base Cost"]).toFixed(2)}
+                        </s>{" "}
+                        <span className="tx-merchant">
+                          {parseFloat(cost).toFixed(2)}
+                        </span>
+                      </>
+                    ) : (
+                      parseFloat(cost).toFixed(2)
+                    )}
                     {owned > 0 && <> (Owned: {owned})</>}
                   </span>
                   <span className="d-flex align-items-center">
@@ -136,7 +168,8 @@ const EquipmentShopComponent = () => {
               })}
             </ul>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

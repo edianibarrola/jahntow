@@ -420,6 +420,17 @@ input.form-control {
   color: #ff66ff;
 }
 
+/* Bounty (mission reward boost) and traveling merchant (equipment
+   discount) events - distinct from price-event colors so the banner and
+   badges read as their own thing. */
+.tx-bounty {
+  color: #ffe066;
+}
+
+.tx-merchant {
+  color: #66e0ff;
+}
+
 /* Inline price sparkline in the market list. */
 .sparkline-wrap {
   display: inline-block;

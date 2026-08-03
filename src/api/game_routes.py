@@ -280,7 +280,14 @@ def equipment_buy():
     if player.level < equipment_data["Required Level"]:
         return jsonify({"message": "your level is too low for this equipment"}), 403
 
-    total_cost = equipment_data["Base Cost"] * quantity
+    # A traveling merchant event discounts this category's Base Cost for a
+    # few minutes. Applied here at transaction time (like price events on
+    # market items) so it needs no cleanup when the event expires.
+    merchant_factor = economy.get_merchant_price_factor(category)
+    unit_cost = equipment_data["Base Cost"]
+    if merchant_factor < 1:
+        unit_cost = max(1, round(unit_cost * merchant_factor))
+    total_cost = unit_cost * quantity
     if player.credits < total_cost:
         return jsonify({"message": "insufficient credits"}), 400
 
@@ -300,8 +307,14 @@ def equipment_buy():
     equipment[item_name] = {"quantity": current_qty + quantity}
     player.equipment = equipment
 
+    bought_note = (
+        f" (merchant discount: {round((1 - merchant_factor) * 100)}% off)"
+        if merchant_factor < 1 else ""
+    )
     activity = economy.log_activity(
-        player, f"Bought {quantity}x {item_name} for {total_cost} credits.", "buy"
+        player,
+        f"Bought {quantity}x {item_name} for {total_cost} credits.{bought_note}",
+        "buy",
     )
     db.session.commit()
     return jsonify({
@@ -436,7 +449,7 @@ def mission_start():
     if err:
         return err
 
-    success, message = economy.resolve_mission(player, mission)
+    success, message = economy.resolve_mission(player, mission, mission_name=mission_name)
     activity = economy.log_activity(
         player, message, "mission-success" if success else "mission-fail"
     )
@@ -623,6 +636,7 @@ def _reset_player(player):
     player.maxEnergy = 100
     player.maxEquipmentCount = 20
     player.storyWins = 0
+    player.win_streak = 0
     player.item_cooldowns = {}
     player.upgrade_steps = {}
     _reset_tick_clocks(player)
@@ -667,6 +681,7 @@ def _prestige_player(player):
     player.maxEquipmentCount = 20 + player.prestige_level * economy.PRESTIGE_MAX_EQUIPMENT_BONUS
     player.health = player.maxHealth
     player.energy = player.maxEnergy
+    player.win_streak = 0
     player.item_cooldowns = {}
     # Purchased-upgrade counters reset with the run. Keeping them would
     # mean every post-prestige upgrade started at the old escalated price -

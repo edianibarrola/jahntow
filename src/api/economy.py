@@ -147,6 +147,47 @@ EVENT_DURATION_MAX = timedelta(minutes=5)
 EVENT_MAGNITUDE_MIN = 0.50
 EVENT_MAGNITUDE_MAX = 1.20
 
+# Win streaks: each consecutive successful mission adds a small credit
+# bonus to the next reward, capped so it plateaus. Guaranteed missions
+# (the Salvage Run bailout) neither build nor benefit from streaks -
+# otherwise spamming the risk-free bailout becomes a free streak pump.
+# Any mission failure resets the streak to zero, which is the tension the
+# mechanic exists to create: a long streak makes the next risky attempt
+# feel like it has something riding on it.
+WIN_STREAK_BONUS_PER_WIN = 0.03
+WIN_STREAK_CAP = 10
+
+# Critical outcomes layered on the base success roll. A crit doubles the
+# credit reward but deliberately not the XP, so the levelling pace is
+# unchanged. A narrow escape softens a failure: no equipment is consumed
+# and only half the health is lost. Net effect is a small (~+8% credits)
+# buff and gentler downswings - both sides of a mission roll now have a
+# second, rarer outcome to hope for.
+CRIT_CHANCE = 0.08
+CRIT_REWARD_MULTIPLIER = 2
+NARROW_ESCAPE_CHANCE = 0.25
+
+# Bounties and traveling merchants reuse the GameEvent machinery (same
+# lazy spawn-on-request pattern, same shared-world scope): a bounty's
+# `category` holds a regular mission's name and its multiplier boosts that
+# mission's credit reward; a merchant's `category` holds an equipment
+# category and its multiplier is the fraction of Base Cost actually
+# charged (0.45 = 55% off). At most one of each is live at a time, and
+# each has its own spawn cooldown so they stay occasional and noticeable.
+PRICE_EVENT_KINDS = ("price_spike", "price_crash")
+BOUNTY_SPAWN_CHANCE = 0.10
+BOUNTY_CHECK_COOLDOWN = timedelta(minutes=6)
+BOUNTY_MULTIPLIER_MIN = 1.5
+BOUNTY_MULTIPLIER_MAX = 2.5
+BOUNTY_DURATION_MIN = timedelta(minutes=5)
+BOUNTY_DURATION_MAX = timedelta(minutes=10)
+MERCHANT_SPAWN_CHANCE = 0.08
+MERCHANT_CHECK_COOLDOWN = timedelta(minutes=8)
+MERCHANT_PRICE_FACTOR_MIN = 0.40  # 60% off
+MERCHANT_PRICE_FACTOR_MAX = 0.60  # 40% off
+MERCHANT_DURATION_MIN = timedelta(minutes=3)
+MERCHANT_DURATION_MAX = timedelta(minutes=6)
+
 # Server-side activity log / notification feed. Player history is capped
 # at ACTIVITY_LOG_CAP entries (only ever trimmed on read, rows aren't
 # deleted), global price-notification feed at NOTIFICATION_LOG_CAP.
@@ -274,14 +315,27 @@ def apply_price_ticks():
         db.session.commit()
 
 
-def apply_event_ticks():
-    """
-    Maybe roll a new category-wide price event into existence. Same lazy,
-    request-driven pattern as apply_price_ticks - called wherever prices
-    are read, no scheduler. Returns the full list of currently active
-    events.
+def _random_duration(minimum, maximum):
+    return timedelta(seconds=random.uniform(
+        minimum.total_seconds(), maximum.total_seconds()
+    ))
 
-    Events are now scoped per category: several can run at once on
+
+def _kind_on_cooldown(kinds, now, cooldown):
+    """True if any event of these kinds ended (or will end) within `cooldown`."""
+    recent_cutoff = now - cooldown
+    return db.session.query(
+        GameEvent.query
+        .filter(GameEvent.kind.in_(kinds), GameEvent.ends_at > recent_cutoff)
+        .exists()
+    ).scalar()
+
+
+def _maybe_spawn_price_event(active, now):
+    """
+    Maybe roll a new category-wide price event into existence.
+
+    Price events are scoped per item category: several can run at once on
     *different* categories (up to MAX_CONCURRENT_EVENTS), but never two on
     the same one. Previously a single global event was allowed, and
     get_active_event() returned only the newest row - so if a second event
@@ -289,16 +343,12 @@ def apply_event_ticks():
     unlocked read-then-write race here), the older one silently stopped
     applying to prices and vanished from the banner.
     """
-    now = utcnow()
-    active = get_active_events()
+    price_events = [e for e in active if e.kind in PRICE_EVENT_KINDS]
+    if len(price_events) >= MAX_CONCURRENT_EVENTS:
+        return None
 
-    if len(active) >= MAX_CONCURRENT_EVENTS:
-        return active
-
-    busy_categories = {event.category for event in active}
+    busy_categories = {event.category for event in price_events}
     candidates = [c for c in game_data.ITEMS.keys() if c not in busy_categories]
-    if not candidates:
-        return active
 
     # Cooldown is per-category too: a category that just finished an event
     # shouldn't immediately start another, but an untouched category
@@ -306,14 +356,17 @@ def apply_event_ticks():
     recent_cutoff = now - EVENT_CHECK_COOLDOWN
     cooling = {
         row.category for row in
-        GameEvent.query.filter(GameEvent.ends_at > recent_cutoff).all()
+        GameEvent.query.filter(
+            GameEvent.kind.in_(PRICE_EVENT_KINDS),
+            GameEvent.ends_at > recent_cutoff,
+        ).all()
     }
     candidates = [c for c in candidates if c not in cooling]
     if not candidates:
-        return active
+        return None
 
     if random.random() > EVENT_SPAWN_CHANCE:
-        return active
+        return None
 
     category = random.choice(candidates)
     kind = random.choice(["price_spike", "price_crash"])
@@ -321,20 +374,111 @@ def apply_event_ticks():
     # Symmetric in log space: a crash divides where a spike multiplies. A
     # plain (1 - magnitude) would go negative once magnitude exceeds 1.
     multiplier = (1 + magnitude) if kind == "price_spike" else 1 / (1 + magnitude)
-    duration = timedelta(seconds=random.uniform(
-        EVENT_DURATION_MIN.total_seconds(), EVENT_DURATION_MAX.total_seconds()
-    ))
 
-    event = GameEvent(
+    return GameEvent(
         kind=kind,
         category=category,
         multiplier=multiplier,
         starts_at=now,
-        ends_at=now + duration,
+        ends_at=now + _random_duration(EVENT_DURATION_MIN, EVENT_DURATION_MAX),
     )
-    db.session.add(event)
-    db.session.commit()
-    return active + [event]
+
+
+def _maybe_spawn_bounty(active, now):
+    """
+    Maybe post a bounty: a temporary credit-reward multiplier on one
+    specific regular mission. Shared-world like every other GameEvent -
+    sometimes the bounty lands on a mission above your level, and that's
+    fine: it's aspirational, someone else might claim it.
+    """
+    if any(e.kind == "bounty" for e in active):
+        return None
+    if _kind_on_cooldown(["bounty"], now, BOUNTY_CHECK_COOLDOWN):
+        return None
+    if random.random() > BOUNTY_SPAWN_CHANCE:
+        return None
+
+    # Guaranteed missions are excluded for the same reason they're excluded
+    # from win streaks: a reward boost on a risk-free mission isn't a
+    # gamble, it's a faucet.
+    candidates = [
+        name for name, mission in game_data.MISSIONS.items()
+        if not mission.get("Guaranteed")
+    ]
+    if not candidates:
+        return None
+
+    multiplier = round(random.uniform(BOUNTY_MULTIPLIER_MIN, BOUNTY_MULTIPLIER_MAX), 2)
+    mission_name = random.choice(candidates)
+    log_notification(
+        f"⭐ Bounty posted: {multiplier}x reward on {mission_name}!", "bounty"
+    )
+    return GameEvent(
+        kind="bounty",
+        category=mission_name,
+        multiplier=multiplier,
+        starts_at=now,
+        ends_at=now + _random_duration(BOUNTY_DURATION_MIN, BOUNTY_DURATION_MAX),
+    )
+
+
+def _maybe_spawn_merchant(active, now):
+    """
+    Maybe roll a traveling merchant: a short, steep discount on one
+    equipment category's Base Cost. The multiplier stored is the fraction
+    of the price actually charged, applied in the equipment-buy endpoint -
+    market item prices are untouched.
+    """
+    if any(e.kind == "merchant" for e in active):
+        return None
+    if _kind_on_cooldown(["merchant"], now, MERCHANT_CHECK_COOLDOWN):
+        return None
+    if random.random() > MERCHANT_SPAWN_CHANCE:
+        return None
+
+    # Story gear is one-off narrative equipment priced as a milestone -
+    # discounting it cheapens the milestone, so the merchant skips it.
+    candidates = [c for c in game_data.EQUIPMENT.keys() if c != "Story"]
+    if not candidates:
+        return None
+
+    category = random.choice(candidates)
+    factor = round(random.uniform(MERCHANT_PRICE_FACTOR_MIN, MERCHANT_PRICE_FACTOR_MAX), 2)
+    log_notification(
+        f"🛒 Traveling merchant: {category} gear {round((1 - factor) * 100)}% off!",
+        "merchant",
+    )
+    return GameEvent(
+        kind="merchant",
+        category=category,
+        multiplier=factor,
+        starts_at=now,
+        ends_at=now + _random_duration(MERCHANT_DURATION_MIN, MERCHANT_DURATION_MAX),
+    )
+
+
+def apply_event_ticks():
+    """
+    Maybe roll new events into existence: category-wide price events,
+    mission bounties, and traveling merchants, each with its own spawn
+    chance and cooldown. Same lazy, request-driven pattern as
+    apply_price_ticks - called wherever prices are read, no scheduler.
+    Returns the full list of currently active events.
+    """
+    now = utcnow()
+    active = get_active_events()
+
+    spawned = [
+        event for event in (
+            _maybe_spawn_price_event(active, now),
+            _maybe_spawn_bounty(active, now),
+            _maybe_spawn_merchant(active, now),
+        ) if event is not None
+    ]
+    if spawned:
+        db.session.add_all(spawned)
+        db.session.commit()
+    return active + spawned
 
 
 def get_active_events():
@@ -362,9 +506,38 @@ def get_event_multiplier(category, events=None):
         events = get_active_events()
     multiplier = 1.0
     for event in events:
-        if event.category == category:
+        # Only price events touch market prices. Bounty/merchant events
+        # store a mission name / equipment category in `category`, which
+        # can never collide with an item category today - but filtering on
+        # kind keeps that a non-assumption.
+        if event.kind in PRICE_EVENT_KINDS and event.category == category:
             multiplier *= event.multiplier
     return multiplier
+
+
+def get_bounty_multiplier(mission_name, events=None):
+    """Combined active-bounty reward multiplier for one regular mission (1.0 = none)."""
+    if events is None:
+        events = get_active_events()
+    multiplier = 1.0
+    for event in events:
+        if event.kind == "bounty" and event.category == mission_name:
+            multiplier *= event.multiplier
+    return multiplier
+
+
+def get_merchant_price_factor(category, events=None):
+    """
+    Fraction of Base Cost actually charged for an equipment category while
+    a traveling merchant targets it (1.0 = no merchant, no discount).
+    """
+    if events is None:
+        events = get_active_events()
+    factor = 1.0
+    for event in events:
+        if event.kind == "merchant" and event.category == category:
+            factor *= event.multiplier
+    return factor
 
 
 def get_effective_price(price_row, events=None):
@@ -774,7 +947,7 @@ def mission_success_chance(player, mission):
     return max(MIN_SUCCESS_CHANCE, min(MAX_SUCCESS_CHANCE, chance))
 
 
-def resolve_mission(player, mission):
+def resolve_mission(player, mission, mission_name=None):
     """
     Runs a mission attempt to completion synchronously (the original
     client-side setTimeout delay was purely cosmetic UI pacing, not a real
@@ -788,6 +961,14 @@ def resolve_mission(player, mission):
     text always implied. A failure refunds MISSION_FAILURE_REFUND_PCT of
     the entry, so a losing streak bleeds rather than bankrupts.
 
+    On top of the base roll: win streaks, critical successes, narrow
+    escapes, and bounty multipliers (see the WIN_STREAK/CRIT/NARROW/BOUNTY
+    constants). Guaranteed missions are excluded from all of them - the
+    bailout stays a flat, boring floor on purpose.
+
+    `mission_name` is the catalog key (bounties are stored against it);
+    None just means no bounty can match.
+
     Health can only ever drop here, from a failure's "Health Effect", and
     player_meets_requirements already refuses to start a mission whose
     Health Effect could take the player to 0 - so a mission attempt can
@@ -800,30 +981,69 @@ def resolve_mission(player, mission):
     # at least one action that cannot fail and costs no credits - otherwise
     # a player who loses their bankroll on a run of failures has no way back
     # into the game at all.
-    success = mission.get("Guaranteed") or random.random() < mission_success_chance(player, mission)
+    guaranteed = bool(mission.get("Guaranteed"))
+    success = guaranteed or random.random() < mission_success_chance(player, mission)
 
     if success:
         xp_awarded = mission_xp_award(player, mission)
-        player.credits += mission["Reward"]
+        reward = mission["Reward"]
+        extras = []
+
+        if not guaranteed:
+            # Crit doubles credits only - XP is untouched so the levelling
+            # pace doesn't compound with reward luck.
+            if random.random() < CRIT_CHANCE:
+                reward *= CRIT_REWARD_MULTIPLIER
+                extras.append("💥 Critical success - double credits!")
+
+            bounty_multiplier = get_bounty_multiplier(mission_name) if mission_name else 1.0
+            if bounty_multiplier > 1:
+                reward = round(reward * bounty_multiplier)
+                extras.append(f"⭐ Bounty claimed: {bounty_multiplier:g}x reward.")
+
+            player.win_streak = (player.win_streak or 0) + 1
+            streak_bonus = min(player.win_streak, WIN_STREAK_CAP) * WIN_STREAK_BONUS_PER_WIN
+            reward = round(reward * (1 + streak_bonus))
+            if player.win_streak >= 2:
+                extras.append(
+                    f"🎯 Win streak {player.win_streak}: +{round(streak_bonus * 100)}% credits."
+                )
+
+        player.credits += reward
         player.experience += xp_awarded
         player.energy = min(player.maxEnergy, player.energy + mission["Required Energy"] // 2)
         # successMessage is a template ("...gaining {reward} credits and
         # {experience} experience.") formatted from the mission's own live
         # values, so the flavor text can never drift out of sync with what
-        # was actually awarded - including after any future rebalance, and
-        # including the over-levelled XP falloff.
+        # was actually awarded - including crits, bounties, and streak
+        # bonuses, all folded into the final reward figure.
         message = mission["successMessage"].format(
-            reward=mission["Reward"], experience=xp_awarded
+            reward=reward, experience=xp_awarded
         )
         if xp_awarded < mission["Experience"]:
             message = f"{message} (XP reduced - this mission is below your level.)"
+        for extra in extras:
+            message = f"{message} {extra}"
     else:
+        # Any failure breaks the streak - that's the tension the streak
+        # bonus buys. (Guaranteed missions can't reach this branch.)
+        player.win_streak = 0
         refund = int(mission["Required Credits"] * MISSION_FAILURE_REFUND_PCT)
         player.credits += refund
-        player.health -= mission["Health Effect"]
+        health_loss = mission["Health Effect"]
+        narrow_escape = health_loss > 0 and random.random() < NARROW_ESCAPE_CHANCE
+        if narrow_escape:
+            health_loss -= health_loss // 2
+        player.health -= health_loss
         player.energy = min(player.maxEnergy, player.energy + mission["Required Energy"] // 8)
-        resolve_mission_equipment_loss(player, mission.get("requiredEquipment"))
+        if not narrow_escape:
+            resolve_mission_equipment_loss(player, mission.get("requiredEquipment"))
         message = mission["failureMessage"]
+        if narrow_escape:
+            message = (
+                f"{message} A narrow escape - gear intact, "
+                f"only {health_loss} health lost."
+            )
         if refund > 0:
             message = f"{message} ({refund} credits recovered.)"
 
