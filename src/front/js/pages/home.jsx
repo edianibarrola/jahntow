@@ -45,6 +45,12 @@ export const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // fetchPlayerData has to run on mount, not just on the interval below.
+    // Without it a page refresh rendered whatever player object was cached
+    // in localStorage and left it stale for a full poll cycle - so stats,
+    // credits and story progress could all be visibly wrong for 20s after
+    // any reload.
+    actions.fetchPlayerData();
     actions.fetchGameData();
     actions.fetchMarketPrices();
     actions.fetchLeaderboard();

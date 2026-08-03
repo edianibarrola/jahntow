@@ -7,7 +7,9 @@ import CreditsComponent from "./creditsComponent";
 import StoryMissionDetailsComponent from "./storyMissionDetailsComponent";
 import { previewSuccessChance } from "../missionOdds";
 
-const STORY_WINS_PER_UNLOCK = 2;
+// Mirrors STORY_WINS_PER_UNLOCK in src/api/game_routes.py, which is what
+// actually enforces which story mission may be run.
+const STORY_WINS_PER_UNLOCK = 5;
 
 const StoryMissions = () => {
   const { store, actions } = useContext(Context);
