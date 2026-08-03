@@ -2,6 +2,7 @@ import React from "react";
 import { Context } from "../store/appContext";
 import { useNavigate } from "react-router-dom";
 import ResetPlayerStats from "../component/resetPlayerStats";
+import PrestigeButton from "../component/prestigeButton";
 
 export function Dashboard() {
   const { store, actions } = React.useContext(Context);
@@ -39,6 +40,9 @@ export function Dashboard() {
             onChange={(e) => setNewName(e.target.value)}
           />
           <button onClick={handleChangeName}>Change Name</button>
+        </div>
+        <div className="col-12 mb-5">
+          <PrestigeButton />
         </div>
         <div className="col-12 mb-5">
           <ResetPlayerStats />

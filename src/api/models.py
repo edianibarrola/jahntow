@@ -70,6 +70,12 @@ class Player(db.Model):
     last_login_at = db.Column(db.DateTime(), nullable=True)
     login_streak = db.Column(db.Integer, default=0)
 
+    # Number of times this player has rebirthed at max level. Each prestige
+    # permanently raises the maxHealth/maxEnergy/maxInventoryCount floor
+    # (see economy.PRESTIGE_MAX_*_BONUS) in exchange for resetting level,
+    # credits, and inventory/equipment/properties back to the base start.
+    prestige_level = db.Column(db.Integer, default=0)
+
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # linking the player to a user
 
     User.player = db.relationship("Player", uselist=False, back_populates="user")
@@ -97,6 +103,7 @@ class Player(db.Model):
             "maxEnergy": self.maxEnergy,
             "storyWins": self.storyWins,
             "loginStreak": self.login_streak,
+            "prestigeLevel": self.prestige_level,
         }
 
 
