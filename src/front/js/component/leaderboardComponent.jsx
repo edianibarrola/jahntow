@@ -18,6 +18,11 @@ const LeaderboardComponent = () => {
     <div className="row mb-3">
       <div className="row sticky-top holo text-center">
         <div className="col-12 text-center">
+          <p className="tx-info m-0">
+            Ranked by renown — prestige, level, story progress, achievements,
+            reputation and win streaks, plus credits on a log scale so a bank
+            balance can't outrank real progress.
+          </p>
           <p>
             Leaderboard:{" "}
             {myRank >= 0 ? (
@@ -51,8 +56,12 @@ const LeaderboardComponent = () => {
                   )}
                 </span>
                 <span>
-                  Lvl {entry.level} · {entry.credits.toFixed(0)} credits · {entry.storyWins}{" "}
-                  story wins
+                  <span className="tx-achievement">
+                    {entry.score?.toLocaleString()} renown
+                  </span>{" "}
+                  · Lvl {entry.level} · {entry.storyWins} story wins ·{" "}
+                  {entry.achievements ?? 0} 🏆 · {entry.credits.toFixed(0)}{" "}
+                  credits
                 </span>
               </li>
             ))}

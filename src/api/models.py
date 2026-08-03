@@ -1,3 +1,4 @@
+import math
 from datetime import datetime, timezone
 
 from flask_sqlalchemy import SQLAlchemy
@@ -122,6 +123,14 @@ class Player(db.Model):
     # makes "newest title" well-defined). Catalog in game_data.ACHIEVEMENTS.
     achievements = db.Column(db.JSON, default=list)
 
+    # Sub-unit production carried between ticks, {item_name: fraction}.
+    # Properties only ever deposit WHOLE items into the inventory; the
+    # leftover fraction lives here until it completes a unit. Without this
+    # a low-rate property left slivers like 0.42 in the inventory, which
+    # floored to "Owned: 0" on the market while still being valued - so a
+    # fully sold-out item showed a phantom unrealized profit.
+    production_remainders = db.Column(db.JSON, default=dict)
+
     # Faction reputation, {faction_name: points}. +1 with a mission's
     # faction per story win (+1 with all six on United Front finale
     # missions). Tiers unlock discounts and story success bonuses - see
@@ -212,6 +221,33 @@ class Player(db.Model):
             "pendingChoice": self.pending_story_choice(),
         }
 
+    def renown_score(self):
+        """
+        One number that reflects everything the game now asks of a player,
+        used to rank the leaderboard.
+
+        Ordering used to be prestige, then level, then raw credits - which
+        ignored story progress, achievements, and streaks entirely, and let
+        a player who simply hoarded credits outrank one who had actually
+        finished content. Credits still count, but logarithmically: going
+        from 10k to 100k is worth the same step as 100k to 1M, so a bank
+        balance can't drown out real progression.
+        """
+        stats = self.stats or {}
+        credits_points = 0
+        if (self.credits or 0) > 0:
+            credits_points = int(math.log10(self.credits + 1) * 150)
+        return (
+            (self.prestige_level or 0) * 5000
+            + (self.level or 0) * 150
+            + (self.storyWins or 0) * 40
+            + len(self.achievements or []) * 200
+            + sum((self.reputation or {}).values()) * 20
+            + stats.get("best_win_streak", 0) * 30
+            + stats.get("missions_won", 0) * 5
+            + credits_points
+        )
+
     def serialize_public(self):
         """
         For the leaderboard - other players never see inventory, equipment,
@@ -226,6 +262,9 @@ class Player(db.Model):
             # Achievement titles are earned flair - exactly the kind of
             # thing a leaderboard exists to show off.
             "title": self.current_title(),
+            "score": self.renown_score(),
+            "achievements": len(self.achievements or []),
+            "bestWinStreak": (self.stats or {}).get("best_win_streak", 0),
         }
 
 

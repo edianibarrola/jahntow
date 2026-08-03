@@ -39,6 +39,19 @@ const GoalsComponent = () => {
   const achievements = gameData.achievements || [];
   const earned = new Set(player.achievements || []);
 
+  // Group the flat catalog into its progression tracks, tiers in order.
+  // Achievements are still earned individually server-side; this is purely
+  // how they're presented - one advancing goal per track instead of a wall
+  // of cards, most of them unreachable.
+  const chainLabels = gameData.achievementChains || {};
+  const chains = Object.keys(chainLabels).map((key) => ({
+    key,
+    label: chainLabels[key],
+    tiers: achievements
+      .filter((a) => a.chain === key)
+      .sort((a, b) => a.tier - b.tier),
+  }));
+
   return (
     <div className="row mb-3">
       <div className="row sticky-top holo text-center">
@@ -115,29 +128,63 @@ const GoalsComponent = () => {
           <h4 className="text-center">
             🏆 Achievements ({earned.size}/{achievements.length})
           </h4>
+          <p className="text-center tx-info">
+            Each track advances a tier at a time — clear one and the next
+            goal takes its place.
+          </p>
           <div className="row">
-            {achievements.map((ach) => {
-              const isEarned = earned.has(ach.id);
-              const value = metricValue(player, ach.metric);
+            {chains.map((chain) => {
+              // The current phase of this track: the lowest tier not yet
+              // earned. Once every tier is done the track is complete.
+              const next = chain.tiers.find((t) => !earned.has(t.id));
+              const done = chain.tiers.filter((t) => earned.has(t.id)).length;
+              const latest = chain.tiers[done - 1];
+              const value = metricValue(player, chain.tiers[0].metric);
+              const complete = !next;
               return (
-                <div className="col-12 col-md-6 col-lg-4 p-2" key={ach.id}>
+                <div className="col-12 col-md-6 p-2" key={chain.key}>
                   <div
                     className={`p-2 border rounded h-100 ${
-                      isEarned ? "achievement-earned" : "achievement-locked"
+                      complete ? "achievement-earned" : "achievement-locked"
                     }`}
                   >
-                    <div className={isEarned ? "tx-achievement" : undefined}>
-                      {isEarned ? "🏆" : "🔒"} {ach.name}
-                      {ach.title && (
-                        <span className="tx-prestige"> · Title: {ach.title}</span>
-                      )}
+                    <div className="d-flex justify-content-between flex-wrap">
+                      <span className={complete ? "tx-achievement" : undefined}>
+                        {complete ? "🏆" : "🎖"} {chain.label}
+                      </span>
+                      <span className="tx-info">
+                        {/* Filled pips for cleared tiers - the "phase"
+                            readout the flat card list couldn't give. */}
+                        {"★".repeat(done)}
+                        {"☆".repeat(chain.tiers.length - done)} {done}/
+                        {chain.tiers.length}
+                      </span>
                     </div>
-                    <div className="tx-info">{ach.desc}</div>
-                    {!isEarned && (
-                      <div className="tx-info">
-                        {Math.min(value, ach.threshold).toLocaleString()}/
-                        {ach.threshold.toLocaleString()}
-                      </div>
+
+                    {latest && (
+                      <div className="tx-achievement">Earned: {latest.name}</div>
+                    )}
+
+                    {next ? (
+                      <>
+                        <div>
+                          Next: {next.name}
+                          {next.title && (
+                            <span className="tx-prestige">
+                              {" "}
+                              · Title: {next.title}
+                            </span>
+                          )}
+                        </div>
+                        <div className="tx-info">{next.desc}</div>
+                        <ProgressBar value={value} goal={next.threshold} />
+                        <div className="tx-info">
+                          {Math.min(value, next.threshold).toLocaleString()}/
+                          {next.threshold.toLocaleString()}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="tx-info">Track complete.</div>
                     )}
                   </div>
                 </div>

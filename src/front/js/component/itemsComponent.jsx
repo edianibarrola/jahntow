@@ -84,7 +84,12 @@ const ItemsComponent = () => {
                 )
                 .map((item) => {
                   const holding = player.inventory[item.item_name];
-                  const owned = holding?.quantity || 0;
+                  // Properties only deposit whole units now, but an
+                  // inventory written before that could still hold a
+                  // fraction. Floor it for every purpose, not just the
+                  // label: valuing a 0.42 sliver showed a phantom
+                  // "profit" on an item the player had fully sold out of.
+                  const owned = Math.floor(holding?.quantity || 0);
                   const avgCost = holding?.avg_cost || 0;
                   const unrealizedPl =
                     owned > 0
@@ -125,12 +130,7 @@ const ItemsComponent = () => {
                         {owned > 0 && (
                           <>
                             {" "}
-                            {/* Property-produced items can accumulate at a
-                                fractional rate (e.g. 0.05/tick for rare,
-                                high-value items) - floor for display only,
-                                the true fractional amount is still what's
-                                compared against for selling. */}
-                            (Owned: {Math.floor(owned)}/{player.maxInventoryCount},
+                            (Owned: {owned}/{player.maxInventoryCount},
                             Avg Cost: {avgCost.toFixed(2)},{" "}
                             <span
                               style={{

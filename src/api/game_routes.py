@@ -85,8 +85,10 @@ def get_game_data():
         "healthRecoveryItems": game_data.HEALTH_RECOVERY_ITEMS,
         # Static achievement catalog - the client needs it to render the
         # locked entries in the Goals tab (the player row only carries
-        # earned ids).
+        # earned ids). Chains let the UI show one advancing goal per
+        # progression instead of every tier at once.
         "achievements": game_data.ACHIEVEMENTS,
+        "achievementChains": game_data.ACHIEVEMENT_CHAINS,
     }), 200
 
 
@@ -139,17 +141,19 @@ LEADERBOARD_SIZE = 20
 @game_api.route('/leaderboard', methods=['GET'])
 def leaderboard():
     """
-    No auth required, same as game-data/market-prices. Ranked by prestige
-    first, then level, then credits - a player who's rebirthed several
-    times outranks one sitting on a big credits pile with no prestige,
-    since that's what prestiging is meant to represent.
+    No auth required, same as game-data/market-prices. Ranked by the
+    composite renown score (see Player.renown_score), which weighs
+    prestige, level, story progress, achievements, reputation, streaks and
+    - logarithmically - credits.
+
+    Sorted in Python rather than SQL because the score reads JSON columns
+    (achievements, reputation, stats) that no portable ORDER BY can reach.
+    The player table is small and this endpoint is cheap; if it ever isn't,
+    the score wants to become a persisted, incrementally-updated column.
     """
-    players = (
-        Player.query
-        .order_by(Player.prestige_level.desc(), Player.level.desc(), Player.credits.desc())
-        .limit(LEADERBOARD_SIZE)
-        .all()
-    )
+    players = sorted(
+        Player.query.all(), key=lambda p: p.renown_score(), reverse=True
+    )[:LEADERBOARD_SIZE]
     return jsonify({"players": [p.serialize_public() for p in players]}), 200
 
 
@@ -757,6 +761,8 @@ def _reset_player(player):
     player.equipment = {}
     player.inventory = {}
     player.properties = {}
+    # Carry pool belongs with the inventory/properties it was produced by.
+    player.production_remainders = {}
     player.maxInventoryCount = 10
     player.maxHealth = 100
     player.maxEnergy = 100
@@ -811,6 +817,7 @@ def _prestige_player(player):
     player.equipment = {}
     player.inventory = {}
     player.properties = {}
+    player.production_remainders = {}
     player.maxInventoryCount = 10 + player.prestige_level * economy.PRESTIGE_MAX_INVENTORY_BONUS
     player.maxHealth = 100 + player.prestige_level * economy.PRESTIGE_MAX_HEALTH_BONUS
     player.maxEnergy = 100 + player.prestige_level * economy.PRESTIGE_MAX_ENERGY_BONUS
