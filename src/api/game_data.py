@@ -43,15 +43,16 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                  'Rank': 1,
                  'requiredEquipment': {},
                  'Health Effect': 0,
-                 'startMessage': 'E.c.h.o.: Sweeping the near orbit for '
-                                 'loose debris. Low value, but it costs us '
-                                 'nothing but time.',
+                 'startMessage': 'E.c.h.o.: Running the scrap lanes. It '
+                                 'barely pays, but it will keep us flying '
+                                 'until we can afford real work.',
                  'successMessage': 'E.c.h.o.: Debris collected and sold on. '
                                    '{reward} credits and {experience} '
                                    'experience.',
                  'failureMessage': 'E.c.h.o.: Nothing salvageable out there '
                                    'this pass.',
-                 'Guaranteed': True},
+                 'Guaranteed': True,
+                 'AvailableBelowCredits': 2000},
  'Asteroid Mining': {'Required Credits': 1000,
                      'Required Energy': 10,
                      'Reward': 3200,

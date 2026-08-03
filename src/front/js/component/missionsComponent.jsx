@@ -50,6 +50,11 @@ const MissionsComponent = () => {
               const wouldSurvive =
                 player.health - missionData["Health Effect"] > 0;
               const odds = successBreakdown(player, missionData);
+              // Bailout missions are hidden above a credit ceiling - mirrors
+              // the server's own check in player_meets_requirements.
+              const bailoutLocked =
+                missionData.AvailableBelowCredits != null &&
+                player.credits >= missionData.AvailableBelowCredits;
               return (
                 <Accordion.Item
                   className="holo"
@@ -71,9 +76,11 @@ const MissionsComponent = () => {
                           Health Risk: -{missionData["Health Effect"]}
                         </li>
                         {missionData.Guaranteed ? (
-                          <li className="tx-sell">
+                          <li className={bailoutLocked ? "tx-info" : "tx-sell"}>
                             Always succeeds — a guaranteed fallback when you're
                             short on credits.
+                            {bailoutLocked &&
+                              ` Locked above ${missionData.AvailableBelowCredits} credits.`}
                           </li>
                         ) : (
                           <li>
@@ -114,7 +121,7 @@ const MissionsComponent = () => {
                       {wouldSurvive ? (
                         <button
                           onClick={() => runMission(missionName)}
-                          disabled={runningMission !== null}
+                          disabled={runningMission !== null || bailoutLocked}
                         >
                           {runningMission === missionName
                             ? "Running..."
