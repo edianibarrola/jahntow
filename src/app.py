@@ -54,15 +54,20 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db, compare_type = True)
 db.init_app(app)
 
-# Allow CORS requests only from configured origins (comma-separated CORS_ORIGINS env var)
-cors_origins = os.getenv("CORS_ORIGINS")
-if cors_origins:
-    CORS(app, origins=[o.strip() for o in cors_origins.split(",") if o.strip()])
-elif IS_DEVELOPMENT:
+# In development, always allow any origin - this must win regardless of
+# CORS_ORIGINS, otherwise a stale/mismatched value left over in .env from
+# earlier testing silently overrides the dev-permissive behavior the
+# FLASK_ENV=development comment above promises, in a way that's very hard
+# to notice from the browser side (it just looks like CORS is broken).
+if IS_DEVELOPMENT:
     CORS(app)
 else:
-    # No origins configured: same-origin only (frontend is served by this same Flask app)
-    CORS(app, origins=[])
+    cors_origins = os.getenv("CORS_ORIGINS")
+    if cors_origins:
+        CORS(app, origins=[o.strip() for o in cors_origins.split(",") if o.strip()])
+    else:
+        # No origins configured: same-origin only (frontend is served by this same Flask app)
+        CORS(app, origins=[])
 
 # add the admin
 setup_admin(app)
