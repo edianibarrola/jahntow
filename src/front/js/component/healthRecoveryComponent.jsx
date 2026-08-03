@@ -10,17 +10,9 @@ const HealthRecoveryComponent = () => {
   const healthRecoveryItems = gameData.healthRecoveryItems || {};
 
   const handleButtonClick = (item) => {
-    actions.useRecoveryItem(item).catch((error) => {
-      if (error.status === 429) {
-        alert(
-          `This item is on cooldown. Try again in ${Math.ceil(
-            error.data.retry_after_seconds
-          )}s.`
-        );
-      } else {
-        alert(error.message || "Failed to use item");
-      }
-    });
+    // flux.js's useRecoveryItem already turns cooldown (429) and other
+    // failures into a toast/activity-log entry.
+    actions.useRecoveryItem(item).catch(() => {});
   };
 
   const generateButtonLabel = (item, category) => {
@@ -53,7 +45,7 @@ const HealthRecoveryComponent = () => {
     <div className="row mb-3">
       <div className="row  sticky-top holo text-center">
         <div className="row pt-2 pb-1 m-0 mb-2 justify-content-around text-center">
-          <HealthComponent health={player.health} />
+          <HealthComponent health={player.health} maxHealth={player.maxHealth} />
           <EnergyComponent energy={player.energy} />
           <CreditsComponent credits={player.credits} />
         </div>

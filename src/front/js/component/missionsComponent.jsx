@@ -16,14 +16,10 @@ const MissionsComponent = () => {
     setRunningMission(missionName);
     actions
       .startMission(missionName)
-      .then((data) => {
-        if (data.died) {
-          alert(data.message);
-        }
-      })
-      .catch((error) => {
-        alert(error.message || "Failed to start mission");
-      })
+      // flux.js already surfaces both the result and any failure via the
+      // activity toast/log - nothing left to do here on rejection besides
+      // making sure it doesn't become an unhandled promise rejection.
+      .catch(() => {})
       .finally(() => {
         setRunningMission(null);
       });
@@ -33,7 +29,7 @@ const MissionsComponent = () => {
     <div className="row mb-3">
       <div className="row  sticky-top holo text-center">
         <div className="row pt-2 pb-1 m-0 mb-1 justify-content-around text-center">
-          <HealthComponent health={player.health} />
+          <HealthComponent health={player.health} maxHealth={player.maxHealth} />
           <EnergyComponent energy={player.energy} />
           <CreditsComponent credits={player.credits} />
         </div>

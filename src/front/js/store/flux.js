@@ -1495,6 +1495,38 @@ const getState = ({ getStore, getActions, setStore }) => {
     return data;
   };
 
+  const LOW_HEALTH_RATIO = 0.25;
+
+  // Health only ever drops from a mission's "Health Effect" - append a
+  // warning directly onto that mission's own result message (rather than
+  // firing a separate transaction) so it's guaranteed to show up in the
+  // same toast the player is already looking at, instead of racing another
+  // push for the toast slot.
+  const withLowHealthWarning = (message, player) => {
+    if (!player || !player.maxHealth) return message;
+    const ratio = player.health / player.maxHealth;
+    if (ratio > LOW_HEALTH_RATIO) return message;
+    return `${message} ⚠ Health critically low (${player.health}/${player.maxHealth}).`;
+  };
+
+  let transactionIdCounter = 0;
+
+  // Every mutating action funnels its failures through here instead of a
+  // blocking alert() - "not enough energy", "on cooldown", "insufficient
+  // credits" etc. all become a toast/activity-log entry like everything
+  // else, then the rejection is re-thrown so the calling component's own
+  // .finally() (button spinner reset, etc.) still runs.
+  const reportError = (error, fallbackMessage) => {
+    let message = error?.message || fallbackMessage;
+    if (error?.status === 429 && error?.data?.retry_after_seconds != null) {
+      message = `${message} Try again in ${Math.ceil(
+        error.data.retry_after_seconds
+      )}s.`;
+    }
+    getActions().updateTransactions(`Error: ${message}`);
+    throw error;
+  };
+
   return {
     store: {
       url: process.env.BACKEND_URL,
@@ -1613,7 +1645,13 @@ const getState = ({ getStore, getActions, setStore }) => {
         return apiRequest("/api/player", { method: "PUT", body: { name } })
           .then(applyPlayerResult)
           .catch((error) => {
-            alert(error.message || "Failed to update name");
+            try {
+              reportError(error, "Failed to update name");
+            } catch {
+              // swallowed here: no caller downstream is waiting on this
+              // promise's rejection, so re-throwing from reportError would
+              // otherwise surface as an unhandled promise rejection.
+            }
           });
       },
 
@@ -1632,112 +1670,142 @@ const getState = ({ getStore, getActions, setStore }) => {
         return apiRequest("/api/market/buy", {
           method: "POST",
           body: { item_name: itemName, quantity },
-        }).then((data) => {
-          applyPlayerResult(data);
-          getActions().updateTransactions(
-            `Bought ${quantity}x ${itemName} for ${data.total_cost} credits.`
-          );
-          return data;
-        });
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            getActions().updateTransactions(
+              `Bought ${quantity}x ${itemName} for ${data.total_cost} credits.`
+            );
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to buy item"));
       },
 
       sellItem: (itemName, quantity) => {
         return apiRequest("/api/market/sell", {
           method: "POST",
           body: { item_name: itemName, quantity },
-        }).then((data) => {
-          applyPlayerResult(data);
-          const profit = data.realized_profit || 0;
-          const profitText =
-            profit > 0
-              ? ` (+${profit} profit)`
-              : profit < 0
-              ? ` (${profit} loss)`
-              : "";
-          getActions().updateTransactions(
-            `Sold ${quantity}x ${itemName} for ${data.total_value} credits${profitText}.`
-          );
-          return data;
-        });
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            const profit = data.realized_profit || 0;
+            const profitText =
+              profit > 0
+                ? ` (+${profit} profit)`
+                : profit < 0
+                ? ` (${profit} loss)`
+                : "";
+            getActions().updateTransactions(
+              `Sold ${quantity}x ${itemName} for ${data.total_value} credits${profitText}.`
+            );
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to sell item"));
       },
 
       buyEquipment: (itemName, quantity) => {
         return apiRequest("/api/equipment/buy", {
           method: "POST",
           body: { item_name: itemName, quantity },
-        }).then((data) => {
-          applyPlayerResult(data);
-          getActions().updateTransactions(
-            `Bought ${quantity}x ${itemName} for ${data.total_cost} credits.`
-          );
-          return data;
-        });
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            getActions().updateTransactions(
+              `Bought ${quantity}x ${itemName} for ${data.total_cost} credits.`
+            );
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to buy equipment"));
       },
 
       buyProperty: (propertyName) => {
         return apiRequest("/api/properties/buy", {
           method: "POST",
           body: { property_name: propertyName },
-        }).then((data) => {
-          applyPlayerResult(data);
-          getActions().updateTransactions(
-            `Purchased ${propertyName} for ${data.total_cost} credits.`
-          );
-          return data;
-        });
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            getActions().updateTransactions(
+              `Purchased ${propertyName} for ${data.total_cost} credits.`
+            );
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to purchase property"));
       },
 
       startMission: (missionName) => {
         return apiRequest("/api/mission/start", {
           method: "POST",
           body: { mission_name: missionName },
-        }).then((data) => {
-          applyPlayerResult(data);
-          getActions().updateTransactions(data.message);
-          return data;
-        });
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            const message = data.died
+              ? data.message
+              : withLowHealthWarning(data.message, data.player);
+            getActions().updateTransactions(message);
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to start mission"));
       },
 
       startStoryMission: (missionName) => {
         return apiRequest("/api/story-mission/start", {
           method: "POST",
           body: { mission_name: missionName },
-        }).then((data) => {
-          applyPlayerResult(data);
-          getActions().updateTransactions(data.message);
-          return data;
-        });
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            const message = data.died
+              ? data.message
+              : withLowHealthWarning(data.message, data.player);
+            getActions().updateTransactions(message);
+            return data;
+          })
+          .catch((error) =>
+            reportError(error, "Failed to start story mission")
+          );
       },
 
       useRecoveryItem: (itemName) => {
         return apiRequest("/api/recovery/use", {
           method: "POST",
           body: { item_name: itemName },
-        }).then((data) => {
-          applyPlayerResult(data);
-          getActions().updateTransactions(
-            `Used ${itemName}: +${data.health_gained} health, +${data.energy_gained} energy.`
-          );
-          return data;
-        });
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            getActions().updateTransactions(
+              `Used ${itemName}: +${data.health_gained} health, +${data.energy_gained} energy.`
+            );
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to use item"));
       },
 
       upgradeStat: (stat) => {
         return apiRequest("/api/upgrade", {
           method: "POST",
           body: { stat },
-        }).then((data) => {
-          applyPlayerResult(data);
-          getActions().updateTransactions(
-            `Upgraded ${stat} for ${data.cost} credits.`
-          );
-          return data;
-        });
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            getActions().updateTransactions(
+              `Upgraded ${stat} for ${data.cost} credits.`
+            );
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to upgrade"));
       },
 
       updateTransactions: (transaction) => {
         const store = getStore();
-        const newTransactions = [transaction, ...store.transactions];
+        // Give every entry a unique id, not just its text, so two
+        // consecutive actions that happen to produce the exact same
+        // message (e.g. failing the same mission twice in a row) each
+        // still count as a distinct event for anything watching
+        // transactions[0] - text-only equality would look unchanged.
+        const entry = { id: ++transactionIdCounter, message: transaction };
+        const newTransactions = [entry, ...store.transactions];
         if (newTransactions.length > 50) {
           newTransactions.length = 50;
         }
