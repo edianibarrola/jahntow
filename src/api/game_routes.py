@@ -66,6 +66,26 @@ def get_market_prices():
     return jsonify({"prices": economy.get_market_prices()}), 200
 
 
+LEADERBOARD_SIZE = 20
+
+
+@game_api.route('/leaderboard', methods=['GET'])
+def leaderboard():
+    """
+    No auth required, same as game-data/market-prices. Ranked by prestige
+    first, then level, then credits - a player who's rebirthed several
+    times outranks one sitting on a big credits pile with no prestige,
+    since that's what prestiging is meant to represent.
+    """
+    players = (
+        Player.query
+        .order_by(Player.prestige_level.desc(), Player.level.desc(), Player.credits.desc())
+        .limit(LEADERBOARD_SIZE)
+        .all()
+    )
+    return jsonify({"players": [p.serialize_public() for p in players]}), 200
+
+
 @game_api.route('/market/buy', methods=['POST'])
 @jwt_required()
 def market_buy():
@@ -428,7 +448,10 @@ def _prestige_player(player):
     max-stat floor scales up with prestige_level instead of resetting to
     the flat base - each rebirth permanently raises the ceiling.
     """
-    player.prestige_level += 1
+    # Coalesce None: SQLAlchemy column defaults only apply to new INSERTs,
+    # not existing rows from before this column was migrated in, so an
+    # older player's prestige_level can still be NULL here.
+    player.prestige_level = (player.prestige_level or 0) + 1
     player.level = 1
     player.experience = 0
     player.credits = 5000

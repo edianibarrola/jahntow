@@ -106,6 +106,19 @@ class Player(db.Model):
             "prestigeLevel": self.prestige_level,
         }
 
+    def serialize_public(self):
+        """
+        For the leaderboard - other players never see inventory, equipment,
+        or properties. Only the fields meaningful to compare/rank on.
+        """
+        return {
+            "name": self.name,
+            "level": self.level,
+            "credits": self.credits,
+            "storyWins": self.storyWins,
+            "prestigeLevel": self.prestige_level,
+        }
+
 
 class MarketPrice(db.Model):
     """
