@@ -82,18 +82,17 @@ const InventoryComponent = () => {
   // Property output waits in an uncollected pool and stops accruing once
   // the pool fills, so surfacing "ready to collect" (and whether anything
   // has stalled) is what tells the player to come back.
-  const [collecting, setCollecting] = useState(false);
+  const [collecting, setCollecting] = useState(null);
   const pendingEntries = Object.entries(player.pendingProduction || {}).filter(
     ([, qty]) => Math.floor(qty) > 0
   );
-  const poolCap = (player.maxInventoryCount || 0) * 5;
-  const anyPoolFull = pendingEntries.some(([, qty]) => qty >= poolCap);
-  const collect = () => {
-    setCollecting(true);
+  const poolCap = (player.maxInventoryCount || 0) * 2;
+  const collect = (propertyName) => {
+    setCollecting(propertyName || "__all__");
     actions
-      .collectProduction()
+      .collectProduction(propertyName)
       .catch(() => {})
-      .finally(() => setCollecting(false));
+      .finally(() => setCollecting(null));
   };
 
   const goodsValue = held.reduce(
@@ -279,24 +278,6 @@ const InventoryComponent = () => {
 
       <div className="col-12 holo mb-5">
         <h4 className="text-center">Properties</h4>
-        {pendingEntries.length > 0 && (
-          <div className="text-center mb-2">
-            <p className="m-0 tx-property">
-              Ready to collect:{" "}
-              {pendingEntries
-                .map(([name, qty]) => `${Math.floor(qty)}x ${name}`)
-                .join(" · ")}
-            </p>
-            {anyPoolFull && (
-              <p className="m-0 tx-error">
-                A store is full — production has stopped until you collect.
-              </p>
-            )}
-            <button onClick={collect} disabled={collecting}>
-              {collecting ? "Collecting..." : "Collect"}
-            </button>
-          </div>
-        )}
         {ownedProperties.length === 0 ? (
           <p className="text-center tx-info">
             None owned. Properties generate goods passively on the Properties
@@ -307,18 +288,37 @@ const InventoryComponent = () => {
             {ownedProperties.map(([name, level]) => {
               const data = propertyCatalog[name];
               if (!data) return null;
+              // Status and action per property: which one has filled up,
+              // and claim just that one.
+              const waiting = Math.floor(
+                (player.pendingProduction || {})[name] || 0
+              );
+              const full = waiting >= poolCap;
               return (
                 <li
                   key={name}
                   className="d-flex justify-content-between align-items-center flex-wrap"
                 >
                   <span>
-                    {name}{" "}
-                    <span className="tx-property">(level {level})</span>
+                    {name} <span className="tx-property">(level {level})</span>{" "}
+                    <span className="tx-info">
+                      · {(data["Generation Rate"] * level).toFixed(2)}{" "}
+                      {data["Item Generated"]} / 30s
+                    </span>
                   </span>
-                  <span className="tx-info">
-                    {(data["Generation Rate"] * level).toFixed(2)}{" "}
-                    {data["Item Generated"]} / 30s
+                  <span className="d-flex align-items-center flex-wrap">
+                    <span className={full ? "tx-error me-2" : "tx-info me-2"}>
+                      {waiting}/{poolCap}
+                      {full && " FULL"}
+                    </span>
+                    {waiting > 0 && (
+                      <button
+                        onClick={() => collect(name)}
+                        disabled={collecting !== null}
+                      >
+                        {collecting === name ? "Claiming..." : "Claim"}
+                      </button>
+                    )}
                   </span>
                 </li>
               );

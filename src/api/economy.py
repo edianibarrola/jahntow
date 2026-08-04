@@ -95,7 +95,7 @@ PROPERTY_PRODUCTION_INTERVAL = timedelta(seconds=30)
 # Properties keep producing past maxInventoryCount up to this multiple of
 # it, so a high-rate property isn't throttled to near-zero output the
 # moment its stock fills. Bounded so it can't accumulate without limit.
-PRODUCTION_OVERFLOW_MULTIPLE = 5
+PRODUCTION_OVERFLOW_MULTIPLE = 2
 # Longest absence that still accrues production, so returning after a week
 # doesn't dump an unsellable mountain of stock.
 PRODUCTION_CAP_HOURS = 8
@@ -891,6 +891,38 @@ def _consume_ticks(player, field, interval, now, cap=None):
     return ticks
 
 
+def migrate_pending_to_properties(player):
+    """
+    Return the uncollected pool keyed by PROPERTY name, converting any
+    entries left over from when it was keyed by item.
+
+    Property pools used to be pooled per item, so two properties making
+    the same good shared one store and neither could be claimed on its
+    own. Rather than discard whatever a player had banked at upgrade
+    time, each legacy entry is handed to an owned property that makes
+    that item (splitting it if several do). Entries with no owning
+    property are dropped - there is nothing left to collect them from.
+    """
+    pending = dict(player.pending_production or {})
+    properties = player.properties or {}
+    legacy = [key for key in pending if key not in properties]
+    if not legacy:
+        return pending
+
+    for item_name in legacy:
+        quantity = pending.pop(item_name)
+        owners = [
+            name for name in properties
+            if (find_property(name)[1] or {}).get("Item Generated") == item_name
+        ]
+        if not owners:
+            continue
+        share = quantity / len(owners)
+        for name in owners:
+            pending[name] = pending.get(name, 0) + share
+    return pending
+
+
 def apply_passive_tick(player):
     """
     Apply energy regen, health regen, property-based item production, and
@@ -949,7 +981,7 @@ def apply_passive_tick(player):
     if production_ticks > 0 and player.properties:
         inventory = dict(player.inventory or {})
         remainders = dict(player.production_remainders or {})
-        pending = dict(player.pending_production or {})
+        pending = migrate_pending_to_properties(player)
         # Legacy cleanup: inventories written before whole-item production
         # can hold fractional quantities. Fold the fraction back into the
         # carry pool so the visible inventory is always whole units.
@@ -970,14 +1002,13 @@ def apply_passive_tick(player):
             _, property_data = find_property(property_name)
             if not property_data:
                 continue
-            generated_item = property_data["Item Generated"]
             rate = property_data["Generation Rate"]
-            # Output accrues to the uncollected pool, not straight to
-            # inventory, so maxInventoryCount stays meaningful (writing
-            # directly meant a cap of 10 quietly held 50). The pool holds
-            # a generous multiple of the inventory cap so an absence still
-            # banks something, then production stops until it's collected.
-            current_qty = pending.get(generated_item, 0)
+            # Output accrues to a pool PER PROPERTY, not straight to
+            # inventory and not pooled per item. Writing to inventory made
+            # maxInventoryCount meaningless; pooling per item meant two
+            # properties making the same good shared one store, so neither
+            # could be claimed or reported on individually.
+            current_qty = pending.get(property_name, 0)
             ceiling = player.maxInventoryCount * PRODUCTION_OVERFLOW_MULTIPLE
             if current_qty >= ceiling:
                 continue
@@ -988,19 +1019,19 @@ def apply_passive_tick(player):
             # low-rate property (0.0213/tick) therefore delivers 1 item
             # every ~47 ticks instead of dribbling unsellable slivers into
             # the inventory that floor to "Owned: 0" but still get valued.
-            produced = owned_qty * rate * production_ticks + remainders.get(generated_item, 0)
+            produced = owned_qty * rate * production_ticks + remainders.get(property_name, 0)
             gained = math.floor(produced)
             carry = round(produced - gained, 6)
             if gained <= 0:
-                if carry != remainders.get(generated_item, 0):
-                    remainders[generated_item] = carry
+                if carry != remainders.get(property_name, 0):
+                    remainders[property_name] = carry
                     changed = True
                 continue
 
             # Output above the ceiling is lost, not banked - otherwise a
             # full pool would keep filling the carry pool forever.
-            remainders[generated_item] = carry
-            pending[generated_item] = min(ceiling, current_qty + gained)
+            remainders[property_name] = carry
+            pending[property_name] = min(ceiling, current_qty + gained)
             changed = True
 
         if changed:

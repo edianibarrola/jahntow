@@ -1848,8 +1848,12 @@ const getState = ({ getStore, getActions, setStore }) => {
           .catch((error) => reportError(error, "Failed to sell equipment"));
       },
 
-      collectProduction: () => {
-        return apiRequest("/api/properties/collect", { method: "POST" })
+      // propertyName omitted collects every property at once.
+      collectProduction: (propertyName) => {
+        return apiRequest("/api/properties/collect", {
+          method: "POST",
+          body: propertyName ? { property_name: propertyName } : {},
+        })
           .then((data) => {
             applyPlayerResult(data);
             appendActivityEntry(data.activity);

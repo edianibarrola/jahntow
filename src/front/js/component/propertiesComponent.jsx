@@ -8,21 +8,22 @@ import CreditsComponent from "./creditsComponent";
 const PropertiesComponent = () => {
   const { store, actions } = useContext(Context);
   const { player } = store;
-  const [collecting, setCollecting] = React.useState(false);
+  const [collecting, setCollecting] = React.useState(null);
 
-  // Properties bank their output in an uncollected pool and stop once it
-  // fills, so this panel is the whole reason to revisit the tab.
+  // Each property banks its own output and stops once its store fills, so
+  // this is reported per property: a single combined line couldn't say
+  // WHICH property had stalled, or let you claim one without draining the
+  // others first.
   const pendingEntries = Object.entries(player.pendingProduction || {}).filter(
     ([, qty]) => Math.floor(qty) > 0
   );
-  const poolCap = (player.maxInventoryCount || 0) * 5;
-  const anyPoolFull = pendingEntries.some(([, qty]) => qty >= poolCap);
-  const collect = () => {
-    setCollecting(true);
+  const poolCap = (player.maxInventoryCount || 0) * 2;
+  const collect = (propertyName) => {
+    setCollecting(propertyName || "__all__");
     actions
-      .collectProduction()
+      .collectProduction(propertyName)
       .catch(() => {})
-      .finally(() => setCollecting(false));
+      .finally(() => setCollecting(null));
   };
 
   // Define maxRank based on player level (every 2 levels equal one rank level)
@@ -88,25 +89,44 @@ const PropertiesComponent = () => {
           <p className="m-0">Properties</p>
           {pendingEntries.length > 0 ? (
             <>
-              <p className="m-0 tx-property">
-                Ready to collect:{" "}
-                {pendingEntries
-                  .map(([name, qty]) => `${Math.floor(qty)}x ${name}`)
-                  .join(" · ")}
-              </p>
-              {anyPoolFull && (
-                <p className="m-0 tx-error">
-                  A store is full — production has stopped until you collect.
-                </p>
+              <ul className="activity-list mb-1">
+                {pendingEntries.map(([propertyName, qty]) => {
+                  const full = qty >= poolCap;
+                  return (
+                    <li
+                      key={propertyName}
+                      className="d-flex justify-content-between align-items-center flex-wrap"
+                    >
+                      <span className={full ? "tx-error" : "tx-property"}>
+                        {propertyName}: {Math.floor(qty)}/{poolCap}
+                        {full && " — FULL, production stopped"}
+                      </span>
+                      <button
+                        onClick={() => collect(propertyName)}
+                        disabled={collecting !== null}
+                      >
+                        {collecting === propertyName
+                          ? "Claiming..."
+                          : `Claim ${Math.floor(qty)}`}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              {pendingEntries.length > 1 && (
+                <button
+                  className="mb-2"
+                  onClick={() => collect()}
+                  disabled={collecting !== null}
+                >
+                  {collecting === "__all__" ? "Claiming..." : "Claim all"}
+                </button>
               )}
-              <button className="mb-2" onClick={collect} disabled={collecting}>
-                {collecting ? "Collecting..." : "Collect production"}
-              </button>
             </>
           ) : (
             <p className="m-0 tx-info">
-              Properties bank their output until you collect it (up to{" "}
-              {poolCap} of each item).
+              Each property banks its own output until you claim it (up to{" "}
+              {poolCap}), then pauses.
             </p>
           )}
         </div>
