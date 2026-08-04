@@ -226,12 +226,6 @@ class Player(db.Model):
             "itemCooldowns": self.item_cooldowns or {},
             "upgradeSteps": self.upgrade_steps or {},
             "ship": self.ship or {},
-            # The hold the player actually has: the purchased cap plus any
-            # cargo-hold ship modules. Every screen that talks about "how
-            # many can I carry" must use this, not maxInventoryCount.
-            "cargoCapacity": self.maxInventoryCount
-            + (self.ship or {}).get("cargo_hold", 0)
-            * game_data.SHIP_MODULES["cargo_hold"]["effect_per_level"],
             "pendingProduction": self.pending_production or {},
             "stats": self.stats or {},
             "dailyContracts": self.daily_contracts or {},

@@ -27,6 +27,16 @@ UPGRADABLE_STATS = {
     "equipment": "maxEquipmentCount",
 }
 
+# These upgrades are presented as ship systems (the Upgrades tab was folded
+# into the Ship tab), so the activity log has to name them the way the tab
+# does - "Upgraded inventory" matched nothing the player could see.
+STAT_DISPLAY_NAMES = {
+    "inventory": "Cargo Bay",
+    "health": "Life Support",
+    "energy": "Capacitor",
+    "equipment": "Armory",
+}
+
 # Refund fraction when selling equipment back.
 EQUIPMENT_SELL_REFUND_PCT = 0.5
 
@@ -189,7 +199,7 @@ def market_buy():
     current_qty = existing.get("quantity", 0)
     current_avg_cost = existing.get("avg_cost", 0)
 
-    if current_qty + quantity > economy.cargo_capacity(player):
+    if current_qty + quantity > player.maxInventoryCount:
         return jsonify({"message": "not enough inventory space"}), 400
     if player.credits < total_cost:
         return jsonify({"message": "insufficient credits"}), 400
@@ -576,7 +586,7 @@ def properties_collect():
         item_name = property_data["Item Generated"]
         entry = inventory.get(item_name, {})
         current_qty = entry.get("quantity", 0)
-        space = economy.cargo_capacity(player) - current_qty
+        space = player.maxInventoryCount - current_qty
         take = min(available, space)
         if take <= 0:
             continue
@@ -897,7 +907,12 @@ def upgrade_stat():
     steps[stat] = purchased + 1
     player.upgrade_steps = steps
 
-    activity = economy.log_activity(player, f"Upgraded {stat} for {cost} credits.", "upgrade")
+    activity = economy.log_activity(
+        player,
+        f"Expanded {STAT_DISPLAY_NAMES.get(stat, stat)} to "
+        f"{current_value + UPGRADE_STAT_STEP} for {cost} credits.",
+        "upgrade",
+    )
     db.session.commit()
     return jsonify({
         "player": player.serialize(),

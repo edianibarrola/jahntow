@@ -87,7 +87,7 @@ const InventoryComponent = () => {
     ([, qty]) => Math.floor(qty) > 0
   );
   const poolCap =
-    (player.cargoCapacity || 0) * (2 + ((player.ship || {}).cargo_drones || 0));
+    (player.maxInventoryCount || 0) * (2 + ((player.ship || {}).cargo_drones || 0));
   const collect = (propertyName) => {
     setCollecting(propertyName || "__all__");
     actions

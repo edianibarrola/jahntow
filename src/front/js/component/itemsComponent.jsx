@@ -149,7 +149,7 @@ const ItemsComponent = () => {
                         {owned > 0 && (
                           <>
                             {" "}
-                            (Owned: {owned}/{player.cargoCapacity},
+                            (Owned: {owned}/{player.maxInventoryCount},
                             Avg Cost: {avgCost.toFixed(2)},{" "}
                             <span
                               style={{
@@ -188,7 +188,7 @@ const ItemsComponent = () => {
                           disabled={
                             pendingItem !== null ||
                             locked ||
-                            owned + quantity > player.cargoCapacity
+                            owned + quantity > player.maxInventoryCount
                           }
                         >
                           {pendingItem === item.item_name ? "..." : "Buy"}

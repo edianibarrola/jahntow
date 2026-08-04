@@ -17,7 +17,6 @@ import NotificationsComponent from "../component/notificationsComponent";
 import TransactionsComponent from "../component/transactionsComponent";
 import HealthRecoveryComponent from "../component/healthRecoveryComponent";
 import PropertiesComponent from "../component/propertiesComponent";
-import InventoryUpgradeComponent from "../component/inventoryUpgradeComponent";
 import ShipComponent from "../component/shipComponent";
 import EquipmentStore from "../component/equipmentStore";
 import InventoryComponent from "../component/inventoryComponent";
@@ -137,12 +136,6 @@ export const Home = () => {
           <Tab eventKey="ship" title="Ship" className="shipinside">
             <div className="mb-5 text-center">
               <ShipComponent />
-            </div>
-          </Tab>
-
-          <Tab eventKey="upgrades" title="Upgrades" className="shipinside">
-            <div className="mb-5 text-center">
-              <InventoryUpgradeComponent />
             </div>
           </Tab>
 
