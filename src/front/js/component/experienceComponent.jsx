@@ -8,15 +8,18 @@ const ExperienceComponent = ({ experience, xpForNextLevel }) => {
   const pct = needed > 0 ? Math.min(100, (experience / needed) * 100) : 0;
 
   return (
-    <div className="col-4">
+    <span className="stat-chip">
       Exp: {experience}
       {needed > 0 && <> / {needed}</>}
       {needed > 0 && (
-        <div className="xp-bar" aria-label={`${Math.round(pct)}% to next level`}>
-          <div className="xp-bar-fill" style={{ width: `${pct}%` }} />
-        </div>
+        <span
+          className="xp-bar"
+          aria-label={`${Math.round(pct)}% to next level`}
+        >
+          <span className="xp-bar-fill" style={{ width: `${pct}%` }} />
+        </span>
       )}
-    </div>
+    </span>
   );
 };
 

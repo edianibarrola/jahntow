@@ -1,7 +1,7 @@
 import React from "react";
 
 const LevelComponent = ({ level }) => {
-  return <div className="col-4">Lvl: {level}</div>;
+  return <span className="stat-chip">Lvl {level}</span>;
 };
 
 export default LevelComponent;

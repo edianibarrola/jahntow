@@ -2,7 +2,7 @@ import React from "react";
 
 const LoginStreakComponent = ({ streak }) => {
   if (!streak) return null;
-  return <div className="col-4">🔥 Streak: {streak}</div>;
+  return <span className="stat-chip">🔥 {streak}</span>;
 };
 
 export default LoginStreakComponent;

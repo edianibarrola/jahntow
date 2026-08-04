@@ -678,3 +678,45 @@ input.form-control {
   border-bottom-color: #7ec8ff;
   font-weight: bold;
 }
+
+
+/* Header/stat chips: auto width, wrap as a group instead of colliding.
+   The old col-4 gave five stats 33% each in one row. */
+.header-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: 10px;
+  row-gap: 2px;
+  text-align: center;
+}
+
+.stat-chip {
+  display: inline-block;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+/* The XP bar rides inside its chip now. */
+.stat-chip .xp-bar {
+  display: inline-block;
+  width: 72px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.stat-chip .xp-bar-fill {
+  display: block;
+}
+
+/* Events can stack five deep; on a phone that was ~350px of banner.
+   Tighter type and an internal scroll past four lines. */
+@media (max-width: 767px) {
+  .event-banner {
+    font-size: 0.8rem;
+    line-height: 1.35;
+    max-height: 108px;
+    overflow-y: auto;
+  }
+}
