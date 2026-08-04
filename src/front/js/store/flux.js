@@ -1848,6 +1848,16 @@ const getState = ({ getStore, getActions, setStore }) => {
           .catch((error) => reportError(error, "Failed to sell equipment"));
       },
 
+      collectProduction: () => {
+        return apiRequest("/api/properties/collect", { method: "POST" })
+          .then((data) => {
+            applyPlayerResult(data);
+            appendActivityEntry(data.activity);
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to collect production"));
+      },
+
       buyProperty: (propertyName) => {
         return apiRequest("/api/properties/buy", {
           method: "POST",

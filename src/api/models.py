@@ -123,6 +123,14 @@ class Player(db.Model):
     # makes "newest title" well-defined). Catalog in game_data.ACHIEVEMENTS.
     achievements = db.Column(db.JSON, default=list)
 
+    # Goods produced by properties but not yet collected, {item_name: qty}.
+    # Production accrues HERE rather than straight into inventory: writing
+    # it directly made maxInventoryCount meaningless (a cap of 10 quietly
+    # overfilled to 50), and gave the player nothing to do with a property
+    # once bought. Output stops when this fills, so a property is worth
+    # checking in on.
+    pending_production = db.Column(db.JSON, default=dict)
+
     # Sub-unit production carried between ticks, {item_name: fraction}.
     # Properties only ever deposit WHOLE items into the inventory; the
     # leftover fraction lives here until it completes a unit. Without this
@@ -212,6 +220,7 @@ class Player(db.Model):
             # surfacing a 429 error after the player clicks.
             "itemCooldowns": self.item_cooldowns or {},
             "upgradeSteps": self.upgrade_steps or {},
+            "pendingProduction": self.pending_production or {},
             "stats": self.stats or {},
             "dailyContracts": self.daily_contracts or {},
             "achievements": self.achievements or [],

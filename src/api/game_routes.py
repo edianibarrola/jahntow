@@ -472,6 +472,80 @@ def properties_buy():
     }), 200
 
 
+@game_api.route('/properties/collect', methods=['POST'])
+@jwt_required()
+def properties_collect():
+    """
+    Move goods produced by properties out of the uncollected pool and into
+    the inventory, bounded by maxInventoryCount per item.
+
+    Production used to be written straight into the inventory, which let a
+    cap of 10 quietly hold 50 and left a bought property with no further
+    interaction. Collecting makes the cap real (it is the limit on what
+    you can hold at once) and gives properties a loop: they fill, you come
+    back, you collect and sell.
+    """
+    player, err = _player_or_404()
+    if err:
+        return err
+    economy.apply_passive_tick(player)
+
+    pending = dict(player.pending_production or {})
+    if not pending:
+        return jsonify({"message": "nothing to collect"}), 400
+
+    inventory = dict(player.inventory or {})
+    collected = {}
+    for item_name, available in list(pending.items()):
+        available = math.floor(available)
+        if available <= 0:
+            continue
+        entry = inventory.get(item_name, {})
+        current_qty = entry.get("quantity", 0)
+        space = player.maxInventoryCount - current_qty
+        take = min(available, space)
+        if take <= 0:
+            continue
+        # Property output is free (already paid for by the property), so
+        # blend it in at zero cost rather than overwriting any avg_cost
+        # tracked from market purchases of the same item.
+        new_qty = current_qty + take
+        inventory[item_name] = {
+            "quantity": new_qty,
+            "avg_cost": round(entry.get("avg_cost", 0) * current_qty / new_qty, 2)
+            if new_qty else 0,
+        }
+        remaining = pending[item_name] - take
+        if remaining > 0:
+            pending[item_name] = remaining
+        else:
+            pending.pop(item_name, None)
+        collected[item_name] = take
+
+    if not collected:
+        return jsonify({
+            "message": "no inventory space - sell something first"
+        }), 400
+
+    player.inventory = inventory
+    player.pending_production = pending
+
+    summary = ", ".join(f"{qty}x {name}" for name, qty in collected.items())
+    left = sum(math.floor(v) for v in pending.values())
+    note = f" ({left} still waiting - free up space to collect the rest.)" if left else ""
+    activity = economy.log_activity(
+        player, f"Collected {summary} from your properties.{note}", "property"
+    )
+    goal_entries = economy.check_achievements(player)
+    db.session.commit()
+    return jsonify({
+        "player": player.serialize(),
+        "collected": collected,
+        "activity": activity.serialize(),
+        "extra_activities": [e.serialize() for e in goal_entries],
+    }), 200
+
+
 def _resolve_mission_request(player, mission_catalog, mission_name, is_story):
     mission = mission_catalog.get(mission_name)
     if not mission:
@@ -783,6 +857,7 @@ def _reset_player(player):
     player.properties = {}
     # Carry pool belongs with the inventory/properties it was produced by.
     player.production_remainders = {}
+    player.pending_production = {}
     player.maxInventoryCount = 10
     player.maxHealth = 100
     player.maxEnergy = 100
@@ -838,6 +913,7 @@ def _prestige_player(player):
     player.inventory = {}
     player.properties = {}
     player.production_remainders = {}
+    player.pending_production = {}
     player.maxInventoryCount = 10 + player.prestige_level * economy.PRESTIGE_MAX_INVENTORY_BONUS
     player.maxHealth = 100 + player.prestige_level * economy.PRESTIGE_MAX_HEALTH_BONUS
     player.maxEnergy = 100 + player.prestige_level * economy.PRESTIGE_MAX_ENERGY_BONUS

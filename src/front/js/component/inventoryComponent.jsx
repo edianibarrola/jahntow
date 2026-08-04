@@ -1,21 +1,31 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Context } from "../store/appContext";
 import HealthComponent from "./healthComponent";
 import EnergyComponent from "./energyComponent";
 import CreditsComponent from "./creditsComponent";
 import { activePerks } from "../equipmentPerks";
 
-// There was previously no way to see what you actually own. Holdings were
-// only visible item-by-item inside the Market list, and that list filtered
-// to items at or below your rank - so anything a property generated above
-// your rank was invisible *and* unsellable.
+// The one place that answers "what do I actually have?". Holdings used to
+// be scattered: goods and equipment were listed here but could only be
+// sold from their own tabs, and properties - often the largest thing a
+// player owns - appeared nowhere but the Properties tab. Everything owned
+// is now here, valued, and sellable in place.
 const InventoryComponent = () => {
-  const { store } = useContext(Context);
-  const { player, marketPrices, gameData } = store;
+  const { store, actions } = useContext(Context);
+  const { player, marketPrices, gameData, activeEvents } = store;
+  const [quantities, setQuantities] = useState({});
+  const [pending, setPending] = useState(null);
+
+  const getQty = (name) => quantities[name] || 1;
+  const adjustQty = (name, delta, max) =>
+    setQuantities((prev) => ({
+      ...prev,
+      [name]: Math.max(1, Math.min(max, (prev[name] || 1) + delta)),
+    }));
 
   const priceByItem = {};
   (marketPrices || []).forEach((p) => {
-    priceByItem[p.item_name] = p.current_cost;
+    priceByItem[p.item_name] = p;
   });
 
   const rankByItem = {};
@@ -27,9 +37,9 @@ const InventoryComponent = () => {
 
   // Whole units only - a sub-unit remainder is carried server-side (see
   // Player.production_remainders) and isn't ownable stock yet.
-  const held = Object.entries(player.inventory || {}).filter(
-    ([, entry]) => Math.floor(entry.quantity || 0) > 0
-  );
+  const held = Object.entries(player.inventory || {})
+    .map(([name, entry]) => [name, Math.floor(entry.quantity || 0), entry])
+    .filter(([, quantity]) => quantity > 0);
 
   const equipmentHeld = Object.entries(player.equipment || {}).filter(
     ([, entry]) => (entry.quantity || 0) > 0
@@ -39,11 +49,78 @@ const InventoryComponent = () => {
     0
   );
 
-  const totalValue = held.reduce(
-    (sum, [name, entry]) =>
-      sum + (priceByItem[name] || 0) * Math.floor(entry.quantity),
+  // Equipment resale mirrors the sell endpoint: half of the CURRENT value,
+  // which a traveling merchant discounts.
+  const equipmentCatalog = {};
+  Object.entries(gameData.equipment || {}).forEach(([category, entries]) => {
+    Object.entries(entries).forEach(([name, data]) => {
+      equipmentCatalog[name] = { ...data, category };
+    });
+  });
+  const merchantFactor = (category) => {
+    const event = (activeEvents || []).find(
+      (e) => e.kind === "merchant" && e.category === category
+    );
+    return event ? event.multiplier : 1;
+  };
+  const equipmentResale = (name) => {
+    const data = equipmentCatalog[name];
+    if (!data) return 0;
+    return Math.floor(data["Base Cost"] * merchantFactor(data.category) * 0.5);
+  };
+
+  const propertyCatalog = {};
+  Object.values(gameData.properties || {}).forEach((entries) => {
+    Object.entries(entries).forEach(([name, data]) => {
+      propertyCatalog[name] = data;
+    });
+  });
+  const ownedProperties = Object.entries(player.properties || {}).filter(
+    ([, level]) => level > 0
+  );
+
+  // Property output waits in an uncollected pool and stops accruing once
+  // the pool fills, so surfacing "ready to collect" (and whether anything
+  // has stalled) is what tells the player to come back.
+  const [collecting, setCollecting] = useState(false);
+  const pendingEntries = Object.entries(player.pendingProduction || {}).filter(
+    ([, qty]) => Math.floor(qty) > 0
+  );
+  const poolCap = (player.maxInventoryCount || 0) * 5;
+  const anyPoolFull = pendingEntries.some(([, qty]) => qty >= poolCap);
+  const collect = () => {
+    setCollecting(true);
+    actions
+      .collectProduction()
+      .catch(() => {})
+      .finally(() => setCollecting(false));
+  };
+
+  const goodsValue = held.reduce(
+    (sum, [name, quantity]) => sum + (priceByItem[name]?.sell_price || 0) * quantity,
     0
   );
+  const equipmentValue = equipmentHeld.reduce(
+    (sum, [name, entry]) => sum + equipmentResale(name) * (entry.quantity || 0),
+    0
+  );
+  const netWorth = (player.credits || 0) + goodsValue + equipmentValue;
+
+  const sellGoods = (name, quantity) => {
+    setPending(name);
+    actions
+      .sellItem(name, quantity)
+      .catch(() => {})
+      .finally(() => setPending(null));
+  };
+
+  const sellGear = (name, quantity) => {
+    setPending(name);
+    actions
+      .sellEquipment(name, quantity)
+      .catch(() => {})
+      .finally(() => setPending(null));
+  };
 
   return (
     <div className="row mb-3">
@@ -54,7 +131,13 @@ const InventoryComponent = () => {
           <CreditsComponent credits={player.credits} />
         </div>
         <div className="col-12 text-center">
-          <p>Inventory — market value {totalValue.toFixed(0)} credits</p>
+          <p className="m-0">
+            Net worth {netWorth.toFixed(0)} credits{" "}
+            <span className="tx-info">
+              (goods {goodsValue.toFixed(0)} · gear {equipmentValue.toFixed(0)} at
+              resale)
+            </span>
+          </p>
         </div>
       </div>
 
@@ -67,11 +150,12 @@ const InventoryComponent = () => {
           </p>
         ) : (
           <ul className="activity-list">
-            {held.map(([name, entry]) => {
-              const price = priceByItem[name] || 0;
-              const quantity = Math.floor(entry.quantity);
-              const value = price * quantity;
-              const pl = (price - (entry.avg_cost || 0)) * quantity;
+            {held.map(([name, quantity, entry]) => {
+              const row = priceByItem[name];
+              const sellPrice = row?.sell_price || 0;
+              const value = sellPrice * quantity;
+              const pl = (sellPrice - (entry.avg_cost || 0)) * quantity;
+              const qty = Math.min(getQty(name), quantity);
               return (
                 <li
                   key={name}
@@ -80,13 +164,46 @@ const InventoryComponent = () => {
                   <span>
                     {name}{" "}
                     <span className="tx-info">(rank {rankByItem[name] ?? "?"})</span>
+                    {row?.volatility && (
+                      <span className="tx-info"> · {row.volatility}</span>
+                    )}
                   </span>
-                  <span>
-                    {quantity} × {price.toFixed(0)} = {value.toFixed(0)}{" "}
-                    <span className={pl >= 0 ? "tx-sell" : "tx-error"}>
-                      ({pl >= 0 ? "+" : ""}
-                      {pl.toFixed(0)})
+                  <span className="d-flex align-items-center flex-wrap">
+                    <span className="me-2">
+                      {quantity} × {sellPrice.toFixed(0)} = {value.toFixed(0)}{" "}
+                      <span className={pl >= 0 ? "tx-sell" : "tx-error"}>
+                        ({pl >= 0 ? "+" : ""}
+                        {pl.toFixed(0)})
+                      </span>
                     </span>
+                    <button
+                      onClick={() => adjustQty(name, -1, quantity)}
+                      disabled={pending === name}
+                    >
+                      -
+                    </button>
+                    <span className="mx-2">{qty}</span>
+                    <button
+                      onClick={() => adjustQty(name, 1, quantity)}
+                      disabled={pending === name}
+                    >
+                      +
+                    </button>
+                    <button
+                      className="ms-2"
+                      onClick={() => sellGoods(name, qty)}
+                      disabled={pending !== null}
+                    >
+                      Sell
+                    </button>
+                    <button
+                      className="ms-1"
+                      onClick={() => sellGoods(name, quantity)}
+                      disabled={pending !== null}
+                      title="Sell the whole holding"
+                    >
+                      All
+                    </button>
                   </span>
                 </li>
               );
@@ -95,7 +212,7 @@ const InventoryComponent = () => {
         )}
       </div>
 
-      <div className="col-12 holo">
+      <div className="col-12 holo mb-3">
         <h4 className="text-center">
           Equipment ({equipmentTotal}/{player.maxEquipmentCount})
         </h4>
@@ -111,15 +228,101 @@ const InventoryComponent = () => {
           <p className="text-center tx-info">No equipment owned.</p>
         ) : (
           <ul className="activity-list">
-            {equipmentHeld.map(([name, entry]) => (
-              <li
-                key={name}
-                className="d-flex justify-content-between align-items-center flex-wrap"
-              >
-                <span>{name}</span>
-                <span>{entry.quantity}</span>
-              </li>
-            ))}
+            {equipmentHeld.map(([name, entry]) => {
+              const quantity = entry.quantity || 0;
+              const qty = Math.min(getQty(name), quantity);
+              return (
+                <li
+                  key={name}
+                  className="d-flex justify-content-between align-items-center flex-wrap"
+                >
+                  <span>
+                    {name}{" "}
+                    <span className="tx-info">
+                      ({equipmentCatalog[name]?.category})
+                    </span>
+                  </span>
+                  <span className="d-flex align-items-center flex-wrap">
+                    <span className="me-2">
+                      {quantity} ·{" "}
+                      <span className="tx-info">
+                        {equipmentResale(name)} each resale
+                      </span>
+                    </span>
+                    <button
+                      onClick={() => adjustQty(name, -1, quantity)}
+                      disabled={pending === name}
+                    >
+                      -
+                    </button>
+                    <span className="mx-2">{qty}</span>
+                    <button
+                      onClick={() => adjustQty(name, 1, quantity)}
+                      disabled={pending === name}
+                    >
+                      +
+                    </button>
+                    <button
+                      className="ms-2"
+                      onClick={() => sellGear(name, qty)}
+                      disabled={pending !== null}
+                    >
+                      Sell
+                    </button>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+
+      <div className="col-12 holo mb-5">
+        <h4 className="text-center">Properties</h4>
+        {pendingEntries.length > 0 && (
+          <div className="text-center mb-2">
+            <p className="m-0 tx-property">
+              Ready to collect:{" "}
+              {pendingEntries
+                .map(([name, qty]) => `${Math.floor(qty)}x ${name}`)
+                .join(" · ")}
+            </p>
+            {anyPoolFull && (
+              <p className="m-0 tx-error">
+                A store is full — production has stopped until you collect.
+              </p>
+            )}
+            <button onClick={collect} disabled={collecting}>
+              {collecting ? "Collecting..." : "Collect"}
+            </button>
+          </div>
+        )}
+        {ownedProperties.length === 0 ? (
+          <p className="text-center tx-info">
+            None owned. Properties generate goods passively on the Properties
+            tab.
+          </p>
+        ) : (
+          <ul className="activity-list">
+            {ownedProperties.map(([name, level]) => {
+              const data = propertyCatalog[name];
+              if (!data) return null;
+              return (
+                <li
+                  key={name}
+                  className="d-flex justify-content-between align-items-center flex-wrap"
+                >
+                  <span>
+                    {name}{" "}
+                    <span className="tx-property">(level {level})</span>
+                  </span>
+                  <span className="tx-info">
+                    {(data["Generation Rate"] * level).toFixed(2)}{" "}
+                    {data["Item Generated"]} / 30s
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
