@@ -490,16 +490,29 @@ def properties_collect():
         return err
     economy.apply_passive_tick(player)
 
-    pending = dict(player.pending_production or {})
+    pending = economy.migrate_pending_to_properties(player)
     if not pending:
         return jsonify({"message": "nothing to collect"}), 400
 
+    # Collect one property, or all of them. Per-property claiming exists
+    # because a single "collect everything" button drained the stores in an
+    # order the player couldn't control - and with the inventory cap
+    # bounding each trip, that meant repeatedly clearing one property's
+    # goods before ever reaching the next.
+    data = request.get_json(silent=True) or {}
+    only = data.get("property_name")
+    if only is not None and only not in pending:
+        return jsonify({"message": "that property has nothing to collect"}), 400
+    targets = [only] if only else list(pending.keys())
+
     inventory = dict(player.inventory or {})
     collected = {}
-    for item_name, available in list(pending.items()):
-        available = math.floor(available)
-        if available <= 0:
+    for property_name in targets:
+        available = math.floor(pending.get(property_name, 0))
+        _, property_data = economy.find_property(property_name)
+        if available <= 0 or not property_data:
             continue
+        item_name = property_data["Item Generated"]
         entry = inventory.get(item_name, {})
         current_qty = entry.get("quantity", 0)
         space = player.maxInventoryCount - current_qty
@@ -515,12 +528,12 @@ def properties_collect():
             "avg_cost": round(entry.get("avg_cost", 0) * current_qty / new_qty, 2)
             if new_qty else 0,
         }
-        remaining = pending[item_name] - take
+        remaining = pending[property_name] - take
         if remaining > 0:
-            pending[item_name] = remaining
+            pending[property_name] = remaining
         else:
-            pending.pop(item_name, None)
-        collected[item_name] = take
+            pending.pop(property_name, None)
+        collected[item_name] = collected.get(item_name, 0) + take
 
     if not collected:
         return jsonify({
