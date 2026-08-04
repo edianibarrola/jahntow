@@ -128,6 +128,13 @@ class Player(db.Model):
     # buy RATES rather than capacities - see the note on SHIP_MODULES.
     ship = db.Column(db.JSON, default=dict)
 
+    # Medlab uses today, {"date": "YYYY-MM-DD", <category>: count}. Each
+    # use raises the next price in that category for the rest of the UTC
+    # day (economy.RECOVERY_PRICE_MULTIPLIER) - the escalation that
+    # replaced flat prices as the thing keeping purchasable energy from
+    # being a money printer.
+    recovery_uses = db.Column(db.JSON, default=dict)
+
     # Goods produced by properties but not yet collected, {item_name: qty}.
     # Production accrues HERE rather than straight into inventory: writing
     # it directly made maxInventoryCount meaningless (a cap of 10 quietly
@@ -224,6 +231,9 @@ class Player(db.Model):
             # Needed to render Medlab cooldown countdowns instead of only
             # surfacing a 429 error after the player clicks.
             "itemCooldowns": self.item_cooldowns or {},
+            # Client mirrors today's escalated Medlab prices from this;
+            # the server still charges its own computed figure.
+            "recoveryUses": self.recovery_uses or {},
             "upgradeSteps": self.upgrade_steps or {},
             "ship": self.ship or {},
             "pendingProduction": self.pending_production or {},

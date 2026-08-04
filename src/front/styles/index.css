@@ -533,3 +533,22 @@ input.form-control {
   font-size: 0.7em;
   opacity: 0.6;
 }
+
+/* Typed quantity on the market steppers - wide enough for three digits,
+   no spinner arrows doubling the +/- buttons beside it. */
+.qty-input {
+  width: 3.5em;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+  color: inherit;
+  border: 1px solid rgba(126, 200, 255, 0.4);
+  border-radius: 4px;
+}
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.qty-input[type="number"] {
+  -moz-appearance: textfield;
+}

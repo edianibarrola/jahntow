@@ -112,9 +112,21 @@ LEVEL_UP_CREDIT_BONUS = 1000
 # going broke before their first win, with no way back.
 MISSION_FAILURE_REFUND_PCT = 0.6
 # Max health/energy also grow with level, so session length doesn't
-# collapse as mission energy costs scale up with rank.
-MAX_ENERGY_PER_LEVEL = 5
-MAX_HEALTH_PER_LEVEL = 3
+# collapse as mission energy costs scale up with rank. At +5/level the
+# full-bar burst still SHRANK from 10 missions at level 1 to 4 at level
+# 50 (costs grew faster) - the game handed out less to do per sitting the
+# further you got. +10/level plus the flattened mission energy costs
+# makes the burst grow to ~12-14 instead.
+MAX_ENERGY_PER_LEVEL = 10
+MAX_HEALTH_PER_LEVEL = 4
+
+# A win on a mission this many levels below the player neither builds nor
+# pays the win streak. At ~95% success and full spares, streak-boosted
+# spam of far-out-levelled missions was measured (60h simulation) as the
+# rational strategy under energy scarcity: one level-78 run chose the
+# rank-14 mission 988 times. The reward falloff already floors the payout;
+# this closes the streak bonus that made the treadmill pay anyway.
+STREAK_OVERLEVEL_CUTOFF = 15
 # Experience falls off for missions well below the player's level, so
 # grinding out-levelled content stops being the optimal way to level.
 XP_FALLOFF_PER_LEVEL = 0.12
@@ -129,6 +141,12 @@ XP_FALLOFF_FLOOR = 0.15
 # mission at level 14 pays ~2,700 against ~20,400 for the at-level one.
 REWARD_FALLOFF_PER_LEVEL = 0.08
 REWARD_FALLOFF_FLOOR = 0.25
+# Beyond the streak cutoff (15+ levels over) the floor halves again. With
+# flattened energy costs a max-level player can run the rank-50 mission
+# ~100+ times an hour; at a 25% floor of a 634k reward that farmed out to
+# ~15M/hour forever, which made prestige pointless. 10% keeps post-50
+# farming worthwhile without it dwarfing everything else in the game.
+REWARD_FALLOFF_DEEP_FLOOR = 0.10
 # Levels above a mission's rank that are NOT counted as out-levelling it.
 # Mission ranks step by 2-3 (1, 3, 6, 8, 10, 12, ...), so on every other
 # level the newest mission a player can reach is already one rank below
@@ -248,13 +266,13 @@ NARROW_ESCAPE_CHANCE = 0.25
 # charged (0.45 = 55% off). At most one of each is live at a time, and
 # each has its own spawn cooldown so they stay occasional and noticeable.
 PRICE_EVENT_KINDS = ("price_spike", "price_crash")
-BOUNTY_SPAWN_CHANCE = 0.10
+BOUNTY_SPAWN_CHANCE = 0.13
 BOUNTY_CHECK_COOLDOWN = timedelta(minutes=6)
 BOUNTY_MULTIPLIER_MIN = 1.5
 BOUNTY_MULTIPLIER_MAX = 2.5
 BOUNTY_DURATION_MIN = timedelta(minutes=5)
 BOUNTY_DURATION_MAX = timedelta(minutes=10)
-MERCHANT_SPAWN_CHANCE = 0.08
+MERCHANT_SPAWN_CHANCE = 0.10
 MERCHANT_CHECK_COOLDOWN = timedelta(minutes=8)
 MERCHANT_PRICE_FACTOR_MIN = 0.40  # 60% off
 MERCHANT_PRICE_FACTOR_MAX = 0.60  # 40% off
@@ -894,6 +912,33 @@ def find_recovery_item(item_name):
     return None, None
 
 
+# Each Medlab use today multiplies the next one's price in that category.
+# At flat prices with seconds-scale cooldowns, energy was purchasable at
+# ~28 credits/point against missions paying 300-12,000 per point - a
+# 12-hour simulation of a stim-chugging player earned 23.3M/hour against
+# 86k for one who never opened the tab. A cooldown long enough to close
+# that hole would have punished the most engaged players with a timer;
+# rising prices let them keep pushing as hard as they will pay, with the
+# curve crossing mission profit after roughly 7-14 uses a day - so a
+# constant player buys real extra hours daily and the printer stays off.
+RECOVERY_PRICE_MULTIPLIER = 1.5
+
+
+def recovery_uses_today(player):
+    """Per-category Medlab use counts, rolling over on the UTC date."""
+    uses = dict(player.recovery_uses or {})
+    today = utcnow().strftime("%Y-%m-%d")
+    if uses.get("date") != today:
+        return {"date": today}
+    return uses
+
+
+def recovery_price(player, category, item_data):
+    """Today's escalated price for this item, before any rep discount."""
+    uses = recovery_uses_today(player).get(category, 0)
+    return round(item_data["Cost"] * RECOVERY_PRICE_MULTIPLIER ** uses)
+
+
 def _consume_ticks(player, field, interval, now, cap=None):
     """
     How many whole `interval`s have elapsed for one passive resource,
@@ -1362,7 +1407,10 @@ def mission_reward_award(player, mission, is_story=False):
     if is_story or mission.get("Guaranteed"):
         return reward
     over = max(0, player.level - mission["Rank"] - LEVEL_GRACE)
-    multiplier = max(REWARD_FALLOFF_FLOOR, 1 - REWARD_FALLOFF_PER_LEVEL * over)
+    floor = (REWARD_FALLOFF_DEEP_FLOOR
+             if player.level - mission["Rank"] >= STREAK_OVERLEVEL_CUTOFF
+             else REWARD_FALLOFF_FLOOR)
+    multiplier = max(floor, 1 - REWARD_FALLOFF_PER_LEVEL * over)
     return max(1, round(reward * multiplier))
 
 
@@ -1653,6 +1701,13 @@ def resolve_mission(player, mission, mission_name=None, is_story=False):
             reward = round(reward * (1 + perks["Ships"]))
         extras = []
 
+        # A far-out-levelled win is treated like a Guaranteed one for
+        # streak purposes: it neither builds nor collects the bonus, so
+        # spamming trivial content can't keep a streak fed.
+        streak_eligible = (
+            not guaranteed
+            and player.level - mission["Rank"] < STREAK_OVERLEVEL_CUTOFF
+        )
         if not guaranteed:
             # Crit doubles credits only - XP is untouched so the levelling
             # pace doesn't compound with reward luck.
@@ -1667,15 +1722,16 @@ def resolve_mission(player, mission, mission_name=None, is_story=False):
                 extras.append(f"⭐ Bounty claimed: {bounty_multiplier:g}x reward.")
                 chatter_trigger = chatter_trigger or "bounty"
 
-            player.win_streak = (player.win_streak or 0) + 1
-            streak_bonus = min(player.win_streak, WIN_STREAK_CAP) * WIN_STREAK_BONUS_PER_WIN
-            reward = round(reward * (1 + streak_bonus))
-            if player.win_streak >= 2:
-                extras.append(
-                    f"🎯 Win streak {player.win_streak}: +{round(streak_bonus * 100)}% credits."
-                )
-            if player.win_streak in (5, 10):
-                chatter_trigger = chatter_trigger or "streak"
+            if streak_eligible:
+                player.win_streak = (player.win_streak or 0) + 1
+                streak_bonus = min(player.win_streak, WIN_STREAK_CAP) * WIN_STREAK_BONUS_PER_WIN
+                reward = round(reward * (1 + streak_bonus))
+                if player.win_streak >= 2:
+                    extras.append(
+                        f"🎯 Win streak {player.win_streak}: +{round(streak_bonus * 100)}% credits."
+                    )
+                if player.win_streak in (5, 10):
+                    chatter_trigger = chatter_trigger or "streak"
 
         player.credits += reward
         player.experience += xp_awarded

@@ -15,34 +15,36 @@ export function RegisterUser() {
         <div className="alert alert-danger">{store.authError}</div>
       )}
 
-      <div className=" mb-3">
-        <input
-          value={email}
-          onChange={(ev) => setEmail(ev.target.value)}
-          type="email"
-          className="form-control"
-          placeholder="name@example.com"
-        />
-      </div>
-      <div className="mb-3">
-        <input
-          value={password}
-          onChange={(ev) => setPassword(ev.target.value)}
-          type="password"
-          className="form-control"
-          placeholder="Enter your password here"
-        />
-      </div>
-      <button
-        className="btn btn-primary mt-3"
-        onClick={() =>
+      <form
+        onSubmit={(ev) => {
+          ev.preventDefault();
           actions.registerUser(email, password, () => {
             navigate("/login");
-          })
-        }
+          });
+        }}
       >
-        Register
-      </button>
+        <div className=" mb-3">
+          <input
+            value={email}
+            onChange={(ev) => setEmail(ev.target.value)}
+            type="email"
+            className="form-control"
+            placeholder="name@example.com"
+          />
+        </div>
+        <div className="mb-3">
+          <input
+            value={password}
+            onChange={(ev) => setPassword(ev.target.value)}
+            type="password"
+            className="form-control"
+            placeholder="Enter your password here"
+          />
+        </div>
+        <button className="btn btn-primary mt-3" type="submit">
+          Register
+        </button>
+      </form>
       <button
         className="btn btn-primary mt-3"
         onClick={() => navigate("/login")}

@@ -47,6 +47,11 @@ EQUIPMENT_SELL_REFUND_PCT = 0.5
 PROPERTY_MAX_LEVEL = 3
 PROPERTY_UPGRADE_COST_MULTIPLIER = 1.25
 
+# Most attempts one /mission/start call may batch (the "Run x5" button).
+# Small on purpose: a batch is a convenience for the constant player, not
+# an automation primitive.
+MISSION_REPEAT_CAP = 5
+
 # Wins needed on the current story mission before the next one unlocks.
 # Deliberately equal to the number of narrative beats authored per chapter
 # in storyMissionArc (flux.js): each win reveals the next part of that
@@ -590,13 +595,20 @@ def properties_collect():
         take = min(available, space)
         if take <= 0:
             continue
-        # Property output is free (already paid for by the property), so
-        # blend it in at zero cost rather than overwriting any avg_cost
-        # tracked from market purchases of the same item.
+        # Claimed goods enter at the CURRENT market sell value, not zero.
+        # A zero basis made every later sale count as pure "profit", and
+        # since trading profit now pays XP, a big property empire was
+        # measured leveling its owner 753 XP/hour with no play at all.
+        # Valued at claim price, selling claimed goods only realizes
+        # profit the market has actually moved since the claim.
+        price_row = economy.get_item_price(item_name)
+        claim_value = round(economy.get_sell_price(price_row), 2) if price_row else 0
         new_qty = current_qty + take
         inventory[item_name] = {
             "quantity": new_qty,
-            "avg_cost": round(entry.get("avg_cost", 0) * current_qty / new_qty, 2)
+            "avg_cost": round(
+                (entry.get("avg_cost", 0) * current_qty + claim_value * take)
+                / new_qty, 2)
             if new_qty else 0,
         }
         remaining = pending[property_name] - take
@@ -661,14 +673,57 @@ def mission_start():
 
     data = request.get_json(silent=True) or {}
     mission_name = data.get("mission_name")
+    # Optional batched attempts: the single most-repeated action in the
+    # game was one click per ~35 seconds of identical clicking. The loop
+    # re-validates requirements before EVERY attempt (energy, credits,
+    # health, supplies all change mid-batch) and stops at the first one
+    # that fails, so a batch can never do anything N single calls couldn't.
+    repeat = data.get("repeat", 1)
+    if not isinstance(repeat, int) or not 1 <= repeat <= MISSION_REPEAT_CAP:
+        return jsonify({
+            "message": f"repeat must be an integer from 1 to {MISSION_REPEAT_CAP}"
+        }), 400
 
     mission, err = _resolve_mission_request(player, game_data.MISSIONS, mission_name, is_story=False)
     if err:
         return err
 
-    success, message, goal_entries = economy.resolve_mission(
-        player, mission, mission_name=mission_name
-    )
+    results = []
+    goal_entries = []
+    credits_before = player.credits
+    level_before = player.level
+    stopped_because = None
+    for attempt in range(repeat):
+        if attempt > 0:
+            mission, stop_err = _resolve_mission_request(
+                player, game_data.MISSIONS, mission_name, is_story=False
+            )
+            if stop_err:
+                stopped_because = stop_err[0].get_json().get("message")
+                break
+        success, message, entries = economy.resolve_mission(
+            player, mission, mission_name=mission_name
+        )
+        results.append((success, message))
+        goal_entries.extend(entries)
+
+    wins = sum(1 for s, _ in results if s)
+    if len(results) == 1:
+        success, message = results[0]
+    else:
+        # One summary line for the log; the per-run flavor (crits,
+        # bounties, streaks) still rides in `messages` for the response.
+        success = wins > 0
+        delta = player.credits - credits_before
+        message = (
+            f"Ran {mission_name} x{len(results)}: {wins} won, "
+            f"{len(results) - wins} lost, {'+' if delta >= 0 else ''}"
+            f"{delta:,} credits."
+        )
+        if player.level > level_before:
+            message = f"{message} Level {level_before} → {player.level}!"
+        if stopped_because:
+            message = f"{message} (Stopped early: {stopped_because})"
     activity = economy.log_activity(
         player, message, "mission-success" if success else "mission-fail"
     )
@@ -677,6 +732,9 @@ def mission_start():
     return jsonify({
         "success": success,
         "message": message,
+        "attempts": len(results),
+        "wins": wins,
+        "messages": [m for _, m in results],
         "player": player.serialize(),
         "activity": activity.serialize(),
         # Contract completions / achievements earned by this very action -
@@ -836,9 +894,11 @@ def recovery_use():
     if needs_health and needs_energy and player.health >= player.maxHealth and player.energy >= player.maxEnergy:
         return jsonify({"message": "health and energy are already full"}), 400
 
-    # Faction allies extend their trade discount to Medlab supplies too.
+    # Each use today raises the next price in this category (resets on the
+    # UTC date). Faction allies still get their discount on top.
+    uses = economy.recovery_uses_today(player)
+    cost = economy.recovery_price(player, category, item_data)
     rep_off = economy.rep_discount(player)
-    cost = item_data["Cost"]
     if rep_off > 0:
         cost = max(1, round(cost * (1 - rep_off)))
     if player.credits < cost:
@@ -852,11 +912,14 @@ def recovery_use():
     player.energy += energy_gain
     cooldowns[item_name] = now.isoformat()
     player.item_cooldowns = cooldowns
+    uses[category] = uses.get(category, 0) + 1
+    player.recovery_uses = uses
 
     rep_note = f" (ally discount: {round(rep_off * 100)}% off)" if rep_off > 0 else ""
     activity = economy.log_activity(
         player,
-        f"Used {item_name}: +{health_gain} health, +{energy_gain} energy.{rep_note}",
+        f"Used {item_name} for {cost} credits: +{health_gain} health, "
+        f"+{energy_gain} energy.{rep_note}",
         "recovery",
     )
     goal_entries = economy.bump_stats(player, recovery_items_used=1)
@@ -954,6 +1017,7 @@ def _reset_player(player):
     player.storyWins = 0
     player.win_streak = 0
     player.item_cooldowns = {}
+    player.recovery_uses = {}
     player.upgrade_steps = {}
     player.ship = {}
     # A full reset wipes meta-progression too - unlike prestige, which
@@ -1012,6 +1076,7 @@ def _prestige_player(player):
     player.energy = player.maxEnergy
     player.win_streak = 0
     player.item_cooldowns = {}
+    player.recovery_uses = {}
     # Purchased-upgrade counters reset with the run. Keeping them would
     # mean every post-prestige upgrade started at the old escalated price -
     # the same anti-synergy that keying cost off the raw stat value caused.
