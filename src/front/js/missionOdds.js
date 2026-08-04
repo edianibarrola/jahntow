@@ -58,11 +58,13 @@ export const successBreakdown = (player, mission) => {
   const equipment = player.equipment || {};
   let rawEquipmentBonus = 0;
   let extraUnits = 0;
+  let requiredUnits = 0;
   Object.entries(mission.requiredEquipment || {}).forEach(
     ([itemName, requiredQty]) => {
       const ownedQty = equipment[itemName]?.quantity || 0;
       const extra = Math.max(0, ownedQty - requiredQty);
       extraUnits += extra;
+      requiredUnits += requiredQty;
       rawEquipmentBonus += extra * SUCCESS_PER_EXTRA_EQUIPMENT;
     }
   );
@@ -88,10 +90,29 @@ export const successBreakdown = (player, mission) => {
     levelPct: Math.round(advantageBonus * 100),
     gearPct: Math.round(equipmentBonus * 100),
     gearMaxPct: Math.round(MAX_EQUIPMENT_BONUS * 100),
-    gearCapped: rawEquipmentBonus > MAX_EQUIPMENT_BONUS,
+    // >= not >: the spare that lands you exactly on the cap is the last
+    // one that does anything, so that's the moment to say "stop buying".
+    // With > , holding exactly the cap (11 owned against a x1 requirement)
+    // showed the same 68% as holding 14 but said nothing about being
+    // maxed, which read as an off-by-one.
+    gearCapped: rawEquipmentBonus >= MAX_EQUIPMENT_BONUS,
     // Spares beyond this add nothing - surfacing it stops players buying
     // gear that can't help them.
     usefulSpares: Math.round(MAX_EQUIPMENT_BONUS / SUCCESS_PER_EXTRA_EQUIPMENT),
+    // The same ceiling expressed as a total holding, because that's the
+    // number the card actually shows ("Owned: N"). Quoting only the spare
+    // count made players stop one unit short of the cap.
+    usefulTotal:
+      requiredUnits +
+      Math.round(MAX_EQUIPMENT_BONUS / SUCCESS_PER_EXTRA_EQUIPMENT),
+    // How many more spares would still earn something (0 once capped).
+    sparesToMax: Math.max(
+      0,
+      Math.round(
+        (MAX_EQUIPMENT_BONUS - rawEquipmentBonus) / SUCCESS_PER_EXTRA_EQUIPMENT
+      )
+    ),
+    requiredUnits,
     extraUnits,
   };
 };
