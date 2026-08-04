@@ -35,6 +35,27 @@ const ItemsComponent = () => {
     }));
   };
 
+  const setQuantity = (itemName, value) => {
+    const parsed = parseInt(value, 10);
+    setQuantities((prev) => ({
+      ...prev,
+      [itemName]: Number.isNaN(parsed) ? 1 : Math.max(1, parsed),
+    }));
+  };
+
+  // The single biggest click sink in the game: filling a 60-slot hold one
+  // "+" at a time was 60 clicks. Max = as many as fit AND are affordable.
+  const setMaxBuy = (item, owned) => {
+    const space = (player.maxInventoryCount || 0) - owned;
+    const affordable = item.buy_price > 0
+      ? Math.floor(player.credits / item.buy_price)
+      : 0;
+    setQuantities((prev) => ({
+      ...prev,
+      [item.item_name]: Math.max(1, Math.min(space, affordable)),
+    }));
+  };
+
   const handleBuy = (itemName) => {
     const quantity = getQuantity(itemName);
     setPendingItem(itemName);
@@ -175,12 +196,29 @@ const ItemsComponent = () => {
                         >
                           -
                         </button>
-                        <span className="mx-2">{quantity}</span>
+                        <input
+                          type="number"
+                          min="1"
+                          className="mx-1 qty-input"
+                          value={quantity}
+                          onChange={(e) =>
+                            setQuantity(item.item_name, e.target.value)
+                          }
+                          disabled={pendingItem === item.item_name}
+                        />
                         <button
                           onClick={() => adjustQuantity(item.item_name, 1)}
                           disabled={pendingItem === item.item_name}
                         >
                           +
+                        </button>
+                        <button
+                          className="ms-1"
+                          onClick={() => setMaxBuy(item, owned)}
+                          disabled={pendingItem === item.item_name || locked}
+                          title="Set quantity to as many as fit in your hold and wallet"
+                        >
+                          Max
                         </button>
                         <button
                           className="ms-2"
@@ -200,6 +238,22 @@ const ItemsComponent = () => {
                         >
                           Sell
                         </button>
+                        {owned > 0 && (
+                          <button
+                            className="ms-1"
+                            onClick={() => {
+                              setQuantity(item.item_name, owned);
+                              setPendingItem(item.item_name);
+                              actions
+                                .sellItem(item.item_name, owned)
+                                .catch(() => {})
+                                .finally(() => setPendingItem(null));
+                            }}
+                            disabled={pendingItem !== null}
+                          >
+                            All
+                          </button>
+                        )}
                       </span>
                     </li>
                   );

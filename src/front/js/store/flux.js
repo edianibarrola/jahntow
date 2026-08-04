@@ -1878,10 +1878,10 @@ const getState = ({ getStore, getActions, setStore }) => {
           .catch((error) => reportError(error, "Failed to purchase property"));
       },
 
-      startMission: (missionName) => {
+      startMission: (missionName, repeat = 1) => {
         return apiRequest("/api/mission/start", {
           method: "POST",
-          body: { mission_name: missionName },
+          body: { mission_name: missionName, repeat },
         })
           .then((data) => {
             applyPlayerResult(data);

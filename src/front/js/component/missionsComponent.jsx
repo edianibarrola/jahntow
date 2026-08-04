@@ -25,10 +25,21 @@ const MissionsComponent = () => {
       ? Math.max(1, Math.round(required * (1 - transportsPct / 100)))
       : required;
 
-  const runMission = (missionName) => {
+  // How long until the player can afford this mission's energy cost -
+  // mirrors economy.energy_regen_amount (1 per 10s tick + reactor).
+  const energyShortSeconds = (missionData) => {
+    const need = effectiveEnergy(missionData["Required Energy"]) - player.energy;
+    if (need <= 0) return 0;
+    const perTick = 1 + ((player.ship || {}).reactor || 0);
+    return Math.ceil(need / perTick) * 10;
+  };
+  const fmtWait = (seconds) =>
+    `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+
+  const runMission = (missionName, repeat = 1) => {
     setRunningMission(missionName);
     actions
-      .startMission(missionName)
+      .startMission(missionName, repeat)
       // flux.js already surfaces both the result and any failure via the
       // activity toast/log - nothing left to do here on rejection besides
       // making sure it doesn't become an unhandled promise rejection.
@@ -252,18 +263,36 @@ const MissionsComponent = () => {
                         )}
                       </ul>
                       {wouldSurvive ? (
-                        <button
-                          onClick={() => runMission(missionName)}
-                          disabled={runningMission !== null || bailoutLocked}
-                        >
-                          {runningMission === missionName
-                            ? "Running..."
-                            : "Run Mission"}
-                        </button>
+                        <>
+                          <button
+                            onClick={() => runMission(missionName)}
+                            disabled={runningMission !== null || bailoutLocked}
+                          >
+                            {runningMission === missionName
+                              ? "Running..."
+                              : "Run Mission"}
+                          </button>
+                          {!missionData.Guaranteed && (
+                            <button
+                              className="ms-2"
+                              onClick={() => runMission(missionName, 5)}
+                              disabled={runningMission !== null || bailoutLocked}
+                              title="Runs up to 5 attempts back-to-back, stopping if energy, credits, health or supplies run short."
+                            >
+                              Run ×5
+                            </button>
+                          )}
+                          {energyShortSeconds(missionData) > 0 && (
+                            <p className="tx-info regen-hint mb-0 mt-1">
+                              Not enough energy — ready in{" "}
+                              {fmtWait(energyShortSeconds(missionData))}
+                            </p>
+                          )}
+                        </>
                       ) : (
                         <p className="tx-error">
                           Your health is too low to survive a failed attempt.
-                          Recover first.
+                          Recover first — or grab a Medlab item.
                         </p>
                       )}
                     </div>

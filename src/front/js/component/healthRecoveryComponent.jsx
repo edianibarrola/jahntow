@@ -34,8 +34,22 @@ const HealthRecoveryComponent = () => {
     actions.useRecoveryItem(item).catch(() => {});
   };
 
+  // Mirrors economy.recovery_price: every use today multiplies the next
+  // price in that category by 1.5, resetting on the UTC date. The server
+  // charges its own figure - this only keeps the label honest.
+  const usesToday = (category) => {
+    const uses = player.recoveryUses || {};
+    const todayUtc = new Date().toISOString().slice(0, 10);
+    return uses.date === todayUtc ? uses[category] || 0 : 0;
+  };
+  const priceToday = (category, data) =>
+    Math.round(data.Cost * Math.pow(1.5, usesToday(category)));
+
   const generateButtonLabel = (item, category) => {
-    let label = `${item} | Cost: ${healthRecoveryItems[category][item].Cost}`;
+    let label = `${item} | Cost: ${priceToday(
+      category,
+      healthRecoveryItems[category][item]
+    ).toLocaleString()}`;
 
     if (healthRecoveryItems[category][item]["Health Gain"] > 0) {
       label += ` | Health Gain: ${healthRecoveryItems[category][item]["Health Gain"]}`;
@@ -71,6 +85,10 @@ const HealthRecoveryComponent = () => {
 
         <div className="col-12 text-center">
           <p>Recovery</p>
+          <p className="small">
+            Prices climb with each use and reset daily &mdash; the first
+            boosts of the day are cheap, pushing all night gets expensive.
+          </p>
         </div>
       </div>
       <div className="row">
@@ -85,7 +103,10 @@ const HealthRecoveryComponent = () => {
                   <button
                     className="healthbutton"
                     onClick={() => handleButtonClick(item)}
-                    disabled={remaining > 0 || player.credits < data.Cost}
+                    disabled={
+                      remaining > 0 ||
+                      player.credits < priceToday(category, data)
+                    }
                   >
                     {generateButtonLabel(item, category)}
                     {remaining > 0 && ` | ready in ${remaining}s`}
