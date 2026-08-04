@@ -21,8 +21,59 @@ PRICE_TICK_INTERVAL = timedelta(seconds=30)
 # completely swallowed the 20-40% price events - an "event" was
 # statistically indistinguishable from ordinary noise, so it never felt
 # like anything was happening.
-PRICE_DRIFT_PCT = 0.035
-PRICE_REVERT_THRESHOLD_PCT = 0.35  # snap back to base once drifted this far
+# Per-tick noise, drawn per item from this band (see item_volatility): a
+# single global figure meant an Omega Seal moved exactly like an Alpha
+# Core, so every item felt identical to trade. Now some are steady blue
+# chips and some are speculative.
+PRICE_VOLATILITY_MIN = 0.010
+PRICE_VOLATILITY_MAX = 0.025
+
+# Momentum. Each item carries a hidden drift that persists across ticks
+# and occasionally re-rolls, which is what turns the chart from white
+# noise into something worth reading: rallies and slumps that continue
+# long enough to trade on. Pure noise has no autocorrelation, so no
+# amount of chart-watching could ever pay off.
+PRICE_TREND_FLIP_CHANCE = 0.01           # ~ once every 100 ticks (50 min)
+PRICE_TREND_MAX = 0.02                   # must stay < PRICE_REVERSION_PULL
+
+# The anchor the price reverts to is itself a slow random walk around the
+# catalog's base cost, rather than base cost exactly. A fixed, published
+# anchor makes "buy under base and wait" a ~98% win - free money on a
+# timer. A moving one means a cheap price might be a bargain or might be
+# the item genuinely being worth less now, which is the judgement call
+# that makes trading a game instead of arithmetic. Kept slow and tightly
+# bounded so the catalog price still means something.
+FAIR_VALUE_DRIFT = 0.004
+FAIR_VALUE_PULL = 0.004
+FAIR_VALUE_MAX_DEVIATION = 0.30
+# Prices are pulled gently back toward base every tick instead of being
+# snapped to it once they drift too far. The old rule ("if more than 35%
+# from base, reset to exactly base") was written as a safety rail to stop
+# prices reaching zero or something absurd, but at +/-35% the rail sat
+# close enough to shape play: it hard-bounded the price at 0.65x-1.35x,
+# wiped 35% off a holding without warning, and - because the floor was
+# only 1% below the snap point while the snap paid +54% - made "buy
+# anything near 0.65x and wait" a farmable free-money trade rather than a
+# market bet.
+#
+# This is the standard mean-reverting walk: each tick moves the price a
+# small fraction of the way home, plus noise. No discontinuities, no hard
+# band to trade against, and prices still cluster around base.
+#
+# The pull is also what BOUNDS the walk now that prices trend. A drift of
+# `t` per tick balances the pull at price = base * pull / (pull - t), so
+# keeping PRICE_TREND_MAX strictly below PRICE_REVERSION_PULL makes the
+# equilibrium finite by construction - here 0.04 / (0.04 - 0.02) = 2x
+# base. Prices can't run away, and that's a proof rather than a patch.
+PRICE_REVERSION_PULL = 0.04
+# Genuine safety rails, kept deliberately far out so they are dead-man's
+# switches rather than gameplay. Over 7.6 simulated years of one item the
+# price never left 0.62x-1.66x and these never fired once; they exist so
+# a pathological run still can't reach zero or run away. Unlike the old
+# rule these CLAMP (the price stops at the rail and gets pulled back
+# gradually) rather than teleporting the price to base.
+PRICE_FLOOR_MULTIPLE = 0.35
+PRICE_CEILING_MULTIPLE = 3.0
 # Buy above mid, sell below it. Without a spread, buy and sell used the
 # identical price, so a round trip was free and "buy under base, sell over
 # base" was risk-free money against a bounded mean-reverting price the
@@ -328,16 +379,70 @@ def get_price_history():
     return series
 
 
+def item_volatility(item_name):
+    """
+    How jumpy one item's price is, fixed per item and stable across
+    restarts (derived from the name, so it needs no column and no seed
+    data). Gives the market a spread of personalities - steady staples
+    versus speculative goods - which is what makes choosing *what* to
+    trade a decision rather than a coin flip.
+    """
+    # A hash of the name, folded into the volatility band. Python's hash()
+    # is salted per process, so use a stable arithmetic digest instead.
+    digest = 0
+    for char in item_name:
+        digest = (digest * 31 + ord(char)) % 100003
+    spread = PRICE_VOLATILITY_MAX - PRICE_VOLATILITY_MIN
+    return PRICE_VOLATILITY_MIN + (digest % 1000) / 999 * spread
+
+
+def volatility_label(item_name):
+    """Public-facing risk tag for an item - a market knows which stocks are wild."""
+    volatility = item_volatility(item_name)
+    span = PRICE_VOLATILITY_MAX - PRICE_VOLATILITY_MIN
+    if volatility < PRICE_VOLATILITY_MIN + span / 3:
+        return "steady"
+    if volatility < PRICE_VOLATILITY_MIN + 2 * span / 3:
+        return "active"
+    return "volatile"
+
+
 def _tick_price(price_row, now):
     elapsed = now - (price_row.updated_at or now)
     if elapsed < PRICE_TICK_INTERVAL:
         return False
 
-    drift = 1 + (random.random() * 2 - 1) * PRICE_DRIFT_PCT
-    new_cost = price_row.current_cost * drift
+    # The anchor drifts slowly around base cost, so the level the price is
+    # pulled toward is never exactly knowable.
+    fair_value = price_row.fair_value or price_row.base_cost
+    fair_value += (
+        FAIR_VALUE_PULL * (price_row.base_cost - fair_value)
+        + fair_value * (random.random() * 2 - 1) * FAIR_VALUE_DRIFT
+    )
+    fair_value = min(
+        max(fair_value, price_row.base_cost * (1 - FAIR_VALUE_MAX_DEVIATION)),
+        price_row.base_cost * (1 + FAIR_VALUE_MAX_DEVIATION),
+    )
+    price_row.fair_value = fair_value
 
-    if price_row.base_cost > 0 and abs(new_cost - price_row.base_cost) / price_row.base_cost > PRICE_REVERT_THRESHOLD_PCT:
-        new_cost = price_row.base_cost
+    # Momentum regime: re-roll the item's persistent drift occasionally.
+    if random.random() < PRICE_TREND_FLIP_CHANCE:
+        price_row.trend = random.uniform(-PRICE_TREND_MAX, PRICE_TREND_MAX)
+
+    # Three forces per tick: the trend (persistent, readable), the pull
+    # toward fair value (bounds everything), and noise (per-item scale).
+    # See the constants above for why this replaced snap-to-base.
+    volatility = item_volatility(price_row.item_name)
+    noise = price_row.current_cost * (random.random() * 2 - 1) * volatility
+    momentum = price_row.current_cost * (price_row.trend or 0)
+    pull = PRICE_REVERSION_PULL * (fair_value - price_row.current_cost)
+    new_cost = price_row.current_cost + momentum + pull + noise
+
+    if price_row.base_cost > 0:
+        new_cost = min(
+            max(new_cost, price_row.base_cost * PRICE_FLOOR_MULTIPLE),
+            price_row.base_cost * PRICE_CEILING_MULTIPLE,
+        )
 
     # Credits are a whole-number currency (Player.credits is an Integer
     # column), so prices stay whole numbers too rather than drifting into
@@ -678,6 +783,15 @@ def get_market_prices():
         # Let the UI mark which items are under an active event rather than
         # silently baking the multiplier into the price with no cue.
         serialized["event_multiplier"] = round(get_event_multiplier(row.category, events), 4)
+        # How far the price sits from its anchor, and how jumpy this item
+        # is. The raw base number on its own told the player very little;
+        # the *distance* from it is the actual trading signal, and the
+        # volatility tag says how much weight to put on a given swing.
+        serialized["pct_from_base"] = (
+            round((serialized["current_cost"] - row.base_cost) / row.base_cost * 100, 1)
+            if row.base_cost else 0.0
+        )
+        serialized["volatility"] = volatility_label(row.item_name)
         results.append(serialized)
     return results
 

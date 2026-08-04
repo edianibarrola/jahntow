@@ -281,6 +281,24 @@ class MarketPrice(db.Model):
     current_cost = db.Column(db.Float, nullable=False)
     updated_at = db.Column(db.DateTime(), default=utcnow, onupdate=utcnow)
 
+    # Current momentum regime: a small per-tick drift that persists for a
+    # while and then flips, so the price forms readable rallies and slumps
+    # instead of independent coin flips. Deliberately NOT serialized - the
+    # whole point is to read it off the chart. See economy._tick_price.
+    trend = db.Column(db.Float, nullable=False, default=0.0)
+
+    # What the market currently believes the item is worth. The price
+    # mean-reverts to THIS, not to base_cost, and it wanders slowly around
+    # base_cost on its own.
+    #
+    # Without it the anchor is fixed and public, which makes "buy below
+    # base, wait for the pull" a ~98% win - free money on a timer, the
+    # same class of problem as snapping to base. A moving anchor means a
+    # low price might be a bargain or might be the item genuinely being
+    # worth less now, and the player has to judge which. Also not
+    # serialized: inferring it is the game.
+    fair_value = db.Column(db.Float, nullable=True)
+
     # Baseline current_cost was at the last time a "price changed" global
     # notification was posted for this item - the server-side equivalent
     # of what used to be a client-only, page-load-reset baseline dict.
