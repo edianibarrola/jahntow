@@ -641,6 +641,10 @@ input.form-control {
   overflow-x: auto;
   gap: 6px;
   padding: 2px 2px 4px;
+  /* Everything on the page centers; the nav rows sat flush left. `safe`
+     keeps the row reachable if a very narrow screen ever overflows it. */
+  justify-content: center;
+  justify-content: safe center;
 }
 
 .tab-groups button {
@@ -745,5 +749,27 @@ input.form-control {
   .tab-subs button {
     padding: 2px 8px;
     font-size: 0.85rem;
+  }
+}
+
+
+/* The logout is a utility, not a stat: it docks in the header's corner
+   instead of wrapping into the centered chip flow as a stray line. */
+.app-header {
+  position: relative;
+}
+
+.app-header .logout-chip {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+}
+
+/* Keep the centered chips clear of the corner button - symmetric side
+   padding so the centering stays visually true. */
+@media (max-width: 767px) {
+  .app-header .header-strip {
+    padding-left: 64px;
+    padding-right: 64px;
   }
 }

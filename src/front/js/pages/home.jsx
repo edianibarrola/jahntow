@@ -136,7 +136,7 @@ export const Home = () => {
   return (
     <div className="mt-2 container-fluid holobg">
       <ActivityToast />
-      <div className="row mb-2 holo ">
+      <div className="row mb-2 holo app-header">
         {/* Auto-width chips in a wrapping flex strip. The old version gave
             every stat a col-4 - five 33% columns plus a logout in one row,
             which collided the name into the level on any phone. */}
