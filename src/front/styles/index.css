@@ -440,6 +440,20 @@ input.form-control {
   color: #ffd700;
 }
 
+/* Ship module installs - the only purchases that buy a rate. */
+.tx-ship {
+  color: #9ad0ff;
+}
+
+.ship-pips {
+  letter-spacing: 3px;
+  color: #9ad0ff;
+}
+
+.ship-pip-empty {
+  opacity: 0.3;
+}
+
 .goal-progress {
   height: 6px;
   border-radius: 3px;

@@ -89,6 +89,8 @@ def get_game_data():
         # progression instead of every tier at once.
         "achievements": game_data.ACHIEVEMENTS,
         "achievementChains": game_data.ACHIEVEMENT_CHAINS,
+        "shipModules": game_data.SHIP_MODULES,
+        "shipModuleMaxLevel": game_data.SHIP_MODULE_MAX_LEVEL,
     }), 200
 
 
@@ -187,7 +189,7 @@ def market_buy():
     current_qty = existing.get("quantity", 0)
     current_avg_cost = existing.get("avg_cost", 0)
 
-    if current_qty + quantity > player.maxInventoryCount:
+    if current_qty + quantity > economy.cargo_capacity(player):
         return jsonify({"message": "not enough inventory space"}), 400
     if player.credits < total_cost:
         return jsonify({"message": "insufficient credits"}), 400
@@ -259,9 +261,18 @@ def market_sell():
         profit_text = f" ({realized_profit} loss)"
     else:
         profit_text = ""
+    # Trading was the only activity in the game that granted no experience,
+    # which left a trade-focused player stuck at level 1 and locked out of
+    # the better goods that make trading pay at all.
+    trade_xp = economy.trade_xp_award(player, realized_profit)
+    if trade_xp > 0:
+        player.experience += trade_xp
+        economy.apply_level_ups(player)
+
     activity = economy.log_activity(
         player,
-        f"Sold {quantity}x {item_name} for {total_value} credits{profit_text}.",
+        f"Sold {quantity}x {item_name} for {total_value} credits{profit_text}."
+        + (f" (+{trade_xp} XP)" if trade_xp else ""),
         "sell",
     )
     goal_entries = economy.bump_stats(
@@ -472,6 +483,56 @@ def properties_buy():
     }), 200
 
 
+@game_api.route('/ship/upgrade', methods=['POST'])
+@jwt_required()
+def ship_upgrade():
+    """
+    Install the next level of a ship module.
+
+    This is the only place credits buy a RATE rather than a capacity, which
+    is why it exists: energy regen was a fixed 360/hour for the whole game
+    while mission costs climb with rank, so play got slower the further you
+    got and a large balance bought nothing that changed it.
+    """
+    player, err = _player_or_404()
+    if err:
+        return err
+    economy.apply_passive_tick(player)
+
+    data = request.get_json(silent=True) or {}
+    module_id = data.get("module_id")
+
+    module = game_data.SHIP_MODULES.get(module_id)
+    if not module:
+        return jsonify({"message": "unknown ship module"}), 404
+
+    cost = economy.ship_module_cost(player, module_id)
+    if cost is None:
+        return jsonify({"message": "this module is already at max level"}), 400
+    if player.credits < cost:
+        return jsonify({"message": "insufficient credits"}), 400
+
+    ship = dict(player.ship or {})
+    new_level = ship.get(module_id, 0) + 1
+    ship[module_id] = new_level
+    player.ship = ship
+    player.credits -= cost
+
+    activity = economy.log_activity(
+        player,
+        f"Installed {module['name']} level {new_level} for {cost} credits.",
+        "ship",
+    )
+    goal_entries = economy.check_achievements(player)
+    db.session.commit()
+    return jsonify({
+        "player": player.serialize(),
+        "total_cost": cost,
+        "activity": activity.serialize(),
+        "extra_activities": [e.serialize() for e in goal_entries],
+    }), 200
+
+
 @game_api.route('/properties/collect', methods=['POST'])
 @jwt_required()
 def properties_collect():
@@ -515,7 +576,7 @@ def properties_collect():
         item_name = property_data["Item Generated"]
         entry = inventory.get(item_name, {})
         current_qty = entry.get("quantity", 0)
-        space = player.maxInventoryCount - current_qty
+        space = economy.cargo_capacity(player) - current_qty
         take = min(available, space)
         if take <= 0:
             continue
@@ -879,6 +940,7 @@ def _reset_player(player):
     player.win_streak = 0
     player.item_cooldowns = {}
     player.upgrade_steps = {}
+    player.ship = {}
     # A full reset wipes meta-progression too - unlike prestige, which
     # deliberately keeps stats/achievements (they're the meta-progression
     # axis a rebirth is supposed to preserve).
@@ -939,6 +1001,10 @@ def _prestige_player(player):
     # mean every post-prestige upgrade started at the old escalated price -
     # the same anti-synergy that keying cost off the raw stat value caused.
     player.upgrade_steps = {}
+    # The ship SURVIVES a rebirth, deliberately. Modules cost millions -
+    # far more than one run earns - so wiping them would make the whole
+    # system unreachable, and a faster ship on the next run is exactly the
+    # sort of permanent gain prestige is meant to hand out.
     _reset_tick_clocks(player)
 
 

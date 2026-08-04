@@ -1425,6 +1425,8 @@ const defaultPlayer = {
   inventory: {},
   properties: {},
   maxInventoryCount: 10,
+  cargoCapacity: 10,
+  ship: {},
   maxHealth: 100,
   maxEnergy: 100,
   maxEquipmentCount: 20,
@@ -1443,6 +1445,8 @@ const defaultGameData = {
   properties: {},
   equipment: {},
   healthRecoveryItems: {},
+  shipModules: {},
+  shipModuleMaxLevel: 5,
 };
 
 
@@ -1940,6 +1944,19 @@ const getState = ({ getStore, getActions, setStore }) => {
             return data;
           })
           .catch((error) => reportError(error, "Failed to upgrade"));
+      },
+
+      upgradeShipModule: (moduleId) => {
+        return apiRequest("/api/ship/upgrade", {
+          method: "POST",
+          body: { module_id: moduleId },
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            appendActivityEntry(data.activity);
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to install module"));
       },
     },
   };

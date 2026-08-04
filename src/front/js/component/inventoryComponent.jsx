@@ -86,7 +86,8 @@ const InventoryComponent = () => {
   const pendingEntries = Object.entries(player.pendingProduction || {}).filter(
     ([, qty]) => Math.floor(qty) > 0
   );
-  const poolCap = (player.maxInventoryCount || 0) * 2;
+  const poolCap =
+    (player.cargoCapacity || 0) * (2 + ((player.ship || {}).cargo_drones || 0));
   const collect = (propertyName) => {
     setCollecting(propertyName || "__all__");
     actions
