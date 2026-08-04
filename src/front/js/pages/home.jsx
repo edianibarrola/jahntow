@@ -7,11 +7,7 @@ import LevelComponent from "../component/levelComponent";
 import ExperienceComponent from "../component/experienceComponent";
 import LoginStreakComponent from "../component/loginStreakComponent";
 import WinStreakComponent from "../component/winStreakComponent";
-import HealthComponent from "../component/healthComponent";
-import EnergyComponent from "../component/energyComponent";
-import CreditsComponent from "../component/creditsComponent";
 import ItemsComponent from "../component/itemsComponent";
-import ResetPlayerStats from "../component/resetPlayerStats";
 import MissionsComponent from "../component/missionsComponent";
 import NotificationsComponent from "../component/notificationsComponent";
 import TransactionsComponent from "../component/transactionsComponent";
@@ -28,7 +24,7 @@ import ActivityToast from "../component/ActivityToast";
 import StoryMissions from "../component/storyMissions";
 
 import "../../styles/home.css";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // i like this for the Ai Robot that helps the player (tells him about the missions)
 //  Eco-conscious Consultant for Habitability Optimization:
@@ -66,7 +62,7 @@ export const Home = () => {
       actions.fetchPlayerData();
       actions.fetchLeaderboard();
       actions.fetchActiveEvents();
-    actions.fetchPriceHistory();
+      actions.fetchPriceHistory();
       actions.fetchActivityLog();
       actions.fetchNotifications();
     }, POLL_INTERVAL_MS);
@@ -74,92 +70,89 @@ export const Home = () => {
     return () => clearInterval(intervalId);
   }, []);
 
-  const handleNavigate = () => {
-    navigate("/dashboard");
-  };
-
   return (
-    <div className="mt-2 container holobg">
+    <div className="mt-2 container-fluid holobg">
       <ActivityToast />
       <div className="row mb-2 holo ">
-        <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
+        <div className="row pt-2 pb-1 m-0 justify-content-around text-center align-items-center">
           <div className="col-4">{player.name}</div>
           <LevelComponent level={player.level} />
           <ExperienceComponent experience={player.experience} xpForNextLevel={player.xpForNextLevel} />
           <LoginStreakComponent streak={player.loginStreak} />
           <WinStreakComponent streak={player.winStreak} />
+          <div className="col-auto">
+            <button
+              className="logout-chip"
+              onClick={() => actions.logout()}
+              title="Log out"
+            >
+              logout
+            </button>
+          </div>
         </div>
         <div className="row pb-2 m-0 justify-content-around text-center">
           <ActiveEventBanner events={store.activeEvents} />
         </div>
       </div>
-      {/* <div className="row mb-2 holo sticky-top">
-        <div className="row pt-2 pb-1 m-0 justify-content-around text-center">
-          <HealthComponent health={player.health} maxHealth={player.maxHealth} />
-          <EnergyComponent energy={player.energy} maxEnergy={player.maxEnergy} />
-          <CreditsComponent credits={player.credits} />
+
+      {/* The game on the left, the live feeds in an always-visible rail on
+          the right. The feeds used to be duplicated below every tab,
+          starting ~800-1800px down a 900px viewport - present on every
+          page and visible on none of them. */}
+      <div className="row">
+        <div className="col-12 col-lg-8">
+          <Tabs defaultActiveKey="items" id="game-tabs">
+            <Tab eventKey="items" title="Market" className="marketplace ">
+              <ItemsComponent />
+            </Tab>
+
+            <Tab eventKey="inventory" title="Inventory" className="shipinside">
+              <InventoryComponent />
+            </Tab>
+
+            <Tab eventKey="missions" title="Missions" className="ship">
+              <MissionsComponent />
+            </Tab>
+            <Tab eventKey="storyMissions" title="Story Missions" className="ship">
+              <StoryMissions />
+            </Tab>
+
+            <Tab eventKey="properties" title="Properties" className="properties">
+              <PropertiesComponent />
+            </Tab>
+
+            <Tab eventKey="equipment" title="Equipment" className="shipeqp">
+              <div className="mb-5 text-center">
+                <EquipmentStore />
+              </div>
+            </Tab>
+            <Tab eventKey="health" title="Medlab" className="shipbed">
+              <div className="row mb-3 text-center">
+                <HealthRecoveryComponent />
+              </div>
+            </Tab>
+
+            <Tab eventKey="ship" title="Ship" className="shipinside">
+              <div className="mb-5 text-center">
+                <ShipComponent />
+              </div>
+            </Tab>
+
+            <Tab eventKey="goals" title="Goals" className="ship">
+              <GoalsComponent />
+            </Tab>
+
+            <Tab eventKey="leaderboard" title="Leaderboard" className="ship">
+              <LeaderboardComponent />
+            </Tab>
+          </Tabs>
         </div>
-      </div> */}
 
-      <div className="row  ">
-        <Tabs defaultActiveKey="items" id="game-tabs">
-          <Tab eventKey="items" title="Market" className="marketplace ">
-            <ItemsComponent />
-          </Tab>
-
-          <Tab eventKey="inventory" title="Inventory" className="shipinside">
-            <InventoryComponent />
-          </Tab>
-
-          <Tab eventKey="missions" title="Missions" className="ship">
-            <MissionsComponent />
-          </Tab>
-          <Tab eventKey="storyMissions" title="Story Missions" className="ship">
-            <StoryMissions />
-          </Tab>
-
-          <Tab eventKey="properties" title="Properties" className="properties">
-            <PropertiesComponent />
-          </Tab>
-
-          <Tab eventKey="equipment" title="Equipment" className="shipeqp">
-            <div className="mb-5 text-center">
-              <EquipmentStore />
-            </div>
-          </Tab>
-          <Tab eventKey="health" title="Medlab" className="shipbed">
-            <div className="row mb-3 text-center">
-              <HealthRecoveryComponent />
-            </div>
-          </Tab>
-
-          <Tab eventKey="ship" title="Ship" className="shipinside">
-            <div className="mb-5 text-center">
-              <ShipComponent />
-            </div>
-          </Tab>
-
-          <Tab eventKey="goals" title="Goals" className="ship">
-            <GoalsComponent />
-          </Tab>
-
-          <Tab eventKey="leaderboard" title="Leaderboard" className="ship">
-            <LeaderboardComponent />
-          </Tab>
-        </Tabs>
-
-        <div className="row heightControl">
-          <div className="col-12 col-md-6">
+        <div className="col-12 col-lg-4">
+          <div className="feed-rail">
             <NotificationsComponent />
-          </div>
-
-          <div className="col-12 col-md-6 mb-5">
             <TransactionsComponent />
           </div>
-        </div>
-
-        <div className="col-12 text-center">
-          <button onClick={handleNavigate}>to dashboard</button>
         </div>
       </div>
     </div>

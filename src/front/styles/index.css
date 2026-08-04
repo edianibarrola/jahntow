@@ -237,21 +237,34 @@ input {
   margin-right: -5%;
 }
 
-.heightControl {
-  display: flex;
-  flex-wrap: wrap;
+/* The live feeds rail. The old .heightControl block force-stacked the
+   two feeds full-width (overriding their col-md-6) and clipped rows in
+   half with a 25vh max-height - at the bottom of every tab, below the
+   fold on all of them. The rail keeps both panels beside the game and
+   in view; each scrolls internally instead of clipping. */
+.feed-rail {
+  position: sticky;
+  top: 8px;
 }
 
-.heightControl > div {
-  display: flex;
-  flex-direction: column;
-  width: 100%; /* Ensures that the divs take up the full width */
-}
-
-.heightControl .holo {
-  max-height: 25vh; /* Adjust this to your needs */
-  overflow: auto; /* Makes it scrollable if content exceeds the height */
+.feed-rail .holo {
+  max-height: 44vh;
+  overflow-y: auto;
   text-align: center;
+  margin-bottom: 12px;
+}
+
+.feed-rail select {
+  max-width: 100%;
+}
+
+.logout-chip {
+  font-size: 0.8rem;
+  padding: 2px 10px;
+  opacity: 0.7;
+}
+.logout-chip:hover {
+  opacity: 1;
 }
 
 /* Remove the .h-10 styles as they are not needed */
