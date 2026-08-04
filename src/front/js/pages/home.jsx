@@ -1,7 +1,5 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Context } from "../store/appContext";
-
-import { Tabs, Tab } from "react-bootstrap";
 
 import LevelComponent from "../component/levelComponent";
 import ExperienceComponent from "../component/experienceComponent";
@@ -70,6 +68,71 @@ export const Home = () => {
     return () => clearInterval(intervalId);
   }, []);
 
+  // Ten flat tabs wrapped into four rows on a phone - a third of the
+  // screen spent on navigation. Two levels cap it at two rows anywhere:
+  // pick a group, then a page; each group remembers its last page.
+  const TAB_GROUPS = [
+    {
+      name: "Trade",
+      tabs: [
+        { key: "items", title: "Market", bg: "marketplace", render: () => <ItemsComponent /> },
+        { key: "inventory", title: "Inventory", bg: "shipinside", render: () => <InventoryComponent /> },
+        { key: "properties", title: "Properties", bg: "properties", render: () => <PropertiesComponent /> },
+      ],
+    },
+    {
+      name: "Missions",
+      tabs: [
+        { key: "missions", title: "Missions", bg: "ship", render: () => <MissionsComponent /> },
+        { key: "storyMissions", title: "Story Missions", bg: "ship", render: () => <StoryMissions /> },
+      ],
+    },
+    {
+      name: "Ship",
+      tabs: [
+        {
+          key: "ship", title: "Ship", bg: "shipinside",
+          render: () => (
+            <div className="mb-5 text-center">
+              <ShipComponent />
+            </div>
+          ),
+        },
+        {
+          key: "equipment", title: "Equipment", bg: "shipeqp",
+          render: () => (
+            <div className="mb-5 text-center">
+              <EquipmentStore />
+            </div>
+          ),
+        },
+        {
+          key: "health", title: "Medlab", bg: "shipbed",
+          render: () => (
+            <div className="row mb-3 text-center">
+              <HealthRecoveryComponent />
+            </div>
+          ),
+        },
+      ],
+    },
+    {
+      name: "Progress",
+      tabs: [
+        { key: "goals", title: "Goals", bg: "ship", render: () => <GoalsComponent /> },
+        { key: "leaderboard", title: "Leaderboard", bg: "ship", render: () => <LeaderboardComponent /> },
+      ],
+    },
+  ];
+
+  const [activeGroup, setActiveGroup] = useState("Trade");
+  const [tabByGroup, setTabByGroup] = useState({});
+  const currentGroup =
+    TAB_GROUPS.find((g) => g.name === activeGroup) || TAB_GROUPS[0];
+  const activeTab =
+    currentGroup.tabs.find((t) => t.key === tabByGroup[activeGroup]) ||
+    currentGroup.tabs[0];
+
   return (
     <div className="mt-2 container-fluid holobg">
       <ActivityToast />
@@ -101,51 +164,44 @@ export const Home = () => {
           page and visible on none of them. */}
       <div className="row">
         <div className="col-12 col-lg-8">
-          <Tabs defaultActiveKey="items" id="game-tabs">
-            <Tab eventKey="items" title="Market" className="marketplace ">
-              <ItemsComponent />
-            </Tab>
-
-            <Tab eventKey="inventory" title="Inventory" className="shipinside">
-              <InventoryComponent />
-            </Tab>
-
-            <Tab eventKey="missions" title="Missions" className="ship">
-              <MissionsComponent />
-            </Tab>
-            <Tab eventKey="storyMissions" title="Story Missions" className="ship">
-              <StoryMissions />
-            </Tab>
-
-            <Tab eventKey="properties" title="Properties" className="properties">
-              <PropertiesComponent />
-            </Tab>
-
-            <Tab eventKey="equipment" title="Equipment" className="shipeqp">
-              <div className="mb-5 text-center">
-                <EquipmentStore />
-              </div>
-            </Tab>
-            <Tab eventKey="health" title="Medlab" className="shipbed">
-              <div className="row mb-3 text-center">
-                <HealthRecoveryComponent />
-              </div>
-            </Tab>
-
-            <Tab eventKey="ship" title="Ship" className="shipinside">
-              <div className="mb-5 text-center">
-                <ShipComponent />
-              </div>
-            </Tab>
-
-            <Tab eventKey="goals" title="Goals" className="ship">
-              <GoalsComponent />
-            </Tab>
-
-            <Tab eventKey="leaderboard" title="Leaderboard" className="ship">
-              <LeaderboardComponent />
-            </Tab>
-          </Tabs>
+          <div className="tab-groups" role="tablist" aria-label="Sections">
+            {TAB_GROUPS.map((group) => (
+              <button
+                key={group.name}
+                role="tab"
+                data-level="group"
+                aria-selected={group.name === activeGroup}
+                className={group.name === activeGroup ? "active" : ""}
+                onClick={() => setActiveGroup(group.name)}
+              >
+                {group.name}
+              </button>
+            ))}
+          </div>
+          <div className="tab-subs" role="tablist" aria-label="Pages">
+            {currentGroup.tabs.map((tab) => (
+              <button
+                key={tab.key}
+                id={`game-tabs-tab-${tab.key}`}
+                role="tab"
+                data-level="sub"
+                aria-selected={tab.key === activeTab.key}
+                className={tab.key === activeTab.key ? "active" : ""}
+                onClick={() =>
+                  setTabByGroup((prev) => ({ ...prev, [activeGroup]: tab.key }))
+                }
+              >
+                {tab.title}
+              </button>
+            ))}
+          </div>
+          <div
+            id={`game-tabs-tabpane-${activeTab.key}`}
+            className={activeTab.bg}
+            role="tabpanel"
+          >
+            {activeTab.render()}
+          </div>
         </div>
 
         <div className="col-12 col-lg-4">
