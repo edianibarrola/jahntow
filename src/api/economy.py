@@ -117,6 +117,16 @@ MAX_HEALTH_PER_LEVEL = 3
 # grinding out-levelled content stops being the optimal way to level.
 XP_FALLOFF_PER_LEVEL = 0.12
 XP_FALLOFF_FLOOR = 0.15
+# Credits fall off for over-levelled content too. Previously only XP did,
+# so out-levelling a mission made it strictly better as an earner: the
+# success chance climbed toward the cap while the payout stayed flat, and
+# the safe, familiar low-rank mission out-earned the risky one at your
+# own level. There was no reason to ever move up. Gentler than the XP
+# falloff (8%/level, floor 25%) because credits are the resource the
+# player plans around, but steep enough to be decisive: farming a rank-6
+# mission at level 14 pays ~2,700 against ~20,400 for the at-level one.
+REWARD_FALLOFF_PER_LEVEL = 0.08
+REWARD_FALLOFF_FLOOR = 0.25
 
 # Credits trickle in while offline (or just idle), same elapsed-time-based
 # mechanism as energy regen/property production, capped so leaving the game
@@ -1229,6 +1239,23 @@ def apply_level_ups(player):
     return leveled_up
 
 
+def mission_reward_award(player, mission, is_story=False):
+    """
+    Credits actually paid for a win, after the over-levelled falloff.
+
+    Exempt: story missions (they must be run in sequence, so there is no
+    "farm the easy one" to discourage - only a player punished for being
+    over-levelled) and Guaranteed missions (the Salvage Run bailout is a
+    safety net; scaling it down would defeat the point of it existing).
+    """
+    reward = mission["Reward"]
+    if is_story or mission.get("Guaranteed"):
+        return reward
+    over = max(0, player.level - mission["Rank"])
+    multiplier = max(REWARD_FALLOFF_FLOOR, 1 - REWARD_FALLOFF_PER_LEVEL * over)
+    return max(1, round(reward * multiplier))
+
+
 def mission_xp_award(player, mission, perks=None):
     """
     Experience actually granted, with a falloff for badly over-levelled
@@ -1438,7 +1465,7 @@ def mission_success_chance(player, mission):
     return max(MIN_SUCCESS_CHANCE, min(ceiling, chance))
 
 
-def resolve_mission(player, mission, mission_name=None):
+def resolve_mission(player, mission, mission_name=None, is_story=False):
     """
     Runs a mission attempt to completion synchronously (the original
     client-side setTimeout delay was purely cosmetic UI pacing, not a real
@@ -1505,7 +1532,8 @@ def resolve_mission(player, mission, mission_name=None):
 
     if success:
         xp_awarded = mission_xp_award(player, mission, perks)
-        reward = mission["Reward"]
+        reward = mission_reward_award(player, mission, is_story)
+        reward_reduced = reward < mission["Reward"]
         # Ships perk: a flat, non-random boost from investment - applied to
         # the base before the luck-based multipliers stack on top.
         if perks["Ships"] > 0:
@@ -1547,8 +1575,11 @@ def resolve_mission(player, mission, mission_name=None):
         message = mission["successMessage"].format(
             reward=reward, experience=xp_awarded
         )
-        if xp_awarded < mission["Experience"]:
-            message = f"{message} (XP reduced - this mission is below your level.)"
+        if xp_awarded < mission["Experience"] or reward_reduced:
+            message = (
+                f"{message} (Reduced - this mission is below your level; "
+                "harder ones pay far more.)"
+            )
         for extra in extras:
             message = f"{message} {extra}"
     else:
