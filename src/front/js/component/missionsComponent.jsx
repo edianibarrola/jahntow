@@ -94,13 +94,25 @@ const MissionsComponent = () => {
                   <Accordion.Body>
                     <div className="col-12 pl-5 pr-5 text-center">
                       <ul className="holo">
-                        {/* Mirrors economy.mission_reward_award: credits
-                            fall off for over-levelled content, so show the
-                            payout the player will actually get - otherwise
-                            the reason to move up to harder missions is
-                            invisible until after the run. */}
+                        {/* The mission's own rank, stated as the level it's
+                            built for. Without it "below your level" looked
+                            wrong on a mission the player had only just
+                            unlocked, because nothing on the card said what
+                            level it was meant for. */}
+                        <li>
+                          Suggested level: {missionData.Rank}{" "}
+                          <span className="tx-info">(you: {player.level})</span>
+                        </li>
+                        {/* Mirrors economy.mission_reward_award, LEVEL_GRACE
+                            included: credits fall off for over-levelled
+                            content, so show the payout the player will
+                            actually get - otherwise the reason to move up to
+                            harder missions is invisible until after the run. */}
                         {(() => {
-                          const over = Math.max(0, player.level - missionData.Rank);
+                          const over = Math.max(
+                            0,
+                            player.level - missionData.Rank - 2
+                          );
                           const mult = missionData.Guaranteed
                             ? 1
                             : Math.max(0.25, 1 - 0.08 * over);
@@ -116,7 +128,7 @@ const MissionsComponent = () => {
                                   <s className="tx-info">{missionData.Reward}</s>{" "}
                                   <span className="tx-error">{effective}</span>{" "}
                                   <span className="tx-info">
-                                    (below your level — {Math.round(mult * 100)}%
+                                    (well below your level — {Math.round(mult * 100)}%
                                     payout)
                                   </span>
                                 </>

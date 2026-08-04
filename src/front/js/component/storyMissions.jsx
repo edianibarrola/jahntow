@@ -143,6 +143,21 @@ const StoryMissions = () => {
                                 ` (+1 rep per win — allies get discounts and better odds)`}
                             </li>
                           )}
+                          {/* Story missions aren't level-gated, so knowing
+                              what level a chapter is built for is the only
+                              warning that you're attempting it early. Their
+                              reward never falls off for out-levelling. */}
+                          <li
+                            style={{
+                              color:
+                                player.level < storyMissionData.Rank
+                                  ? "#ff8a8a"
+                                  : undefined,
+                            }}
+                          >
+                            Suggested level: {storyMissionData.Rank}{" "}
+                            <span className="tx-info">(you: {player.level})</span>
+                          </li>
                           <li>Reward: {storyMissionData.Reward}</li>
                           <li>
                             Required Credits:{" "}
