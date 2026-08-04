@@ -720,3 +720,30 @@ input.form-control {
     overflow-y: auto;
   }
 }
+
+
+/* A chip whose UNITS may wrap onto a new line (the energy chip grows a
+   "(+N rested)" suffix that poked out of the card), while each unit
+   itself never breaks mid-text. */
+.stat-chip-wrap {
+  white-space: normal;
+}
+
+.stat-bit {
+  white-space: nowrap;
+  display: inline-block;
+}
+
+/* Small phones: shrink the nav chips so all four groups (and every
+   group's sub-row) fit the width outright - the scrollable overflow
+   left a half-cut "Progress" chip that read as broken. */
+@media (max-width: 430px) {
+  .tab-groups button {
+    padding: 3px 9px;
+    font-size: 0.85rem;
+  }
+  .tab-subs button {
+    padding: 2px 8px;
+    font-size: 0.85rem;
+  }
+}

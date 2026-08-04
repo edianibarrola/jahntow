@@ -25,12 +25,17 @@ const EnergyComponent = ({ energy, maxEnergy }) => {
   const ss = String(seconds % 60).padStart(2, "0");
 
   return (
-    <div className="stat-chip" style={isLow ? { color: "#ffb84d" } : undefined}>
-      Energy: {energy}
-      {maxEnergy ? ` / ${maxEnergy}` : ""}
+    <div
+      className="stat-chip stat-chip-wrap"
+      style={isLow ? { color: "#ffb84d" } : undefined}
+    >
+      <span className="stat-bit">
+        Energy: {energy}
+        {maxEnergy ? ` / ${maxEnergy}` : ""}
+      </span>
       {(store.player.restedEnergy || 0) > 0 && (
         <span
-          className="tx-info"
+          className="tx-info stat-bit"
           title="Regen banked while your bar was full - it refills the bar as you spend."
         >
           {" "}(+{store.player.restedEnergy} rested)
