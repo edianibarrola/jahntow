@@ -105,14 +105,13 @@ export const successBreakdown = (player, mission) => {
     usefulTotal:
       requiredUnits +
       Math.round(MAX_EQUIPMENT_BONUS / SUCCESS_PER_EXTRA_EQUIPMENT),
-    // How many more spares would still earn something (0 once capped).
+    // How many more units would still earn something (0 once capped).
     sparesToMax: Math.max(
       0,
       Math.round(
         (MAX_EQUIPMENT_BONUS - rawEquipmentBonus) / SUCCESS_PER_EXTRA_EQUIPMENT
       )
     ),
-    requiredUnits,
     extraUnits,
   };
 };

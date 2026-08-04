@@ -136,27 +136,26 @@ const MissionsComponent = () => {
                             </span>
                           </li>
                         )}
-                        {/* Always LEAD with the owned total, because that's
-                            the number the line above shows ("Owned: N").
-                            Leading with the spare count read as "the cap is
-                            10" when the actual stopping point is 11 owned. */}
+                        {/* One number, in the same units as the "Owned: N"
+                            line below: the total holding that maxes the
+                            bonus. Earlier versions quoted the spare count,
+                            or the total plus a required/spare breakdown -
+                            both left the player doing arithmetic to work
+                            out when to stop buying. */}
                         {odds.gearCapped ? (
                           <li className="tx-info">
-                            Gear bonus is maxed at +{odds.gearMaxPct}% —{" "}
+                            Gear bonus maxed at +{odds.gearMaxPct}% —{" "}
                             <strong>owning {odds.usefulTotal}</strong> is all
-                            that counts ({odds.requiredUnits} required +{" "}
-                            {odds.usefulSpares} spare). Anything past{" "}
-                            {odds.usefulTotal} adds nothing.
+                            that counts, extras add nothing.
                           </li>
                         ) : (
                           odds.sparesToMax > 0 &&
                           Object.keys(missionData.requiredEquipment || {}).length >
                             0 && (
                             <li className="tx-info">
-                              <strong>Own {odds.usefulTotal}</strong> (
-                              {odds.requiredUnits} required + {odds.usefulSpares}{" "}
-                              spare) to max the gear bonus at +{odds.gearMaxPct}%
-                              — {odds.sparesToMax} more to go.
+                              <strong>Own {odds.usefulTotal}</strong> to max the
+                              gear bonus at +{odds.gearMaxPct}% —{" "}
+                              {odds.sparesToMax} more to go.
                             </li>
                           )
                         )}
