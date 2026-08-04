@@ -12,7 +12,6 @@ import { Footer } from "./component/footer";
 import { LoginUser } from "./pages/LoginUser";
 import { RegisterUser } from "./pages/RegisterUser";
 import { SecurePage } from "./component/SecurePage";
-import { Dashboard } from "./pages/Dashboard";
 
 const RouteManager = () => {
   const { store } = useContext(Context);
@@ -28,7 +27,7 @@ const RouteManager = () => {
       }
     } else {
       if (currentPath === "/login" || currentPath === "/register") {
-        navigate("/dashboard"); // Redirect authenticated users to dashboard
+        navigate("/"); // authenticated users land straight in the game
       }
     }
   }, [token, navigate]);
@@ -46,14 +45,6 @@ const RouteManager = () => {
         />
         <Route element={<LoginUser />} path="/login" />
         <Route element={<RegisterUser />} path="/register" />
-        <Route
-          element={
-            <SecurePage>
-              <Dashboard />
-            </SecurePage>
-          }
-          path="/dashboard"
-        />
         <Route element={<h1>Not found!</h1>} path="*" />
       </Routes>
     </>

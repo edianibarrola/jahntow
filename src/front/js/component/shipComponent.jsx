@@ -1,17 +1,21 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Context } from "../store/appContext";
 import HealthComponent from "./healthComponent";
 import EnergyComponent from "./energyComponent";
 import CreditsComponent from "./creditsComponent";
+import PrestigeButton from "./prestigeButton";
+import ResetPlayerStats from "./resetPlayerStats";
 
-// Everything you own that isn't cargo, gear or property lives here, split
-// by what it actually buys:
+// The command deck: everything about YOUR ship in one place.
 //
+//   Status   what the ship is doing for you right now
 //   Modules  buy RATES     - fixed levels, big escalating costs
 //   Systems  buy CAPACITY  - unlimited step purchases, cheap first step
+//   Command  rebirth, registry, and the dangerous switches
 //
-// They used to be two tabs, which put two answers to "how do I carry more?"
-// in front of the player at wildly different prices. One tab, one answer.
+// Modules/Systems used to be two tabs (two answers to "how do I carry
+// more?" at wildly different prices), and Command lived on a separate
+// near-empty Dashboard page behind a button under the fold.
 
 // What one level of each module changes, phrased in the units the player
 // actually feels. The catalog's own `effect` string is the short form; this
@@ -87,6 +91,22 @@ const ShipComponent = () => {
     actions.upgradeStat(stat).catch(() => {});
   };
 
+  const [newName, setNewName] = useState("");
+  const handleRename = () => {
+    if (!newName.trim()) return;
+    actions.updatePlayerName(newName.trim());
+    setNewName("");
+  };
+
+  const gearHeld = Object.values(player.equipment || {}).reduce(
+    (sum, e) => sum + (e.quantity || 0), 0
+  );
+  const banked = Object.values(player.pendingProduction || {}).reduce(
+    (sum, qty) => sum + Math.floor(qty), 0
+  );
+  const reactorLvl = ship.reactor || 0;
+  const medbayLvl = ship.medbay || 0;
+
   return (
     <div className="row mb-3">
       <div className="row sticky-top holo text-center">
@@ -154,6 +174,35 @@ const ShipComponent = () => {
             </div>
           );
         })}
+      <div className="col-12 col-md-6 mb-4">
+        <div className="holo h-100 p-2 text-start">
+          <strong>Ship Status</strong>
+          <ul className="small mb-0 mt-1 ps-3">
+            <li>
+              Energy: +{1 + reactorLvl}/10s ({(1 + reactorLvl) * 360}/hour)
+              {(player.restedEnergy || 0) > 0 &&
+                ` · ${player.restedEnergy} rested in reserve`}
+            </li>
+            <li>Health: +{1 + medbayLvl}/45s ({(1 + medbayLvl) * 80}/hour)</li>
+            <li>
+              Armory: {gearHeld}/{player.maxEquipmentCount} equipment slots used
+            </li>
+            <li>Cargo Bay: up to {player.maxInventoryCount} of each good</li>
+            <li>
+              {banked > 0
+                ? `${banked} goods banked at your properties - collect them.`
+                : "No goods waiting at your properties."}
+            </li>
+            {(player.prestigeLevel || 0) > 0 && (
+              <li className="tx-prestige">
+                Prestige {player.prestigeLevel}: +
+                {Math.min(60, player.prestigeLevel * 12)}% mission credits & XP
+              </li>
+            )}
+          </ul>
+        </div>
+      </div>
+
       </div>
 
       <div className="col-12 text-center mt-2 mb-2">
@@ -183,6 +232,44 @@ const ShipComponent = () => {
             </div>
           );
         })}
+      </div>
+
+      <div className="col-12 text-center mt-2 mb-2">
+        <p className="mb-0">Command</p>
+      </div>
+
+      <div className="row">
+        <div className="col-12 col-md-6 mb-4">
+          <div className="holo h-100 p-2">
+            <strong>Rebirth</strong>
+            <p className="small mb-2">
+              Strip the ship's registry and start over, stronger: stat floors
+              rise, missions pay more forever, and your ship and story
+              survive the reset.
+            </p>
+            <PrestigeButton />
+          </div>
+        </div>
+        <div className="col-12 col-md-6 mb-4">
+          <div className="holo h-100 p-2">
+            <strong>Registry</strong>
+            <p className="small mb-2">Registered captain: {player.name}</p>
+            <input
+              type="text"
+              className="qty-input me-2"
+              style={{ width: "10em" }}
+              placeholder={player.name}
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+            />
+            <button onClick={handleRename} disabled={!newName.trim()}>
+              Rename
+            </button>
+            <div className="mt-3">
+              <ResetPlayerStats />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
