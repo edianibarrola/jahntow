@@ -256,7 +256,7 @@ const ShipComponent = () => {
             <p className="small mb-2">Registered captain: {player.name}</p>
             <input
               type="text"
-              className="qty-input me-2"
+              className="qty-input registry-input me-2"
               style={{ width: "10em" }}
               placeholder={player.name}
               value={newName}
