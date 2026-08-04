@@ -631,3 +631,50 @@ input.form-control {
     justify-content: flex-start;
   }
 }
+
+/* Two-level tab navigation: a group row and a page row, two rows at any
+   width. The old flat strip of ten wrapped into four rows on a phone. */
+.tab-groups,
+.tab-subs {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 6px;
+  padding: 2px 2px 4px;
+}
+
+.tab-groups button {
+  background: transparent;
+  border: 1px solid rgba(126, 200, 255, 0.45);
+  border-radius: 6px;
+  color: #7ec8ff;
+  padding: 4px 14px;
+  white-space: nowrap;
+}
+
+.tab-groups button.active {
+  background: rgba(126, 200, 255, 0.18);
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.tab-subs {
+  border-bottom: 1px solid rgba(126, 200, 255, 0.35);
+  margin-bottom: 6px;
+}
+
+.tab-subs button {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: #7ec8ff;
+  padding: 2px 12px 4px;
+  white-space: nowrap;
+}
+
+.tab-subs button.active {
+  color: #ffffff;
+  border-bottom-color: #7ec8ff;
+  font-weight: bold;
+}
