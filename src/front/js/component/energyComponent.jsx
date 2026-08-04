@@ -25,7 +25,7 @@ const EnergyComponent = ({ energy, maxEnergy }) => {
   const ss = String(seconds % 60).padStart(2, "0");
 
   return (
-    <div className="col-4" style={isLow ? { color: "#ffb84d" } : undefined}>
+    <div className="stat-chip" style={isLow ? { color: "#ffb84d" } : undefined}>
       Energy: {energy}
       {maxEnergy ? ` / ${maxEnergy}` : ""}
       {(store.player.restedEnergy || 0) > 0 && (

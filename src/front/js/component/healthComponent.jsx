@@ -20,7 +20,7 @@ const HealthComponent = ({ health, maxHealth }) => {
 
   return (
     <div
-      className="col-4"
+      className="stat-chip"
       style={isLow ? { color: "#ff4d4d", fontWeight: "bold" } : undefined}
     >
       Health: {health}

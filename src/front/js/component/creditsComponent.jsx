@@ -1,7 +1,11 @@
 import React from "react";
 
 const CreditsComponent = ({ credits }) => {
-  return <div className="col-4">Credits: {credits.toFixed(2)}</div>;
+  return (
+    <span className="stat-chip">
+      Credits: {Math.floor(credits).toLocaleString()}
+    </span>
+  );
 };
 
 export default CreditsComponent;

@@ -137,23 +137,26 @@ export const Home = () => {
     <div className="mt-2 container-fluid holobg">
       <ActivityToast />
       <div className="row mb-2 holo ">
-        <div className="row pt-2 pb-1 m-0 justify-content-around text-center align-items-center">
-          <div className="col-4">{player.name}</div>
+        {/* Auto-width chips in a wrapping flex strip. The old version gave
+            every stat a col-4 - five 33% columns plus a logout in one row,
+            which collided the name into the level on any phone. */}
+        <div className="header-strip pt-2 pb-1">
+          <span className="stat-chip">
+            <strong>{player.name}</strong>
+          </span>
           <LevelComponent level={player.level} />
           <ExperienceComponent experience={player.experience} xpForNextLevel={player.xpForNextLevel} />
           <LoginStreakComponent streak={player.loginStreak} />
           <WinStreakComponent streak={player.winStreak} />
-          <div className="col-auto">
-            <button
-              className="logout-chip"
-              onClick={() => actions.logout()}
-              title="Log out"
-            >
-              logout
-            </button>
-          </div>
+          <button
+            className="logout-chip"
+            onClick={() => actions.logout()}
+            title="Log out"
+          >
+            logout
+          </button>
         </div>
-        <div className="row pb-2 m-0 justify-content-around text-center">
+        <div className="row pb-2 m-0 justify-content-around text-center event-banner">
           <ActiveEventBanner events={store.activeEvents} />
         </div>
       </div>
