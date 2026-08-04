@@ -543,7 +543,9 @@ def story_mission_start():
     if err:
         return err
 
-    success, message, goal_entries = economy.resolve_mission(player, mission)
+    success, message, goal_entries = economy.resolve_mission(
+        player, mission, is_story=True
+    )
 
     if success:
         player.storyWins += 1

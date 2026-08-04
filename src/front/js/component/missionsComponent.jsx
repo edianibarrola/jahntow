@@ -94,14 +94,43 @@ const MissionsComponent = () => {
                   <Accordion.Body>
                     <div className="col-12 pl-5 pr-5 text-center">
                       <ul className="holo">
-                        <li>
-                          Reward: {missionData.Reward}
-                          {bounty && (
-                            <span className="tx-bounty">
-                              {" "}⭐ Bounty active: {bounty.multiplier}x!
-                            </span>
-                          )}
-                        </li>
+                        {/* Mirrors economy.mission_reward_award: credits
+                            fall off for over-levelled content, so show the
+                            payout the player will actually get - otherwise
+                            the reason to move up to harder missions is
+                            invisible until after the run. */}
+                        {(() => {
+                          const over = Math.max(0, player.level - missionData.Rank);
+                          const mult = missionData.Guaranteed
+                            ? 1
+                            : Math.max(0.25, 1 - 0.08 * over);
+                          const effective = Math.max(
+                            1,
+                            Math.round(missionData.Reward * mult)
+                          );
+                          return (
+                            <li>
+                              Reward:{" "}
+                              {mult < 1 ? (
+                                <>
+                                  <s className="tx-info">{missionData.Reward}</s>{" "}
+                                  <span className="tx-error">{effective}</span>{" "}
+                                  <span className="tx-info">
+                                    (below your level — {Math.round(mult * 100)}%
+                                    payout)
+                                  </span>
+                                </>
+                              ) : (
+                                missionData.Reward
+                              )}
+                              {bounty && (
+                                <span className="tx-bounty">
+                                  {" "}⭐ Bounty active: {bounty.multiplier}x!
+                                </span>
+                              )}
+                            </li>
+                          );
+                        })()}
                         <li>
                           Required Credits: {missionData["Required Credits"]}
                         </li>
