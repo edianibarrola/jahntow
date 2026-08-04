@@ -565,3 +565,69 @@ input.form-control {
 .qty-input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* Market board: aligned columns instead of six prose panels. */
+.market-line {
+  display: grid;
+  grid-template-columns: 1.5fr 1.1fr 0.6fr 1fr 1.4fr;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+}
+
+.market-head {
+  font-size: 0.78rem;
+  opacity: 0.65;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid rgba(126, 200, 255, 0.35);
+  padding-bottom: 3px;
+}
+
+.market-item {
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.market-item:last-child {
+  border-bottom: none;
+}
+
+.market-tag {
+  font-size: 0.72rem;
+  opacity: 0.6;
+  margin-left: 6px;
+}
+
+.market-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.market-sort {
+  background: rgba(0, 0, 0, 0.5);
+  color: inherit;
+  border: 1px solid rgba(126, 200, 255, 0.4);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+/* Phones: the grid collapses into a wrapped line per item - column
+   alignment matters less than not clipping. */
+@media (max-width: 767px) {
+  .market-head {
+    display: none;
+  }
+  .market-line {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 10px;
+    row-gap: 2px;
+  }
+  .market-controls {
+    justify-content: flex-start;
+  }
+}

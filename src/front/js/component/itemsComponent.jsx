@@ -1,15 +1,37 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import { Context } from "../store/appContext";
 import HealthComponent from "./healthComponent";
 import EnergyComponent from "./energyComponent";
 import CreditsComponent from "./creditsComponent";
 import PriceSparkline from "./priceSparkline";
 
+// The market is a trading screen, not a catalog. The old layout was six
+// stacked category panels rendering every item identically, so finding
+// the actual play - what's cheap against its anchor, what's spiking,
+// which position is in profit - meant reading twelve prose rows. This is
+// a flat table with aligned columns, sortable by the signals a trader
+// sorts by, with the player's own positions pulled out on top.
+
+const SORTS = {
+  category: { label: "By category", fn: (a, b) => a.category.localeCompare(b.category) || a.rank - b.rank },
+  discount: { label: "Cheapest vs base", fn: (a, b) => (a.pct ?? 0) - (b.pct ?? 0) },
+  premium: { label: "Priciest vs base", fn: (a, b) => (b.pct ?? 0) - (a.pct ?? 0) },
+  volatility: {
+    label: "Most volatile",
+    fn: (a, b) =>
+      ({ volatile: 0, active: 1, steady: 2 }[a.volatility] ?? 3) -
+        ({ volatile: 0, active: 1, steady: 2 }[b.volatility] ?? 3) ||
+      Math.abs(b.pct ?? 0) - Math.abs(a.pct ?? 0),
+  },
+  pl: { label: "Your P/L", fn: (a, b) => b.unrealized - a.unrealized },
+};
+
 const ItemsComponent = () => {
   const { store, actions } = useContext(Context);
   const { player, marketPrices, gameData, priceHistory } = store;
   const [quantities, setQuantities] = useState({});
   const [pendingItem, setPendingItem] = useState(null);
+  const [sortKey, setSortKey] = useState("category");
 
   const rankByItem = {};
   Object.values(gameData.items || {}).forEach((items) => {
@@ -18,13 +40,42 @@ const ItemsComponent = () => {
     });
   });
 
-  const pricesByCategory = {};
-  (marketPrices || []).forEach((price) => {
-    if (!pricesByCategory[price.category]) {
-      pricesByCategory[price.category] = [];
-    }
-    pricesByCategory[price.category].push(price);
-  });
+  const rows = useMemo(() => {
+    return (marketPrices || [])
+      .map((item) => {
+        const holding = player.inventory[item.item_name];
+        // Floor pre-whole-unit legacy slivers for every purpose - valuing
+        // a 0.42 fraction once showed phantom profit on a sold-out item.
+        const owned = Math.floor(holding?.quantity || 0);
+        const avgCost = holding?.avg_cost || 0;
+        // Unrealized P/L at the SELL price - what liquidating now would
+        // actually realize, not the mid-price neither side trades at.
+        const unrealized =
+          owned > 0
+            ? Math.round((item.sell_price - avgCost) * owned * 100) / 100
+            : 0;
+        return {
+          ...item,
+          rank: rankByItem[item.item_name] ?? 99,
+          owned,
+          avgCost,
+          unrealized,
+          pct: item.pct_from_base,
+          locked: (rankByItem[item.item_name] ?? 99) > player.level,
+          eventMult: item.event_multiplier || 1,
+        };
+      })
+      // Locked items stay listed while held (properties generate them) -
+      // sellable, never invisible stock. Locked and unheld is just noise.
+      .filter((r) => !r.locked || r.owned > 0)
+      .sort(SORTS[sortKey].fn);
+  }, [marketPrices, player.inventory, player.level, sortKey]);
+
+  const positions = rows.filter((r) => r.owned > 0);
+  const positionValue = positions.reduce(
+    (sum, r) => sum + r.owned * r.sell_price, 0
+  );
+  const positionPl = positions.reduce((sum, r) => sum + r.unrealized, 0);
 
   const getQuantity = (itemName) => quantities[itemName] || 1;
 
@@ -43,36 +94,167 @@ const ItemsComponent = () => {
     }));
   };
 
-  // The single biggest click sink in the game: filling a 60-slot hold one
-  // "+" at a time was 60 clicks. Max = as many as fit AND are affordable.
-  const setMaxBuy = (item, owned) => {
-    const space = (player.maxInventoryCount || 0) - owned;
-    const affordable = item.buy_price > 0
-      ? Math.floor(player.credits / item.buy_price)
-      : 0;
+  // Max = as many as fit in the hold AND the wallet.
+  const setMaxBuy = (row) => {
+    const space = (player.maxInventoryCount || 0) - row.owned;
+    const affordable =
+      row.buy_price > 0 ? Math.floor(player.credits / row.buy_price) : 0;
     setQuantities((prev) => ({
       ...prev,
-      [item.item_name]: Math.max(1, Math.min(space, affordable)),
+      [row.item_name]: Math.max(1, Math.min(space, affordable)),
     }));
   };
 
   const handleBuy = (itemName) => {
-    const quantity = getQuantity(itemName);
     setPendingItem(itemName);
     actions
-      .buyItem(itemName, quantity)
+      .buyItem(itemName, getQuantity(itemName))
       .catch(() => {})
       .finally(() => setPendingItem(null));
   };
 
-  const handleSell = (itemName) => {
-    const quantity = getQuantity(itemName);
+  const handleSell = (itemName, qty) => {
     setPendingItem(itemName);
     actions
-      .sellItem(itemName, quantity)
+      .sellItem(itemName, qty)
       .catch(() => {})
       .finally(() => setPendingItem(null));
   };
+
+  const pctColor = (pct) =>
+    pct > 0 ? "tx-price-up" : pct < 0 ? "tx-price-down" : "tx-info";
+
+  const renderRow = (row) => {
+    const quantity = getQuantity(row.item_name);
+    const pending = pendingItem === row.item_name;
+    const hasEvent = Math.abs(row.eventMult - 1) > 0.001;
+    return (
+      <div className="market-item" key={row.item_name}>
+        <div className="market-line">
+          <span>
+            <strong>{row.item_name}</strong>
+            <span className="market-tag">{row.category}</span>
+            {row.locked && (
+              <span className="tx-info market-tag">
+                rank {row.rank} — sell only
+              </span>
+            )}
+          </span>
+          <span>
+            <span className="tx-price-up">{row.buy_price}</span>
+            {" / "}
+            <span className="tx-price-down">{row.sell_price}</span>
+            {hasEvent && (
+              <span className={row.eventMult > 1 ? "tx-price-up" : "tx-price-down"}>
+                {" "}⚡{row.eventMult > 1 ? "+" : ""}
+                {Math.round((row.eventMult - 1) * 100)}%
+              </span>
+            )}
+          </span>
+          <span
+            className={pctColor(row.pct)}
+            title={`Anchor price ${row.base_cost.toFixed(0)} — prices drift but are pulled back toward it`}
+          >
+            {row.pct != null ? `${row.pct > 0 ? "+" : ""}${row.pct}%` : "—"}
+          </span>
+          <span>
+            <PriceSparkline
+              series={priceHistory[row.item_name]}
+              baseCost={row.base_cost}
+            />
+            {row.volatility && (
+              <span className="tx-info market-tag">{row.volatility}</span>
+            )}
+          </span>
+          <span>
+            {row.owned > 0 ? (
+              <>
+                Owned: {row.owned}/{player.maxInventoryCount} @{" "}
+                {row.avgCost.toFixed(2)}{" "}
+                <span
+                  className={row.unrealized >= 0 ? "tx-sell" : "tx-error"}
+                >
+                  {row.unrealized >= 0 ? "+" : ""}
+                  {row.unrealized.toFixed(2)}
+                </span>
+              </>
+            ) : (
+              <span className="tx-info">—</span>
+            )}
+          </span>
+        </div>
+        <div className="market-controls">
+          {quantity > 1 && (
+            <span className="tx-info small me-2">
+              cost {(row.buy_price * quantity).toLocaleString()} · sell{" "}
+              {(row.sell_price * quantity).toLocaleString()}
+            </span>
+          )}
+          <button onClick={() => adjustQuantity(row.item_name, -1)} disabled={pending}>
+            -
+          </button>
+          <input
+            type="number"
+            min="1"
+            className="mx-1 qty-input"
+            value={quantity}
+            onChange={(e) => setQuantity(row.item_name, e.target.value)}
+            disabled={pending}
+          />
+          <button onClick={() => adjustQuantity(row.item_name, 1)} disabled={pending}>
+            +
+          </button>
+          <button
+            className="ms-1"
+            onClick={() => setMaxBuy(row)}
+            disabled={pending || row.locked}
+            title="Set quantity to as many as fit in your hold and wallet"
+          >
+            Max
+          </button>
+          <button
+            className="ms-2"
+            onClick={() => handleBuy(row.item_name)}
+            disabled={
+              pendingItem !== null ||
+              row.locked ||
+              row.owned + quantity > player.maxInventoryCount
+            }
+          >
+            {pending ? "..." : "Buy"}
+          </button>
+          <button
+            className="ms-1"
+            onClick={() => handleSell(row.item_name, quantity)}
+            disabled={pendingItem !== null || row.owned < quantity}
+          >
+            Sell
+          </button>
+          {row.owned > 0 && (
+            <button
+              className="ms-1"
+              onClick={() => handleSell(row.item_name, row.owned)}
+              disabled={pendingItem !== null}
+            >
+              All
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const header = (
+    <div className="market-line market-head">
+      <span>Item</span>
+      <span>Buy / Sell</span>
+      <span title="Distance from the anchor price the market pulls back toward">
+        vs base
+      </span>
+      <span>Trend</span>
+      <span>Position</span>
+    </div>
+  );
 
   return (
     <div className="row  mb-3">
@@ -83,184 +265,42 @@ const ItemsComponent = () => {
           <CreditsComponent credits={player.credits} />
         </div>
 
-        <div className="col-12  text-center  ">
-          <p>Market:</p>
+        <div className="col-12 text-center d-flex justify-content-center align-items-center flex-wrap gap-2 pb-1">
+          <span>Market</span>
+          <select
+            className="market-sort"
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value)}
+            title="Sort the board"
+          >
+            {Object.entries(SORTS).map(([key, s]) => (
+              <option key={key} value={key}>
+                {s.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      <div className="row">
-        {Object.entries(pricesByCategory).map(([category, items]) => (
-          <div className="col-12  text-center holo" key={category}>
-            <h4 className="text-center">{category}</h4>
-            <ul>
-              {items
-                // Items above the player's rank can't be *bought*, but they
-                // can still be held (properties generate them) - so they
-                // stay listed and sellable rather than becoming invisible
-                // and unsellable stock.
-                .filter(
-                  (item) =>
-                    rankByItem[item.item_name] <= player.level ||
-                    (player.inventory[item.item_name]?.quantity || 0) > 0
-                )
-                .map((item) => {
-                  const holding = player.inventory[item.item_name];
-                  // Properties only deposit whole units now, but an
-                  // inventory written before that could still hold a
-                  // fraction. Floor it for every purpose, not just the
-                  // label: valuing a 0.42 sliver showed a phantom
-                  // "profit" on an item the player had fully sold out of.
-                  const owned = Math.floor(holding?.quantity || 0);
-                  const avgCost = holding?.avg_cost || 0;
-                  const unrealizedPl =
-                    owned > 0
-                      ? Math.round(
-                          (item.current_cost - avgCost) * owned * 100
-                        ) / 100
-                      : 0;
-                  const quantity = getQuantity(item.item_name);
-                  const locked = rankByItem[item.item_name] > player.level;
-                  const eventMultiplier = item.event_multiplier || 1;
-                  const hasEvent = Math.abs(eventMultiplier - 1) > 0.001;
-                  return (
-                    <li
-                      key={item.item_name}
-                      className="d-flex justify-content-between align-items-center flex-wrap"
-                    >
-                      <span>
-                        {item.item_name}:{" "}
-                        {/* Buy and sell differ by the market spread, so
-                            showing only a single "current cost" left the
-                            actual price of a purchase unknowable. The raw
-                            base cost used to sit here; it said little on
-                            its own, so it's now expressed as the distance
-                            from base - which is the actual signal - and
-                            the sparkline still draws base as a dashed
-                            reference line. */}
-                        Buy <span className="tx-price-up">{item.buy_price}</span> /
-                        Sell <span className="tx-price-down">{item.sell_price}</span>
-                        {item.pct_from_base != null && (
-                          <span
-                            className={
-                              item.pct_from_base > 0 ? "tx-price-up" : "tx-price-down"
-                            }
-                            title={`Anchor price ${item.base_cost.toFixed(0)} — prices drift but are pulled back toward it`}
-                          >
-                            {" "}({item.pct_from_base > 0 ? "+" : ""}
-                            {item.pct_from_base}% vs base)
-                          </span>
-                        )}
-                        {item.volatility && (
-                          <span className="tx-info"> · {item.volatility}</span>
-                        )}
-                        {hasEvent && (
-                          <span className={eventMultiplier > 1 ? "tx-price-up" : "tx-price-down"}>
-                            {" "}⚡{eventMultiplier > 1 ? "+" : ""}
-                            {Math.round((eventMultiplier - 1) * 100)}%
-                          </span>
-                        )}
-                        {locked && (
-                          <span className="tx-info"> (rank {rankByItem[item.item_name]} — sell only)</span>
-                        )}
-                        {" "}
-                        <PriceSparkline
-                          series={priceHistory[item.item_name]}
-                          baseCost={item.base_cost}
-                        />
-                        {owned > 0 && (
-                          <>
-                            {" "}
-                            (Owned: {owned}/{player.maxInventoryCount},
-                            Avg Cost: {avgCost.toFixed(2)},{" "}
-                            <span
-                              style={{
-                                color:
-                                  unrealizedPl > 0
-                                    ? "#8aff8a"
-                                    : unrealizedPl < 0
-                                    ? "#ff8a8a"
-                                    : undefined,
-                              }}
-                            >
-                              {unrealizedPl >= 0 ? "+" : ""}
-                              {unrealizedPl.toFixed(2)}
-                            </span>
-                            )
-                          </>
-                        )}
-                      </span>
-                      <span className="d-flex align-items-center">
-                        <button
-                          onClick={() => adjustQuantity(item.item_name, -1)}
-                          disabled={pendingItem === item.item_name}
-                        >
-                          -
-                        </button>
-                        <input
-                          type="number"
-                          min="1"
-                          className="mx-1 qty-input"
-                          value={quantity}
-                          onChange={(e) =>
-                            setQuantity(item.item_name, e.target.value)
-                          }
-                          disabled={pendingItem === item.item_name}
-                        />
-                        <button
-                          onClick={() => adjustQuantity(item.item_name, 1)}
-                          disabled={pendingItem === item.item_name}
-                        >
-                          +
-                        </button>
-                        <button
-                          className="ms-1"
-                          onClick={() => setMaxBuy(item, owned)}
-                          disabled={pendingItem === item.item_name || locked}
-                          title="Set quantity to as many as fit in your hold and wallet"
-                        >
-                          Max
-                        </button>
-                        <button
-                          className="ms-2"
-                          onClick={() => handleBuy(item.item_name)}
-                          disabled={
-                            pendingItem !== null ||
-                            locked ||
-                            owned + quantity > player.maxInventoryCount
-                          }
-                        >
-                          {pendingItem === item.item_name ? "..." : "Buy"}
-                        </button>
-                        <button
-                          className="ms-1"
-                          onClick={() => handleSell(item.item_name)}
-                          disabled={pendingItem !== null || owned < quantity}
-                        >
-                          Sell
-                        </button>
-                        {owned > 0 && (
-                          <button
-                            className="ms-1"
-                            onClick={() => {
-                              setQuantity(item.item_name, owned);
-                              setPendingItem(item.item_name);
-                              actions
-                                .sellItem(item.item_name, owned)
-                                .catch(() => {})
-                                .finally(() => setPendingItem(null));
-                            }}
-                            disabled={pendingItem !== null}
-                          >
-                            All
-                          </button>
-                        )}
-                      </span>
-                    </li>
-                  );
-                })}
-            </ul>
-          </div>
-        ))}
+      {positions.length > 0 && (
+        <div className="col-12 holo mb-2">
+          <h5 className="text-center mb-1">
+            Your positions ({positions.length}) · value{" "}
+            {Math.round(positionValue).toLocaleString()} ·{" "}
+            <span className={positionPl >= 0 ? "tx-sell" : "tx-error"}>
+              {positionPl >= 0 ? "+" : ""}
+              {positionPl.toFixed(2)}
+            </span>
+          </h5>
+          {header}
+          {positions.map(renderRow)}
+        </div>
+      )}
+
+      <div className="col-12 holo">
+        <h5 className="text-center mb-1">All goods</h5>
+        {header}
+        {rows.map(renderRow)}
       </div>
     </div>
   );
