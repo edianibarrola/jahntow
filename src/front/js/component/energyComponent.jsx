@@ -28,6 +28,14 @@ const EnergyComponent = ({ energy, maxEnergy }) => {
     <div className="col-4" style={isLow ? { color: "#ffb84d" } : undefined}>
       Energy: {energy}
       {maxEnergy ? ` / ${maxEnergy}` : ""}
+      {(store.player.restedEnergy || 0) > 0 && (
+        <span
+          className="tx-info"
+          title="Regen banked while your bar was full - it refills the bar as you spend."
+        >
+          {" "}(+{store.player.restedEnergy} rested)
+        </span>
+      )}
       {maxEnergy && energy < maxEnergy ? (
         <div className="regen-hint">
           +{perTick}/10s · full in {mm}:{ss}

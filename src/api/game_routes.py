@@ -1018,6 +1018,7 @@ def _reset_player(player):
     player.win_streak = 0
     player.item_cooldowns = {}
     player.recovery_uses = {}
+    player.rested_energy = 0
     player.upgrade_steps = {}
     player.ship = {}
     # A full reset wipes meta-progression too - unlike prestige, which
@@ -1077,6 +1078,7 @@ def _prestige_player(player):
     player.win_streak = 0
     player.item_cooldowns = {}
     player.recovery_uses = {}
+    player.rested_energy = 0
     # Purchased-upgrade counters reset with the run. Keeping them would
     # mean every post-prestige upgrade started at the old escalated price -
     # the same anti-synergy that keying cost off the raw stat value caused.
@@ -1100,8 +1102,9 @@ def prestige():
     _prestige_player(player)
     activity = economy.log_activity(
         player,
-        f"Prestiged to level {player.prestige_level}! Stats reset, but your max "
-        "Health/Energy/Inventory floor is now permanently higher.",
+        f"Prestiged to level {player.prestige_level}! Stats reset, but your "
+        "stat floors are permanently higher and every mission now pays "
+        f"+{round(economy.prestige_bonus(player) * 100)}% credits and XP.",
         "prestige",
     )
     db.session.commit()
