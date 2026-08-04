@@ -18,6 +18,7 @@ import TransactionsComponent from "../component/transactionsComponent";
 import HealthRecoveryComponent from "../component/healthRecoveryComponent";
 import PropertiesComponent from "../component/propertiesComponent";
 import InventoryUpgradeComponent from "../component/inventoryUpgradeComponent";
+import ShipComponent from "../component/shipComponent";
 import EquipmentStore from "../component/equipmentStore";
 import InventoryComponent from "../component/inventoryComponent";
 import LeaderboardComponent from "../component/leaderboardComponent";
@@ -130,6 +131,12 @@ export const Home = () => {
           <Tab eventKey="health" title="Medlab" className="shipbed">
             <div className="row mb-3 text-center">
               <HealthRecoveryComponent />
+            </div>
+          </Tab>
+
+          <Tab eventKey="ship" title="Ship" className="shipinside">
+            <div className="mb-5 text-center">
+              <ShipComponent />
             </div>
           </Tab>
 

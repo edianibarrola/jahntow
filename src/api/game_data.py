@@ -1809,7 +1809,11 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                              'unity endures.'}}
 
 
-PROPERTIES = {'Energy Labs': {'Fusion Facility': {'Base Cost': 8800,
+PROPERTIES = {'Energy Labs': {'Salvage Smelter': {'Base Cost': 3000,
+                                      'Item Generated': 'Alpha Core',
+                                      'Generation Rate': 0.0171,
+                                      'Rank': 1},
+                              'Fusion Facility': {'Base Cost': 8800,
                                      'Item Generated': 'Alpha Core',
                                      'Generation Rate': 0.05,
                                      'Rank': 3},
@@ -1967,7 +1971,7 @@ PROPERTIES = {'Energy Labs': {'Fusion Facility': {'Base Cost': 8800,
                                                       'Rank': 48}}}
 
 
-EQUIPMENT = {'Research': {'Spectral Analyzer': {'Base Cost': 50, 'Required Level': 1},
+EQUIPMENT ={'Research': {'Spectral Analyzer': {'Base Cost': 50, 'Required Level': 1},
               'Bio Collector': {'Base Cost': 150, 'Required Level': 10},
               'Porta Lab': {'Base Cost': 500, 'Required Level': 20}},
  'Weapons': {'Steel Machete': {'Base Cost': 50, 'Required Level': 1},
@@ -2252,3 +2256,50 @@ STORY_CHOICES = [
           'reward': {'credits': 25000}},
      ]},
 ]
+
+# The player's ship: the one system that sells THROUGHPUT rather than
+# bigger numbers. Simulation of 60 hours of play found the real ceiling
+# was never credits - it was energy regen, fixed at 360/hour for the whole
+# game while mission costs rise with rank (53 missions/hour at level 1
+# down to 6 at level 50). Every existing upgrade raises a capacity, not a
+# rate, so no amount of money could make the game faster. These modules
+# can, which is what finally gives credits somewhere meaningful to go.
+#
+# effect_per_level is applied by economy.ship_bonus(); cost of level N is
+# base_cost * cost_multiplier**(N-1).
+SHIP_MODULE_MAX_LEVEL = 5
+
+SHIP_MODULES = {
+    'reactor': {
+        'name': 'Fusion Reactor',
+        'desc': 'Energy regenerates faster - more missions per hour.',
+        'effect': '+1 energy per 10s tick (+360/hour)',
+        'effect_per_level': 1,
+        'base_cost': 25000,
+        'cost_multiplier': 3.0,
+    },
+    'cargo_hold': {
+        'name': 'Cargo Hold',
+        'desc': 'Carry more of every good, so a trading run is worth making.',
+        'effect': '+10 to your cap on every item',
+        'effect_per_level': 10,
+        'base_cost': 5000,
+        'cost_multiplier': 3.2,
+    },
+    'medbay': {
+        'name': 'Medbay',
+        'desc': 'Health regenerates faster, so a bad run costs less downtime.',
+        'effect': '+1 health per 45s tick',
+        'effect_per_level': 1,
+        'base_cost': 10000,
+        'cost_multiplier': 2.6,
+    },
+    'cargo_drones': {
+        'name': 'Cargo Drones',
+        'desc': 'Each property banks more output before it pauses.',
+        'effect': '+1x cargo capacity of property storage',
+        'effect_per_level': 1,
+        'base_cost': 15000,
+        'cost_multiplier': 2.8,
+    },
+}

@@ -17,7 +17,10 @@ const PropertiesComponent = () => {
   const pendingEntries = Object.entries(player.pendingProduction || {}).filter(
     ([, qty]) => Math.floor(qty) > 0
   );
-  const poolCap = (player.maxInventoryCount || 0) * 2;
+  // Cargo drones raise how much a property banks before pausing, so the
+  // cap shown here has to include them or a full property looks broken.
+  const poolCap =
+    (player.cargoCapacity || 0) * (2 + ((player.ship || {}).cargo_drones || 0));
   const collect = (propertyName) => {
     setCollecting(propertyName || "__all__");
     actions

@@ -123,6 +123,11 @@ class Player(db.Model):
     # makes "newest title" well-defined). Catalog in game_data.ACHIEVEMENTS.
     achievements = db.Column(db.JSON, default=list)
 
+    # Installed ship modules, {module_id: level}. Catalog in
+    # game_data.SHIP_MODULES. Unlike every other upgrade in the game these
+    # buy RATES rather than capacities - see the note on SHIP_MODULES.
+    ship = db.Column(db.JSON, default=dict)
+
     # Goods produced by properties but not yet collected, {item_name: qty}.
     # Production accrues HERE rather than straight into inventory: writing
     # it directly made maxInventoryCount meaningless (a cap of 10 quietly
@@ -220,6 +225,13 @@ class Player(db.Model):
             # surfacing a 429 error after the player clicks.
             "itemCooldowns": self.item_cooldowns or {},
             "upgradeSteps": self.upgrade_steps or {},
+            "ship": self.ship or {},
+            # The hold the player actually has: the purchased cap plus any
+            # cargo-hold ship modules. Every screen that talks about "how
+            # many can I carry" must use this, not maxInventoryCount.
+            "cargoCapacity": self.maxInventoryCount
+            + (self.ship or {}).get("cargo_hold", 0)
+            * game_data.SHIP_MODULES["cargo_hold"]["effect_per_level"],
             "pendingProduction": self.pending_production or {},
             "stats": self.stats or {},
             "dailyContracts": self.daily_contracts or {},

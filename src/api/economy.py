@@ -6,7 +6,9 @@ of trusting values sent by the client.
 """
 import math
 import random
+import statistics
 from datetime import timedelta
+from functools import lru_cache
 
 from api.models import (
     db, MarketPrice, MarketPriceHistory, GameEvent, ActivityLogEntry,
@@ -738,13 +740,56 @@ def get_effective_price(price_row, events=None):
 
 
 def get_buy_price(price_row, events=None):
-    """What the player pays per unit - mid plus half the spread."""
+    """
+    What the player pays per unit - mid plus half the spread. The spread is
+    a property of the market, not of the player: everyone trades on the
+    same quotes, and nothing a player owns moves them.
+    """
     return get_effective_price(price_row, events) * (1 + MARKET_SPREAD_PCT / 2)
 
 
 def get_sell_price(price_row, events=None):
     """What the player receives per unit - mid minus half the spread."""
     return get_effective_price(price_row, events) * (1 - MARKET_SPREAD_PCT / 2)
+
+
+@lru_cache(maxsize=None)
+def _mission_xp_per_credit(level):
+    """
+    The median XP a mission at this player's rank pays per credit it
+    rewards. Median, not any single mission: rewards inside one rank vary
+    more than tenfold (rank 1 spans 260 to 3,200), so picking one mission
+    would set the rate by an accident of tie-breaking.
+    """
+    rank = max((m["Rank"] for m in game_data.MISSIONS.values()
+                if not m.get("Guaranteed") and m["Rank"] <= level), default=None)
+    if rank is None:
+        return 0.0
+    ratios = [m["Experience"] / m["Reward"]
+              for m in game_data.MISSIONS.values()
+              if m["Rank"] == rank and m["Reward"] > 0]
+    return statistics.median(ratios) if ratios else 0.0
+
+
+def trade_xp_award(player, profit):
+    """
+    Experience for a profitable sale.
+
+    Trading previously granted none at all, so a trade-focused player was
+    stuck at level 1 forever - locked out of the higher-rank goods that
+    are the only ones worth trading, and therefore out of ever trading
+    profitably. A closed trap.
+
+    The rate is calibrated against missions rather than fixed: a credit of
+    trading profit is worth the same XP as a credit of mission reward at
+    your rank. No single credits-per-XP constant can work, because an
+    at-level payday runs from a few hundred credits at level 1 to nearly a
+    million at level 48 - any constant either hands out free levels at the
+    top or none at all at the bottom.
+    """
+    if profit <= 0:
+        return 0
+    return int(profit * _mission_xp_per_credit(player.level))
 
 
 def log_activity(player, message, type_="info"):
@@ -891,6 +936,54 @@ def _consume_ticks(player, field, interval, now, cap=None):
     return ticks
 
 
+def ship_bonus(player, module_id):
+    """Total effect of an installed module: level x its per-level effect."""
+    level = (player.ship or {}).get(module_id, 0)
+    if not level:
+        return 0
+    return level * game_data.SHIP_MODULES[module_id]["effect_per_level"]
+
+
+def ship_module_cost(player, module_id):
+    """Cost of the NEXT level, or None once the module is maxed."""
+    module = game_data.SHIP_MODULES[module_id]
+    level = (player.ship or {}).get(module_id, 0)
+    if level >= game_data.SHIP_MODULE_MAX_LEVEL:
+        return None
+    return int(module["base_cost"] * module["cost_multiplier"] ** level)
+
+
+def energy_regen_amount(player):
+    """
+    Energy restored per regen tick. This is THE throughput lever: it was a
+    hard-coded 1 for the whole game, so a player's actions-per-hour could
+    never improve no matter how rich they got - and mission energy costs
+    rise with rank, meaning the game got steadily slower. The reactor
+    module lets credits buy speed.
+    """
+    return ENERGY_REGEN_AMOUNT + ship_bonus(player, "reactor")
+
+
+def health_regen_amount(player):
+    return HEALTH_REGEN_AMOUNT + ship_bonus(player, "medbay")
+
+
+def production_pool_multiple(player):
+    return PRODUCTION_OVERFLOW_MULTIPLE + ship_bonus(player, "cargo_drones")
+
+
+def cargo_capacity(player):
+    """
+    How many of each good this player can hold. Trading was unplayable: a
+    perfect swing on a full hold of the best low-rank good netted ~750
+    credits against a mission paying thousands, because the hold only ever
+    held 10. Profit per round trip scales directly with what you can carry,
+    so the cargo hold - not any change to prices - is what makes trading
+    worth doing. Every player still buys and sells at the same quotes.
+    """
+    return player.maxInventoryCount + ship_bonus(player, "cargo_hold")
+
+
 def migrate_pending_to_properties(player):
     """
     Return the uncollected pool keyed by PROPERTY name, converting any
@@ -955,7 +1048,10 @@ def apply_passive_tick(player):
     # sitting at max doesn't bank time that would instantly refill later.
     energy_ticks = _consume_ticks(player, "last_energy_tick_at", ENERGY_REGEN_INTERVAL, now)
     if energy_ticks > 0 and player.energy < player.maxEnergy:
-        player.energy = min(player.maxEnergy, player.energy + energy_ticks * ENERGY_REGEN_AMOUNT)
+        player.energy = min(
+            player.maxEnergy,
+            player.energy + energy_ticks * energy_regen_amount(player),
+        )
         changed = True
 
     # Health regen. Health used to have no passive recovery at all, which
@@ -968,7 +1064,10 @@ def apply_passive_tick(player):
     health_gained = 0
     if health_ticks > 0 and player.health < player.maxHealth:
         before = player.health
-        player.health = min(player.maxHealth, player.health + health_ticks * HEALTH_REGEN_AMOUNT)
+        player.health = min(
+            player.maxHealth,
+            player.health + health_ticks * health_regen_amount(player),
+        )
         health_gained = player.health - before
         changed = True
 
@@ -1009,7 +1108,7 @@ def apply_passive_tick(player):
             # properties making the same good shared one store, so neither
             # could be claimed or reported on individually.
             current_qty = pending.get(property_name, 0)
-            ceiling = player.maxInventoryCount * PRODUCTION_OVERFLOW_MULTIPLE
+            ceiling = cargo_capacity(player) * production_pool_multiple(player)
             if current_qty >= ceiling:
                 continue
 

@@ -15,7 +15,11 @@ const UPGRADES = [
   {
     stat: "inventory",
     label: "Inventory",
-    describe: (p) => `You can store ${p.maxInventoryCount} of each market item.`,
+    describe: (p) =>
+      `You can store ${p.cargoCapacity} of each market item` +
+      (p.cargoCapacity > p.maxInventoryCount
+        ? ` (${p.maxInventoryCount} bought here, the rest from your ship's cargo hold).`
+        : "."),
   },
   {
     stat: "equipment",
