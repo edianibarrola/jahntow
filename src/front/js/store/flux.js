@@ -1425,6 +1425,7 @@ const defaultPlayer = {
   inventory: {},
   properties: {},
   maxInventoryCount: 10,
+  restedEnergy: 0,
   ship: {},
   maxHealth: 100,
   maxEnergy: 100,

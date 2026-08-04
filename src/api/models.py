@@ -128,6 +128,12 @@ class Player(db.Model):
     # buy RATES rather than capacities - see the note on SHIP_MODULES.
     ship = db.Column(db.JSON, default=dict)
 
+    # Energy regen that would have spilled past maxEnergy, banked at half
+    # rate (economy.RESTED_ENERGY_*) up to one extra bar. Drains back into
+    # the bar whenever it is below max - so a returning player's first
+    # session runs on roughly double the energy instead of three minutes.
+    rested_energy = db.Column(db.Float, default=0)
+
     # Medlab uses today, {"date": "YYYY-MM-DD", <category>: count}. Each
     # use raises the next price in that category for the rest of the UTC
     # day (economy.RECOVERY_PRICE_MULTIPLIER) - the escalation that
@@ -234,6 +240,7 @@ class Player(db.Model):
             # Client mirrors today's escalated Medlab prices from this;
             # the server still charges its own computed figure.
             "recoveryUses": self.recovery_uses or {},
+            "restedEnergy": int(self.rested_energy or 0),
             "upgradeSteps": self.upgrade_steps or {},
             "ship": self.ship or {},
             "pendingProduction": self.pending_production or {},

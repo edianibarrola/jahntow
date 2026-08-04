@@ -87,6 +87,10 @@ MARKET_SPREAD_PCT = 0.05
 # Each has its own last-applied timestamp on Player so sub-tick remainders
 # carry forward instead of being discarded (see _consume_ticks).
 ENERGY_REGEN_INTERVAL = timedelta(seconds=10)
+# Overflow regen banks into a rested reserve at this rate, up to one full
+# extra bar - see the energy block in apply_passive_tick.
+RESTED_ENERGY_BANK_RATE = 0.5
+RESTED_ENERGY_CAP_MULTIPLE = 1.0
 ENERGY_REGEN_AMOUNT = 1
 # Health regenerates far slower than energy: it's the resource that gates
 # risk-taking, so recovering it should cost real time (or credits, via
@@ -189,6 +193,21 @@ PRESTIGE_MAX_HEALTH_BONUS = 20
 PRESTIGE_MAX_ENERGY_BONUS = 20
 PRESTIGE_MAX_INVENTORY_BONUS = 5
 PRESTIGE_MAX_EQUIPMENT_BONUS = 10
+
+# Each rebirth also multiplies mission credits AND experience, permanently.
+# Stat floors alone made prestige a bad trade: a max-level player farming
+# the rank-50 mission at the deep falloff floor still cleared ~6M/hour,
+# against which "your bars start 20 higher" was nothing. +12% earnings per
+# prestige (to +60% at five) is the compounding reason to actually reset -
+# and it stacks with the ship, which a rebirth keeps.
+PRESTIGE_REWARD_BONUS_PER_LEVEL = 0.12
+PRESTIGE_REWARD_BONUS_CAP = 0.60
+
+
+def prestige_bonus(player):
+    level = min(player.prestige_level or 0, 5)
+    return min(PRESTIGE_REWARD_BONUS_CAP,
+               level * PRESTIGE_REWARD_BONUS_PER_LEVEL)
 
 # Mission success chance scales with how prepared the player actually is,
 # instead of being a flat coin flip regardless of level or gear:
@@ -1080,11 +1099,27 @@ def apply_passive_tick(player):
     # Ticks are consumed whether or not the player is already full, so
     # sitting at max doesn't bank time that would instantly refill later.
     energy_ticks = _consume_ticks(player, "last_energy_tick_at", ENERGY_REGEN_INTERVAL, now)
-    if energy_ticks > 0 and player.energy < player.maxEnergy:
-        player.energy = min(
-            player.maxEnergy,
-            player.energy + energy_ticks * energy_regen_amount(player),
-        )
+    if energy_ticks > 0:
+        # Regen that would spill past the cap banks into a rested reserve
+        # at half rate instead of evaporating. Session players lost 90-100%
+        # of their overnight regen to a bar that filled within the first
+        # hour away; now coming back means a full bar plus a reserve that
+        # refills it as it is spent - a real session, not three minutes.
+        regen = energy_ticks * energy_regen_amount(player)
+        space = max(0, player.maxEnergy - player.energy)
+        used = min(regen, space)
+        player.energy += used
+        overflow = regen - used
+        if overflow > 0:
+            cap = player.maxEnergy * RESTED_ENERGY_CAP_MULTIPLE
+            player.rested_energy = min(
+                cap, (player.rested_energy or 0) + overflow * RESTED_ENERGY_BANK_RATE
+            )
+        changed = True
+    if (player.rested_energy or 0) >= 1 and player.energy < player.maxEnergy:
+        take = min(int(player.rested_energy), player.maxEnergy - player.energy)
+        player.energy += take
+        player.rested_energy = (player.rested_energy or 0) - take
         changed = True
 
     # Health regen. Health used to have no passive recovery at all, which
@@ -1404,13 +1439,16 @@ def mission_reward_award(player, mission, is_story=False):
     safety net; scaling it down would defeat the point of it existing).
     """
     reward = mission["Reward"]
-    if is_story or mission.get("Guaranteed"):
+    if mission.get("Guaranteed"):
         return reward
+    if is_story:
+        return max(1, round(reward * (1 + prestige_bonus(player))))
     over = max(0, player.level - mission["Rank"] - LEVEL_GRACE)
     floor = (REWARD_FALLOFF_DEEP_FLOOR
              if player.level - mission["Rank"] >= STREAK_OVERLEVEL_CUTOFF
              else REWARD_FALLOFF_FLOOR)
     multiplier = max(floor, 1 - REWARD_FALLOFF_PER_LEVEL * over)
+    multiplier *= 1 + prestige_bonus(player)
     return max(1, round(reward * multiplier))
 
 
@@ -1433,6 +1471,7 @@ def mission_xp_award(player, mission, perks=None):
     multiplier = max(XP_FALLOFF_FLOOR, 1 - XP_FALLOFF_PER_LEVEL * over)
     if perks:
         multiplier *= 1 + perks.get("Research", 0)
+    multiplier *= 1 + prestige_bonus(player)
     return max(1, round(mission["Experience"] * multiplier))
 
 
