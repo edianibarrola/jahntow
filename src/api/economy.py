@@ -127,6 +127,15 @@ XP_FALLOFF_FLOOR = 0.15
 # mission at level 14 pays ~2,700 against ~20,400 for the at-level one.
 REWARD_FALLOFF_PER_LEVEL = 0.08
 REWARD_FALLOFF_FLOOR = 0.25
+# Levels above a mission's rank that are NOT counted as out-levelling it.
+# Mission ranks step by 2-3 (1, 3, 6, 8, 10, 12, ...), so on every other
+# level the newest mission a player can reach is already one rank below
+# them: at level 13 the best available is rank 12. Without this grace the
+# falloff penalised players for the catalog's own spacing - the correct,
+# freshly unlocked mission paid a reduced reward - which is the opposite
+# of what the falloff is for. Set to the largest gap between consecutive
+# ranks so the newest mission always pays in full.
+LEVEL_GRACE = 2
 
 # Credits trickle in while offline (or just idle), same elapsed-time-based
 # mechanism as energy regen/property production, capped so leaving the game
@@ -1234,7 +1243,7 @@ def mission_reward_award(player, mission, is_story=False):
     reward = mission["Reward"]
     if is_story or mission.get("Guaranteed"):
         return reward
-    over = max(0, player.level - mission["Rank"])
+    over = max(0, player.level - mission["Rank"] - LEVEL_GRACE)
     multiplier = max(REWARD_FALLOFF_FLOOR, 1 - REWARD_FALLOFF_PER_LEVEL * over)
     return max(1, round(reward * multiplier))
 
@@ -1251,7 +1260,10 @@ def mission_xp_award(player, mission, perks=None):
     The Research equipment perk boosts the final figure (capped, see
     EQUIPMENT_PERKS).
     """
-    over = max(0, player.level - mission["Rank"])
+    # Same grace as the credit falloff: the newest mission a player can
+    # reach is often already a rank or two below them purely because of
+    # how the catalog is spaced, and shouldn't be treated as out-levelled.
+    over = max(0, player.level - mission["Rank"] - LEVEL_GRACE)
     multiplier = max(XP_FALLOFF_FLOOR, 1 - XP_FALLOFF_PER_LEVEL * over)
     if perks:
         multiplier *= 1 + perks.get("Research", 0)
