@@ -124,6 +124,12 @@ const EquipmentShopComponent = () => {
                 const cost = merchant
                   ? Math.max(1, Math.round(data["Base Cost"] * merchant.multiplier))
                   : data["Base Cost"];
+                // Mirrors EQUIPMENT_SELL_REFUND_PCT and the merchant
+                // adjustment in the sell endpoint. Shown so the round trip
+                // is visibly a loss rather than something to discover.
+                const sellBack = Math.floor(
+                  data["Base Cost"] * (merchant ? merchant.multiplier : 1) * 0.5
+                );
                 return (
                 <li
                   key={itemName}
@@ -143,6 +149,7 @@ const EquipmentShopComponent = () => {
                     ) : (
                       parseFloat(cost).toFixed(2)
                     )}
+                    <span className="tx-info"> · sells back {sellBack}</span>
                     {owned > 0 && <> (Owned: {owned})</>}
                   </span>
                   <span className="d-flex align-items-center">

@@ -377,7 +377,19 @@ def equipment_sell():
     if current_qty < quantity:
         return jsonify({"message": "insufficient quantity"}), 400
 
-    total_value = int(equipment_data["Base Cost"] * EQUIPMENT_SELL_REFUND_PCT) * quantity
+    # The refund tracks the item's CURRENT value, not its static Base
+    # Cost. Refunding a flat 50% of base while a traveling merchant sold
+    # the same item at 40-60% off was a money printer: buy at 24 during a
+    # 52%-off sale, sell straight back for 25, repeat forever.
+    #
+    # The personal reputation discount is deliberately NOT applied here -
+    # it's a buying perk, and folding it into the refund too would let it
+    # cancel out. Buying costs Base * merchant * (1 - rep) and selling
+    # returns Base * merchant * 0.5, so a round trip loses money for any
+    # rep discount below 50% (the cap is 10%).
+    merchant_factor = economy.get_merchant_price_factor(category)
+    unit_value = equipment_data["Base Cost"] * merchant_factor
+    total_value = int(unit_value * EQUIPMENT_SELL_REFUND_PCT) * quantity
     player.credits += total_value
 
     equipment = dict(player.equipment or {})
@@ -388,8 +400,14 @@ def equipment_sell():
         equipment.pop(item_name, None)
     player.equipment = equipment
 
+    sale_note = (
+        " (reduced while a merchant is flooding the market)"
+        if merchant_factor < 1 else ""
+    )
     activity = economy.log_activity(
-        player, f"Sold {quantity}x {item_name} for {total_value} credits.", "sell"
+        player,
+        f"Sold {quantity}x {item_name} for {total_value} credits.{sale_note}",
+        "sell",
     )
     db.session.commit()
     return jsonify({
