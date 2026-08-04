@@ -4,6 +4,15 @@ import HealthComponent from "./healthComponent";
 import EnergyComponent from "./energyComponent";
 import CreditsComponent from "./creditsComponent";
 
+// Everything you own that isn't cargo, gear or property lives here, split
+// by what it actually buys:
+//
+//   Modules  buy RATES     - fixed levels, big escalating costs
+//   Systems  buy CAPACITY  - unlimited step purchases, cheap first step
+//
+// They used to be two tabs, which put two answers to "how do I carry more?"
+// in front of the player at wildly different prices. One tab, one answer.
+
 // What one level of each module changes, phrased in the units the player
 // actually feels. The catalog's own `effect` string is the short form; this
 // spells out the resulting total so the player can see the module working
@@ -13,9 +22,41 @@ const CURRENT_EFFECT = {
     `Energy regenerates ${1 + lvl} per tick (${(1 + lvl) * 360}/hour).`,
   medbay: (p, lvl) => `Health regenerates ${1 + lvl} per tick.`,
   cargo_drones: (p, lvl) =>
-    `Each property banks up to ${(p.cargoCapacity || 0) * (2 + lvl)} units before it pauses.`,
-  cargo_hold: (p) => `You can carry ${p.cargoCapacity || 0} of each good.`,
+    `Each property banks up to ${(p.maxInventoryCount || 0) * (2 + lvl)} units before it pauses.`,
 };
+
+// Preview-only: mirrors the cost formula the backend actually charges
+// (src/api/game_routes.py UPGRADE_BASE_COST/UPGRADE_COST_MULTIPLIER). The
+// server is still the one that computes and applies the real cost.
+const UPGRADE_BASE_COST = 250;
+const UPGRADE_COST_MULTIPLIER = 1.35;
+
+const SYSTEMS = [
+  {
+    stat: "inventory",
+    label: "Cargo Bay",
+    describe: (p) => `Holds ${p.maxInventoryCount} of each market good.`,
+    why: "Bigger runs mean bigger swings - this is what makes trading scale.",
+  },
+  {
+    stat: "equipment",
+    label: "Armory",
+    describe: (p) => `Holds ${p.maxEquipmentCount} equipment units in total.`,
+    why: "Room for spares, which raise your odds on every mission.",
+  },
+  {
+    stat: "energy",
+    label: "Capacitor",
+    describe: (p) => `Stores ${p.maxEnergy} energy.`,
+    why: "A deeper buffer, so you can burn a backlog in one sitting.",
+  },
+  {
+    stat: "health",
+    label: "Life Support",
+    describe: (p) => `Sustains ${p.maxHealth} health.`,
+    why: "More room to absorb a bad run before you have to stop.",
+  },
+];
 
 const ShipComponent = () => {
   const { store, actions } = useContext(Context);
@@ -24,16 +65,26 @@ const ShipComponent = () => {
   const maxLevel = gameData.shipModuleMaxLevel || 5;
   const ship = player.ship || {};
 
-  // Mirrors economy.ship_module_cost. The server still charges the real
-  // price; this only labels the button.
+  // Mirrors economy.ship_module_cost.
   const nextCost = (id, module) => {
     const level = ship[id] || 0;
     if (level >= maxLevel) return null;
     return Math.floor(module.base_cost * Math.pow(module.cost_multiplier, level));
   };
 
+  const systemCost = (stat) => {
+    const purchased = (player.upgradeSteps || {})[stat] || 0;
+    return Math.floor(
+      UPGRADE_BASE_COST * Math.pow(UPGRADE_COST_MULTIPLIER, purchased)
+    );
+  };
+
   const handleInstall = (id) => {
     actions.upgradeShipModule(id).catch(() => {});
+  };
+
+  const handleExpand = (stat) => {
+    actions.upgradeStat(stat).catch(() => {});
   };
 
   return (
@@ -47,11 +98,15 @@ const ShipComponent = () => {
 
         <div className="col-12 text-center">
           <p>Your Ship</p>
-          <p className="small">
-            Everything else you buy raises a limit. Modules raise a{" "}
-            <em>rate</em> &mdash; they are how credits turn into playing faster.
-          </p>
         </div>
+      </div>
+
+      <div className="col-12 text-center mt-2 mb-2">
+        <p className="mb-0">Modules</p>
+        <p className="small">
+          These raise a <em>rate</em>. Everything else in the game raises a
+          limit &mdash; modules are how credits turn into playing faster.
+        </p>
       </div>
 
       <div className="row">
@@ -95,6 +150,35 @@ const ShipComponent = () => {
                     {cost.toLocaleString()} credits
                   </button>
                 )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="col-12 text-center mt-2 mb-2">
+        <p className="mb-0">Systems</p>
+        <p className="small">
+          These raise a <em>limit</em>. No ceiling &mdash; each expansion just
+          costs more than the last.
+        </p>
+      </div>
+
+      <div className="row">
+        {SYSTEMS.map(({ stat, label, describe, why }) => {
+          const cost = systemCost(stat);
+          return (
+            <div className="col-12 col-md-6 mb-4" key={stat}>
+              <div className="holo h-100 p-2">
+                <strong>{label}</strong>
+                <p className="small mb-1">{describe(player)}</p>
+                <p className="small mb-2">{why}</p>
+                <button
+                  onClick={() => handleExpand(stat)}
+                  disabled={player.credits < cost}
+                >
+                  Expand (+5) for {cost.toLocaleString()} credits
+                </button>
               </div>
             </div>
           );

@@ -2265,6 +2265,13 @@ STORY_CHOICES = [
 # rate, so no amount of money could make the game faster. These modules
 # can, which is what finally gives credits somewhere meaningful to go.
 #
+# Modules buy RATES and only rates. Capacity is bought separately, by the
+# step-purchase upgrades in UPGRADABLE_STATS, whose escalating cost is a
+# better fit for it: no arbitrary ceiling, and the price self-limits. A
+# fixed-level capacity module shipped alongside them was strictly
+# dominated - it charged 760,328 for the +50 item capacity the step
+# upgrades sell for 13,645 - so it was removed rather than repriced.
+#
 # effect_per_level is applied by economy.ship_bonus(); cost of level N is
 # base_cost * cost_multiplier**(N-1).
 SHIP_MODULE_MAX_LEVEL = 5
@@ -2278,14 +2285,6 @@ SHIP_MODULES = {
         'base_cost': 25000,
         'cost_multiplier': 3.0,
     },
-    'cargo_hold': {
-        'name': 'Cargo Hold',
-        'desc': 'Carry more of every good, so a trading run is worth making.',
-        'effect': '+10 to your cap on every item',
-        'effect_per_level': 10,
-        'base_cost': 5000,
-        'cost_multiplier': 3.2,
-    },
     'medbay': {
         'name': 'Medbay',
         'desc': 'Health regenerates faster, so a bad run costs less downtime.',
@@ -2297,7 +2296,7 @@ SHIP_MODULES = {
     'cargo_drones': {
         'name': 'Cargo Drones',
         'desc': 'Each property banks more output before it pauses.',
-        'effect': '+1x cargo capacity of property storage',
+        'effect': '+1x your Cargo Bay in property storage',
         'effect_per_level': 1,
         'base_cost': 15000,
         'cost_multiplier': 2.8,

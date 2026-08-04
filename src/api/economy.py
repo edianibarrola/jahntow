@@ -972,18 +972,6 @@ def production_pool_multiple(player):
     return PRODUCTION_OVERFLOW_MULTIPLE + ship_bonus(player, "cargo_drones")
 
 
-def cargo_capacity(player):
-    """
-    How many of each good this player can hold. Trading was unplayable: a
-    perfect swing on a full hold of the best low-rank good netted ~750
-    credits against a mission paying thousands, because the hold only ever
-    held 10. Profit per round trip scales directly with what you can carry,
-    so the cargo hold - not any change to prices - is what makes trading
-    worth doing. Every player still buys and sells at the same quotes.
-    """
-    return player.maxInventoryCount + ship_bonus(player, "cargo_hold")
-
-
 def migrate_pending_to_properties(player):
     """
     Return the uncollected pool keyed by PROPERTY name, converting any
@@ -1108,7 +1096,7 @@ def apply_passive_tick(player):
             # properties making the same good shared one store, so neither
             # could be claimed or reported on individually.
             current_qty = pending.get(property_name, 0)
-            ceiling = cargo_capacity(player) * production_pool_multiple(player)
+            ceiling = player.maxInventoryCount * production_pool_multiple(player)
             if current_qty >= ceiling:
                 continue
 
