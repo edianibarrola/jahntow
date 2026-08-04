@@ -136,11 +136,28 @@ const MissionsComponent = () => {
                             </span>
                           </li>
                         )}
-                        {odds.gearCapped && (
+                        {/* Quote the total holding, not just the spare
+                            count - the line above shows "Owned: N", so a
+                            bare spare figure had players stopping one
+                            unit short of the cap. */}
+                        {odds.gearCapped ? (
                           <li className="tx-info">
-                            Gear bonus is maxed — spares beyond{" "}
-                            {odds.usefulSpares} add nothing.
+                            Gear bonus is maxed at +{odds.gearMaxPct}% —{" "}
+                            {odds.usefulSpares} spares ({odds.usefulTotal} owned
+                            in total) is all that counts. Anything beyond that
+                            adds nothing.
                           </li>
+                        ) : (
+                          odds.sparesToMax > 0 &&
+                          Object.keys(missionData.requiredEquipment || {}).length >
+                            0 && (
+                            <li className="tx-info">
+                              {odds.sparesToMax} more spare
+                              {odds.sparesToMax === 1 ? "" : "s"} (
+                              {odds.usefulTotal} owned in total) would max the
+                              gear bonus at +{odds.gearMaxPct}%.
+                            </li>
+                          )
                         )}
                         <li>Required Equipment:</li>
                         <ul>
