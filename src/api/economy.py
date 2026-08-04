@@ -940,6 +940,7 @@ def apply_passive_tick(player):
     if production_ticks > 0 and player.properties:
         inventory = dict(player.inventory or {})
         remainders = dict(player.production_remainders or {})
+        pending = dict(player.pending_production or {})
         # Legacy cleanup: inventories written before whole-item production
         # can hold fractional quantities. Fold the fraction back into the
         # carry pool so the visible inventory is always whole units.
@@ -962,16 +963,12 @@ def apply_passive_tick(player):
                 continue
             generated_item = property_data["Item Generated"]
             rate = property_data["Generation Rate"]
-            existing_entry = inventory.get(generated_item, {})
-            current_qty = existing_entry.get("quantity", 0)
-            current_avg_cost = existing_entry.get("avg_cost", 0)
-            # Production is allowed to overfill past maxInventoryCount, up
-            # to a generous multiple. Hard-stopping at the cap meant a
-            # high-rate property filled its 10 slots in under a minute and
-            # then idled for the rest of the hour - up to a 65x shortfall
-            # against the payback period its cost was solved for. The
-            # player still has to sell it down; they just stop losing the
-            # output while they're away.
+            # Output accrues to the uncollected pool, not straight to
+            # inventory, so maxInventoryCount stays meaningful (writing
+            # directly meant a cap of 10 quietly held 50). The pool holds
+            # a generous multiple of the inventory cap so an absence still
+            # banks something, then production stops until it's collected.
+            current_qty = pending.get(generated_item, 0)
             ceiling = player.maxInventoryCount * PRODUCTION_OVERFLOW_MULTIPLE
             if current_qty >= ceiling:
                 continue
@@ -991,30 +988,16 @@ def apply_passive_tick(player):
                     changed = True
                 continue
 
-            new_qty = min(ceiling, current_qty + gained)
             # Output above the ceiling is lost, not banked - otherwise a
-            # full stock would keep filling the carry pool forever.
+            # full pool would keep filling the carry pool forever.
             remainders[generated_item] = carry
-            if new_qty != current_qty:
-                # Passively generated units are free (already paid for via
-                # the property itself) - blend them into the average cost
-                # at $0 rather than overwriting the whole entry, which
-                # would silently wipe any avg_cost tracked from market
-                # purchases of the same item.
-                new_avg_cost = (
-                    round((current_avg_cost * current_qty) / new_qty, 2)
-                    if new_qty > 0
-                    else 0
-                )
-                inventory[generated_item] = {
-                    "quantity": new_qty,
-                    "avg_cost": new_avg_cost,
-                }
+            pending[generated_item] = min(ceiling, current_qty + gained)
             changed = True
 
         if changed:
             player.inventory = inventory
             player.production_remainders = remainders
+            player.pending_production = pending
 
     player.last_tick_at = now
     if changed:

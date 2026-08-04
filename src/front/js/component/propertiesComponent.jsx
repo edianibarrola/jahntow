@@ -8,6 +8,22 @@ import CreditsComponent from "./creditsComponent";
 const PropertiesComponent = () => {
   const { store, actions } = useContext(Context);
   const { player } = store;
+  const [collecting, setCollecting] = React.useState(false);
+
+  // Properties bank their output in an uncollected pool and stop once it
+  // fills, so this panel is the whole reason to revisit the tab.
+  const pendingEntries = Object.entries(player.pendingProduction || {}).filter(
+    ([, qty]) => Math.floor(qty) > 0
+  );
+  const poolCap = (player.maxInventoryCount || 0) * 5;
+  const anyPoolFull = pendingEntries.some(([, qty]) => qty >= poolCap);
+  const collect = () => {
+    setCollecting(true);
+    actions
+      .collectProduction()
+      .catch(() => {})
+      .finally(() => setCollecting(false));
+  };
 
   // Define maxRank based on player level (every 2 levels equal one rank level)
   let maxRank;
@@ -69,7 +85,30 @@ const PropertiesComponent = () => {
           <CreditsComponent credits={player.credits} />
         </div>
         <div className="col-12  text-center  ">
-          <p>Properties</p>
+          <p className="m-0">Properties</p>
+          {pendingEntries.length > 0 ? (
+            <>
+              <p className="m-0 tx-property">
+                Ready to collect:{" "}
+                {pendingEntries
+                  .map(([name, qty]) => `${Math.floor(qty)}x ${name}`)
+                  .join(" · ")}
+              </p>
+              {anyPoolFull && (
+                <p className="m-0 tx-error">
+                  A store is full — production has stopped until you collect.
+                </p>
+              )}
+              <button className="mb-2" onClick={collect} disabled={collecting}>
+                {collecting ? "Collecting..." : "Collect production"}
+              </button>
+            </>
+          ) : (
+            <p className="m-0 tx-info">
+              Properties bank their output until you collect it (up to{" "}
+              {poolCap} of each item).
+            </p>
+          )}
         </div>
       </div>
       <div className="row">
