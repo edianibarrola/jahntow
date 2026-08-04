@@ -773,3 +773,16 @@ input.form-control {
     padding-right: 64px;
   }
 }
+
+
+/* A .row nested directly inside another .row (the page is full of them:
+   sticky stat cards, mission accordions, ship card grids) becomes a
+   content-width flex item pulled 12px left by its own negative margin -
+   measured as the health box sitting 28px from the left edge and 52px
+   from the right, and 24px skews on six other tabs. A nested row spans
+   its parent, centered, period. */
+.row > .row {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
