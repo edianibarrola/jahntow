@@ -3,7 +3,10 @@ import secrets
 from flask import request, Response
 from flask_admin import Admin, AdminIndexView, expose
 from flask_admin.theme import Bootstrap4Theme
+from wtforms import PasswordField
+from wtforms.validators import ValidationError
 from .models import db, User, Player, MarketPrice, GameEvent, ActivityLogEntry
+from .routes import ph
 from flask_admin.contrib.sqla import ModelView
 
 
@@ -43,9 +46,26 @@ class SecureModelView(SecureAdminMixin, ModelView):
 
 
 class UserModelView(SecureModelView):
-    # Never expose the password hash through the admin UI
+    # Never expose the password hash through the admin UI. That exclusion
+    # used to apply to the create form too, which made admin-created users
+    # unable to log in (no way to give them a password at all) - so a
+    # write-only field hashes into the real column instead.
     column_exclude_list = ['password']
     form_excluded_columns = ['password']
+    form_extra_fields = {
+        'new_password': PasswordField(
+            'Password',
+            description="Required when creating a user; leave blank on "
+                        "edit to keep the current password.",
+        )
+    }
+
+    def on_model_change(self, form, model, is_created):
+        if form.new_password.data:
+            model.password = ph.hash(form.new_password.data)
+        elif is_created:
+            raise ValidationError("A password is required for a new user.")
+        return super().on_model_change(form, model, is_created)
 
 
 def setup_admin(app):

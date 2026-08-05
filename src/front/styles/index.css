@@ -340,6 +340,7 @@ input.form-control {
   padding: 12px 20px;
   animation: activity-toast-fade 4.5s ease forwards;
   pointer-events: auto;
+  white-space: pre-line;
 }
 
 @keyframes activity-toast-fade {
@@ -375,6 +376,10 @@ input.form-control {
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   padding: 6px 4px;
   text-align: left;
+  /* Mission results arrive as multi-part messages (result + crit/streak
+     lines + E.c.h.o. chatter) separated by newlines server-side - render
+     the breaks instead of collapsing everything into one blob. */
+  white-space: pre-line;
 }
 
 .activity-list li:last-child {
@@ -487,6 +492,14 @@ input.form-control {
 
 .achievement-locked {
   opacity: 0.55;
+}
+
+/* A track with at least one tier earned is live progress, not locked
+   content - full strength, with a subtle earned-edge, while the gold
+   border stays reserved for finished tracks. */
+.achievement-progressing {
+  opacity: 1;
+  border-color: rgba(255, 215, 0, 0.45) !important;
 }
 
 /* Story: faction reputation + chapter-end choices. */
@@ -888,4 +901,62 @@ input.form-control {
     padding-left: 0;
     padding-right: 0;
   }
+}
+
+/* Trade-action button families. Every button used to look identical, so
+   "All" read as ambiguous (buy all? select all?) and cost at least one
+   accidental liquidation in playtesting. Buys stay in the app's cyan;
+   anything that sells is amber; the full-liquidation button gets the
+   strongest treatment of the family. */
+.btn-buy {
+  border: 1px solid rgba(105, 224, 255, 0.7) !important;
+  color: #9be2ff !important;
+}
+.btn-sell {
+  border: 1px solid rgba(255, 193, 105, 0.55) !important;
+  color: #ffd591 !important;
+}
+.btn-sell-all {
+  border: 1px solid rgba(255, 193, 105, 0.9) !important;
+  color: #ffc169 !important;
+  font-weight: 600;
+}
+
+/* Zebra striping + row hover: the board's rows had nothing separating
+   them but whitespace, which is how the wrong item gets bought. */
+.market-item:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.035);
+}
+.market-item:hover {
+  background: rgba(105, 224, 255, 0.07);
+}
+
+/* What kind of thing a name refers to, by color: market goods (tradable
+   inventory) vs equipment (owned gear). Used anywhere an item name
+   appears in running text - requirements lists, feeds, stores. */
+.tx-item {
+  color: #8fd4b8;
+}
+.tx-equip {
+  color: #c9b8ff;
+}
+
+/* Equipment store rows: info line on top, controls always on their own
+   row below, with a divider per item so entries inside a category read
+   as distinct rows rather than a run-on list. */
+.equip-row {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  list-style: none;
+  text-align: left;
+}
+.equip-row:last-child {
+  border-bottom: none;
+}
+.equip-row-controls {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  row-gap: 4px;
 }

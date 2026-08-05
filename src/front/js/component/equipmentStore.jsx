@@ -84,7 +84,7 @@ const EquipmentShopComponent = () => {
             <span className={spaceLeft <= 0 ? "tx-error" : undefined}>
               {heldTotal}/{capacity}
             </span>{" "}
-            <span className="tx-info">(upgrade capacity on the Upgrades tab)</span>
+            <span className="tx-info">(upgrade Armory capacity on the Ship tab)</span>
           </p>
         </div>
       </div>
@@ -131,12 +131,13 @@ const EquipmentShopComponent = () => {
                   data["Base Cost"] * (merchant ? merchant.multiplier : 1) * 0.5
                 );
                 return (
-                <li
-                  key={itemName}
-                  className="d-flex justify-content-between align-items-center flex-wrap"
-                >
-                  <span>
-                    {itemName}: Cost:{" "}
+                // Info line and controls are stacked rows on purpose: with
+                // both in one flex row, owning items made the text wide
+                // enough to shove the buttons onto a ragged second line on
+                // some cards but not others.
+                <li key={itemName} className="equip-row">
+                  <div className="equip-row-info">
+                    <span className="tx-equip">{itemName}</span>: Cost:{" "}
                     {merchant ? (
                       <>
                         <s className="tx-info">
@@ -151,8 +152,8 @@ const EquipmentShopComponent = () => {
                     )}
                     <span className="tx-info"> · sells back {sellBack}</span>
                     {owned > 0 && <> (Owned: {owned})</>}
-                  </span>
-                  <span className="d-flex align-items-center">
+                  </div>
+                  <div className="equip-row-controls">
                     <button
                       onClick={() => adjustQuantity(itemName, -1)}
                       disabled={buyingItem === itemName}
@@ -167,7 +168,7 @@ const EquipmentShopComponent = () => {
                       +
                     </button>
                     <button
-                      className="ms-2"
+                      className="ms-2 btn-buy"
                       onClick={() => handleBuyEquipment(itemName)}
                       disabled={buyingItem !== null || qty > spaceLeft}
                       title={qty > spaceLeft ? "Not enough equipment storage" : undefined}
@@ -175,13 +176,13 @@ const EquipmentShopComponent = () => {
                       {buyingItem === itemName ? "Buying..." : "Buy"}
                     </button>
                     <button
-                      className="ms-1"
+                      className="ms-1 btn-sell"
                       onClick={() => handleSellEquipment(itemName)}
                       disabled={buyingItem !== null || owned < qty}
                     >
                       Sell
                     </button>
-                  </span>
+                  </div>
                 </li>
                 );
               })}

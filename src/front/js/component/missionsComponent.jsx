@@ -9,9 +9,50 @@ import { perkBonusPct } from "../equipmentPerks";
 
 const MissionsComponent = () => {
   const { store, actions } = useContext(Context);
-  const { player, gameData, activeEvents } = store;
+  const { player, gameData, activeEvents, marketPrices } = store;
   const missionsData = gameData.missions || {};
   const [runningMission, setRunningMission] = useState(null);
+
+  // Client-side estimate for the one-click outfit button - the server
+  // reprices authoritatively (with merchant/ally discounts), this only
+  // sizes the label so the player knows roughly what they're agreeing to.
+  const equipCostByName = {};
+  Object.values(gameData.equipment || {}).forEach((items) =>
+    Object.entries(items).forEach(([name, data]) => {
+      equipCostByName[name] = data["Base Cost"];
+    })
+  );
+  const buyPriceByName = {};
+  (marketPrices || []).forEach((row) => {
+    buyPriceByName[row.item_name] = row.buy_price;
+  });
+  const missingFor = (missionData) => {
+    let cost = 0;
+    let count = 0;
+    Object.entries(missionData.requiredEquipment || {}).forEach(([name, qty]) => {
+      const short = qty - (player.equipment[name]?.quantity || 0);
+      if (short > 0) {
+        count += short;
+        cost += short * (equipCostByName[name] || 0);
+      }
+    });
+    Object.entries(missionData.requiredSupplies || {}).forEach(([name, qty]) => {
+      const short = qty - Math.floor(player.inventory?.[name]?.quantity || 0);
+      if (short > 0) {
+        count += short;
+        cost += short * (buyPriceByName[name] || 0);
+      }
+    });
+    return { count, cost: Math.round(cost) };
+  };
+
+  const outfitMission = (missionName) => {
+    setRunningMission(missionName);
+    actions
+      .outfitMission(missionName)
+      .catch(() => {})
+      .finally(() => setRunningMission(null));
+  };
 
   // Mirrors economy.WIN_STREAK_BONUS_PER_WIN / WIN_STREAK_CAP - the server
   // is what actually applies the bonus.
@@ -75,6 +116,10 @@ const MissionsComponent = () => {
         <Accordion>
           {Object.entries(missionsData)
             .filter(([, missionData]) => missionData.Rank <= player.level)
+            // Newest unlock first: the mission worth running is the one
+            // just unlocked, and it used to require scrolling to the
+            // bottom of an ever-growing list every level-up.
+            .reverse()
             .map(([missionName, missionData], index) => {
               // Mirrors the backend's own gate in player_meets_requirements:
               // a failed attempt costs "Health Effect" health, so refuse to
@@ -264,6 +309,22 @@ const MissionsComponent = () => {
                       </ul>
                       {wouldSurvive ? (
                         <>
+                          {(() => {
+                            const missing = missingFor(missionData);
+                            return (
+                              missing.count > 0 && (
+                                <button
+                                  className="btn-buy mb-2"
+                                  onClick={() => outfitMission(missionName)}
+                                  disabled={runningMission !== null}
+                                  title="Buy every missing requirement in one transaction (merchant and ally discounts apply)"
+                                >
+                                  🧰 Buy missing (≈
+                                  {missing.cost.toLocaleString()} cr)
+                                </button>
+                              )
+                            );
+                          })()}
                           <button
                             onClick={() => runMission(missionName)}
                             disabled={runningMission !== null || bailoutLocked}
@@ -279,7 +340,7 @@ const MissionsComponent = () => {
                               disabled={runningMission !== null || bailoutLocked}
                               title="Runs up to 5 attempts back-to-back, stopping if energy, credits, health or supplies run short."
                             >
-                              Run ×5
+                              Run up to ×5
                             </button>
                           )}
                           {energyShortSeconds(missionData) > 0 && (

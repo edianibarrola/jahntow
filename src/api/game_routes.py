@@ -744,6 +744,135 @@ def mission_start():
     }), 200
 
 
+@game_api.route('/mission/outfit', methods=['POST'])
+@jwt_required()
+def mission_outfit():
+    """
+    Buy everything a mission still needs in one transaction: missing
+    required equipment at store pricing (merchant + ally discounts apply,
+    same math as equipment_buy) and missing supplies at the live market
+    buy price (same math as market_buy, cost-basis bookkeeping included).
+    All-or-nothing: the whole list is priced and checked against credits
+    and storage before anything is bought, so a partial outfit - the
+    exact one-item-at-a-time round trip this replaces - can't happen.
+    """
+    player, err = _player_or_404()
+    if err:
+        return err
+    economy.apply_passive_tick(player)
+
+    data = request.get_json(silent=True) or {}
+    mission_name = data.get("mission_name")
+    mission = (game_data.MISSIONS.get(mission_name)
+               or game_data.STORY_MISSIONS.get(mission_name))
+    if not mission:
+        return jsonify({"message": "unknown mission"}), 404
+
+    rep_off = economy.rep_discount(player)
+    purchases = []  # (kind, item_name, shortfall, total_cost)
+
+    equipment_needed = 0
+    for item_name, required_qty in (mission.get("requiredEquipment") or {}).items():
+        shortfall = required_qty - _equipment_qty(player, item_name)
+        if shortfall <= 0:
+            continue
+        category, equipment_data = economy.find_equipment(item_name)
+        if not equipment_data:
+            return jsonify({"message": f"{item_name} is not purchasable"}), 400
+        if player.level < equipment_data["Required Level"]:
+            return jsonify({
+                "message": f"your level is too low for {item_name}"
+            }), 403
+        unit_cost = equipment_data["Base Cost"]
+        merchant_factor = economy.get_merchant_price_factor(category)
+        if merchant_factor < 1:
+            unit_cost = max(1, round(unit_cost * merchant_factor))
+        if rep_off > 0:
+            unit_cost = max(1, round(unit_cost * (1 - rep_off)))
+        purchases.append(("equipment", item_name, shortfall, unit_cost * shortfall))
+        equipment_needed += shortfall
+
+    inventory_now = player.inventory or {}
+    for item_name, required_qty in (mission.get("requiredSupplies") or {}).items():
+        held = math.floor(inventory_now.get(item_name, {}).get("quantity", 0))
+        shortfall = required_qty - held
+        if shortfall <= 0:
+            continue
+        _, catalog_item = economy.find_catalog_item(item_name)
+        price_row = economy.get_item_price(item_name)
+        if not catalog_item or not price_row:
+            return jsonify({"message": f"{item_name} is not on the market"}), 400
+        if catalog_item["Rank"] > player.level:
+            return jsonify({
+                "message": f"your level is too low for {item_name}"
+            }), 403
+        raw_qty = inventory_now.get(item_name, {}).get("quantity", 0)
+        if raw_qty + shortfall > player.maxInventoryCount:
+            return jsonify({
+                "message": f"not enough inventory space for {shortfall}x {item_name}"
+            }), 400
+        purchases.append((
+            "supply", item_name, shortfall,
+            int(economy.get_buy_price(price_row) * shortfall),
+        ))
+
+    if not purchases:
+        return jsonify({
+            "message": "Nothing missing - you're already outfitted for this mission."
+        }), 400
+
+    held_total = _equipment_total(player)
+    capacity = player.maxEquipmentCount or 0
+    if held_total + equipment_needed > capacity:
+        return jsonify({
+            "message": (
+                f"not enough equipment storage ({held_total}/{capacity} used, "
+                f"{equipment_needed} more slots needed)"
+            )
+        }), 400
+
+    grand_total = sum(total for _, _, _, total in purchases)
+    if player.credits < grand_total:
+        return jsonify({
+            "message": (
+                f"Outfitting costs {grand_total:,} credits - "
+                f"you have {player.credits:,}."
+            )
+        }), 400
+
+    player.credits -= grand_total
+    equipment = dict(player.equipment or {})
+    inventory = dict(player.inventory or {})
+    parts = []
+    for kind, item_name, qty, total in purchases:
+        if kind == "equipment":
+            current = equipment.get(item_name, {}).get("quantity", 0)
+            equipment[item_name] = {"quantity": current + qty}
+        else:
+            entry = inventory.get(item_name, {})
+            current_qty = entry.get("quantity", 0)
+            current_avg = entry.get("avg_cost", 0)
+            new_qty = current_qty + qty
+            new_avg = round(((current_avg * current_qty) + total) / new_qty, 2)
+            inventory[item_name] = {"quantity": new_qty, "avg_cost": new_avg}
+        parts.append(f"{qty}x {item_name} ({total:,})")
+    player.equipment = equipment
+    player.inventory = inventory
+
+    activity = economy.log_activity(
+        player,
+        f"🧰 Outfitted for {mission_name}: {', '.join(parts)} - "
+        f"{grand_total:,} credits total.",
+        "buy",
+    )
+    db.session.commit()
+    return jsonify({
+        "player": player.serialize(),
+        "total_cost": grand_total,
+        "activity": activity.serialize(),
+    }), 200
+
+
 @game_api.route('/story-mission/start', methods=['POST'])
 @jwt_required()
 def story_mission_start():
