@@ -5,7 +5,7 @@ export const EQUIPMENT_PERKS = {
   Research: { perUnit: 2, cap: 10, effect: "mission XP", sign: "+" },
   Transports: { perUnit: 2, cap: 10, effect: "mission energy cost", sign: "-" },
   Armor: { perUnit: 5, cap: 25, effect: "failure health loss", sign: "-" },
-  Ships: { perUnit: 2, cap: 10, effect: "mission credit reward", sign: "+" },
+  Vehicles: { perUnit: 2, cap: 10, effect: "mission credit reward", sign: "+" },
 };
 
 // Current capped bonus (in %) the player gets from one perk category.

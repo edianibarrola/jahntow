@@ -113,14 +113,44 @@ const MissionsComponent = () => {
       </div>
 
       <div className="row  mb-5">
-        <Accordion>
-          {Object.entries(missionsData)
-            .filter(([, missionData]) => missionData.Rank <= player.level)
-            // Newest unlock first: the mission worth running is the one
-            // just unlocked, and it used to require scrolling to the
-            // bottom of an ever-growing list every level-up.
-            .reverse()
-            .map(([missionName, missionData], index) => {
+        {/* Ops are grouped by the land they happen in, and a land only
+            appears once the story has reached it (the server enforces
+            the same gate). Newest region first, newest unlock first
+            within it - the content worth running is always on top. */}
+        {Object.keys(gameData.regions || {})
+          .filter(
+            (region) =>
+              (gameData.regions[region] ?? 0) <= (player.storyWins || 0)
+          )
+          .reverse()
+          .map((region) => {
+            const regionAll = Object.entries(missionsData).filter(
+              ([, m]) => m.Region === region
+            );
+            const regionMissions = regionAll
+              .filter(([, m]) => m.Rank <= player.level)
+              .reverse();
+            if (regionMissions.length === 0) {
+              // Story has opened the region but its ops out-rank the
+              // player - say so instead of silently hiding the land.
+              const lowestRank = Math.min(
+                ...regionAll.map(([, m]) => m.Rank)
+              );
+              return (
+                <div className="col-12" key={region}>
+                  <h5 className="region-header">{region}</h5>
+                  <p className="tx-info text-center">
+                    The war has reached {region}, but its operations start
+                    at level {lowestRank} (you: {player.level}).
+                  </p>
+                </div>
+              );
+            }
+            return (
+              <div className="col-12" key={region}>
+                <h5 className="region-header">{region}</h5>
+                <Accordion>
+                  {regionMissions.map(([missionName, missionData], index) => {
               // Mirrors the backend's own gate in player_meets_requirements:
               // a failed attempt costs "Health Effect" health, so refuse to
               // even offer a mission that could drop the player to 0.
@@ -360,8 +390,26 @@ const MissionsComponent = () => {
                   </Accordion.Body>
                 </Accordion.Item>
               );
-            })}
-        </Accordion>
+                  })}
+                </Accordion>
+              </div>
+            );
+          })}
+        {(() => {
+          const nextLocked = Object.keys(gameData.regions || {}).find(
+            (region) =>
+              (gameData.regions[region] ?? 0) > (player.storyWins || 0)
+          );
+          if (!nextLocked) return null;
+          const winsAway =
+            gameData.regions[nextLocked] - (player.storyWins || 0);
+          return (
+            <p className="tx-info text-center region-locked mt-2">
+              🔒 {nextLocked} is still behind Vortex lines — {winsAway} story{" "}
+              {winsAway === 1 ? "win" : "wins"} until the war reaches it.
+            </p>
+          );
+        })()}
       </div>
     </div>
   );

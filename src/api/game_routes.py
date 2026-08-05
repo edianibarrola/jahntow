@@ -105,6 +105,9 @@ def get_game_data():
         "achievements": game_data.ACHIEVEMENTS,
         "achievementChains": game_data.ACHIEVEMENT_CHAINS,
         "shipModules": game_data.SHIP_MODULES,
+        # Region -> storyWins gate, so the client can group ops by land
+        # and show what the story hasn't opened yet (server enforces).
+        "regions": game_data.REGIONS,
         "shipModuleMaxLevel": game_data.SHIP_MODULE_MAX_LEVEL,
     }), 200
 
