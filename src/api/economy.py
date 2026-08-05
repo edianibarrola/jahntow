@@ -307,7 +307,7 @@ EQUIPMENT_PERKS = {
     "Research":   {"per_unit": 0.02, "cap": 0.10},  # +mission XP
     "Transports": {"per_unit": 0.02, "cap": 0.10},  # -mission energy cost
     "Armor":      {"per_unit": 0.05, "cap": 0.25},  # -failure health loss
-    "Ships":      {"per_unit": 0.02, "cap": 0.10},  # +mission credit reward
+    "Vehicles":   {"per_unit": 0.02, "cap": 0.10},  # +mission credit reward
 }
 
 # Faction reputation: +1 with a story mission's faction per story win
@@ -1615,6 +1615,20 @@ def player_meets_requirements(player, mission):
             f"Only available when you're below {ceiling} credits - "
             "you've got enough to take on real work."
         )
+    # A region's ops are locked until the story reaches that land - the
+    # war has a geography, and the player can't be running caravans in a
+    # country Jahntow hasn't set foot in yet. Story missions carry no
+    # Region field and are unaffected.
+    region = mission.get("Region")
+    if region is not None:
+        needed = game_data.REGIONS.get(region, 0)
+        if (player.storyWins or 0) < needed:
+            return False, (
+                f"{region} is still behind Vortex lines - the story "
+                "hasn't taken you there yet. Advance the story missions "
+                "to open this region."
+            )
+
     # Collect EVERY blocking problem rather than returning at the first
     # one: a player missing several items was told about exactly one,
     # bought it, and got refused again for the next - one round-trip of
@@ -1757,10 +1771,10 @@ def resolve_mission(player, mission, mission_name=None, is_story=False):
         xp_awarded = mission_xp_award(player, mission, perks)
         reward = mission_reward_award(player, mission, is_story)
         reward_reduced = reward < mission["Reward"]
-        # Ships perk: a flat, non-random boost from investment - applied to
+        # Vehicles perk: a flat, non-random boost from investment - applied to
         # the base before the luck-based multipliers stack on top.
-        if perks["Ships"] > 0:
-            reward = round(reward * (1 + perks["Ships"]))
+        if perks["Vehicles"] > 0:
+            reward = round(reward * (1 + perks["Vehicles"]))
         extras = []
 
         # A far-out-levelled win is treated like a Guaranteed one for

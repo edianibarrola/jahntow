@@ -36,11 +36,23 @@ ITEMS = {'Energy Cores': {'Alpha Core': {'Base Cost': 50, 'Rank': 1},
                              'Omega Seal': {'Base Cost': 500000, 'Rank': 50}}}
 
 
+# The lands of Zephyr, and the story progress (storyWins) at which the
+# war reaches each one. Regular missions carry a Region field; a region's
+# ops are locked until the story arrives there (enforced server-side).
+REGIONS = {'Xictlia': 0,
+ 'Luxor': 30,
+ 'Xiaojia': 60,
+ 'Titan Ranges': 90,
+ 'Tuatha': 120,
+ 'Namarupa': 150,
+ 'The Fortress Wastes': 180}
+
 MISSIONS = {'Salvage Run': {'Required Credits': 0,
                  'Required Energy': 6,
                  'Reward': 260,
                  'Experience': 15,
                  'Rank': 1,
+                 'Region': 'Xictlia',
                  'requiredEquipment': {},
                  'Health Effect': 0,
                  'startMessage': 'E.c.h.o.: Running the scrap lanes. It '
@@ -53,533 +65,651 @@ MISSIONS = {'Salvage Run': {'Required Credits': 0,
                                    'there this pass.',
                  'Guaranteed': True,
                  'AvailableBelowCredits': 2000},
- 'Asteroid Mining': {'Required Credits': 1000,
+ 'Ore Reclamation': {'Required Credits': 1000,
                      'Required Energy': 10,
                      'Reward': 3200,
                      'Experience': 40,
                      'Rank': 1,
+                     'Region': 'Xictlia',
                      'requiredEquipment': {'Spectral Analyzer': 1},
                      'Health Effect': 7,
-                     'startMessage': 'E.c.h.o.: Heading towards the '
-                                     'asteroid belt for mining operations.',
-                     'successMessage': 'E.c.h.o.: Successfully mined '
-                                       'precious resources from the '
-                                       'asteroid, gaining {reward} credits '
-                                       'and {experience} experience.',
-                     'failureMessage': 'E.c.h.o.: Mining operations were '
-                                       'not successful. Better luck next '
-                                       'time.'},
- 'Space Salvage': {'Required Credits': 1500,
-                   'Required Energy': 12,
-                   'Reward': 4730,
-                   'Experience': 120,
-                   'Rank': 3,
-                   'requiredEquipment': {'Environmental Suit': 1},
-                   'Health Effect': 8,
-                   'startMessage': 'E.c.h.o.: Scanning space debris for '
-                                   'valuable salvage.',
-                   'successMessage': 'E.c.h.o.: Salvage successful. '
-                                     'Recovered items translated to '
-                                     '{reward} credits and {experience} '
-                                     'experience.',
-                   'failureMessage': 'E.c.h.o.: Salvage mission was '
-                                     'unsuccessful. Nothing of value '
-                                     'found.'},
- 'Alien Artifact Retrieval': {'Required Credits': 2200,
-                              'Required Energy': 14,
-                              'Reward': 6401,
-                              'Experience': 240,
-                              'Rank': 6,
-                              'requiredEquipment': {'Alien Skin Armor': 1},
-                              'Health Effect': 10,
-                              'startMessage': 'E.c.h.o.: Setting '
-                                              'coordinates to a rumored '
-                                              'alien artifact location.',
-                              'successMessage': 'E.c.h.o.: Artifact '
-                                                'retrieved successfully, '
-                                                'granting you {reward} '
-                                                'credits and {experience} '
-                                                'experience.',
-                              'failureMessage': 'E.c.h.o.: The mission to '
-                                                'retrieve the alien '
-                                                'artifact failed. It seems '
-                                                'we were not the only ones '
-                                                'after it.'},
- 'Galactic Trading': {'Required Credits': 3000,
-                      'Required Energy': 16,
-                      'Reward': 9045,
-                      'Experience': 320,
-                      'Rank': 8,
-                      'requiredEquipment': {'Hover Board': 1,
-                                            'Spectral Analyzer': 1},
-                      'requiredSupplies': {'NeuroLink': 1},
-                      'Health Effect': 11,
-                      'startMessage': 'E.c.h.o.: Initiating trading '
-                                      'protocols with neighboring galactic '
-                                      'entities.',
-                      'successMessage': 'E.c.h.o.: Trade successful. The '
-                                        'profits earned you {reward} '
-                                        'credits and {experience} '
-                                        'experience.',
-                      'failureMessage': 'E.c.h.o.: The trade negotiation '
-                                        'failed. No profits this time.'},
- 'Deep Space Exploration': {'Required Credits': 4000,
-                            'Required Energy': 18,
-                            'Reward': 12520,
-                            'Experience': 400,
-                            'Rank': 10,
-                            'requiredEquipment': {'Basic Ship': 2},
-                            'requiredSupplies': {'NanoMesh': 1,
-                                                 'Alpha Core': 3},
-                            'Health Effect': 13,
-                            'startMessage': 'E.c.h.o.: Preparing for a '
-                                            'deep-space exploration '
-                                            'mission to uncharted '
-                                            'territories.',
-                            'successMessage': 'E.c.h.o.: Exploration '
-                                              'successful. New regions '
-                                              'charted and you earned '
-                                              '{reward} credits and '
-                                              '{experience} experience.',
-                            'failureMessage': 'E.c.h.o.: The exploration '
-                                              'mission faced unforeseen '
-                                              'challenges. No new data '
-                                              'collected.'},
- 'Starship Racing': {'Required Credits': 5200,
+                     'startMessage': 'E.C.H.O.: Vortex left open diggings '
+                                     'in the northern dunes when the '
+                                     'desert pushed them out. The ore is '
+                                     'still in the ground. Bring back what '
+                                     'the tribe can use.',
+                     'successMessage': 'E.C.H.O.: Reclaimed ore hauled '
+                                       'back to the city smelters. '
+                                       '{reward} credits, {experience} '
+                                       'experience.',
+                     'failureMessage': 'E.C.H.O.: The diggings shifted in '
+                                       'the wind and we came back light. '
+                                       'The dunes keep what they want. '
+                                       'Next time.'},
+ 'Dropship Salvage': {'Required Credits': 1500,
+                      'Required Energy': 12,
+                      'Reward': 4730,
+                      'Experience': 120,
+                      'Rank': 3,
+                      'Region': 'Xictlia',
+                      'requiredEquipment': {'Environmental Suit': 1},
+                      'Health Effect': 8,
+                      'startMessage': 'E.C.H.O.: A Vortex dropship went '
+                                      'down in the deep dunes - the desert '
+                                      'repelled the invasion, and now it '
+                                      'pays salvage. Strip the wreck '
+                                      'before the sand claims it.',
+                      'successMessage': 'E.C.H.O.: Hull stripped, cores '
+                                        "pulled, parts sold. The invaders' "
+                                        'wreckage funds the war against '
+                                        'them. {reward} credits, '
+                                        '{experience} experience.',
+                      'failureMessage': 'E.C.H.O.: A Vortex recovery team '
+                                        'reached the wreck first - we '
+                                        'pulled back rather than fight for '
+                                        'scrap. There will be more wrecks. '
+                                        'Regrettably.'},
+ 'Temple Relic Recovery': {'Required Credits': 2200,
+                           'Required Energy': 14,
+                           'Reward': 6401,
+                           'Experience': 240,
+                           'Rank': 6,
+                           'Region': 'Xictlia',
+                           'requiredEquipment': {'Alien Skin Armor': 1},
+                           'Health Effect': 10,
+                           'startMessage': 'E.C.H.O.: Vortex crews looted '
+                                           'relics from the outer temples '
+                                           'before the walls went up. I '
+                                           'have traced a cache. The '
+                                           'elders want their history '
+                                           'back.',
+                           'successMessage': 'E.C.H.O.: Relics recovered '
+                                             'and returned to the temple '
+                                             "vaults. The elders' "
+                                             'gratitude has practical '
+                                             'dimensions. {reward} '
+                                             'credits, {experience} '
+                                             'experience.',
+                           'failureMessage': 'E.C.H.O.: The cache was '
+                                             'guarded heavier than my '
+                                             'estimate - withdrawing was '
+                                             'the right call. The relics '
+                                             'have waited years; they can '
+                                             'wait a week.'},
+ 'Salt Road Caravan': {'Required Credits': 3000,
+                       'Required Energy': 16,
+                       'Reward': 9045,
+                       'Experience': 320,
+                       'Rank': 8,
+                       'Region': 'Xictlia',
+                       'requiredEquipment': {'Hover Board': 1,
+                                             'Spectral Analyzer': 1},
+                       'requiredSupplies': {'NeuroLink': 1},
+                       'Health Effect': 11,
+                       'startMessage': 'E.C.H.O.: A caravan needs a guard '
+                                       'rider down the salt roads - water, '
+                                       'goods and mail between the wells. '
+                                       'Quiet work. Usually.',
+                       'successMessage': 'E.C.H.O.: Caravan delivered '
+                                         'intact, every cask counted. The '
+                                         'salt roads pay their guards '
+                                         'well. {reward} credits, '
+                                         '{experience} experience.',
+                       'failureMessage': 'E.C.H.O.: Raiders hit the '
+                                         'caravan at the narrows and we '
+                                         'lost cargo driving them off. The '
+                                         'roads are never quite quiet.'},
+ 'Lowland Survey': {'Required Credits': 4000,
+                    'Required Energy': 18,
+                    'Reward': 12520,
+                    'Experience': 400,
+                    'Rank': 10,
+                    'Region': 'Luxor',
+                    'requiredEquipment': {'Dune Skimmer': 2},
+                    'requiredSupplies': {'NanoMesh': 1, 'Alpha Core': 3},
+                    'Health Effect': 13,
+                    'startMessage': 'E.C.H.O.: Axenthon wants the deep '
+                                    'lowlands mapped - Vortex movements, '
+                                    'water lines, safe routes. Take the '
+                                    'skimmer. I will chart.',
+                    'successMessage': 'E.C.H.O.: Survey complete - three '
+                                      'new safe routes and one Vortex '
+                                      'depot marked for later attention. '
+                                      '{reward} credits, {experience} '
+                                      'experience.',
+                    'failureMessage': 'E.C.H.O.: A patrol crossed our line '
+                                      'and we ran dark for hours. Half a '
+                                      'map. We finish it next run.'},
+ 'Skimmer Circuit': {'Required Credits': 5200,
                      'Required Energy': 19,
                      'Reward': 16063,
                      'Experience': 480,
                      'Rank': 12,
-                     'requiredEquipment': {'Star Ship': 1,
+                     'Region': 'Luxor',
+                     'requiredEquipment': {'Storm Chaser': 1,
                                            'Environmental Suit': 1},
                      'requiredSupplies': {'Data Shard': 2},
                      'Health Effect': 14,
-                     'startMessage': 'E.c.h.o.: Enrolling in the '
-                                     'intergalactic starship racing event.',
-                     'successMessage': 'E.c.h.o.: You won the race! '
-                                       'Credited {reward} credits and '
-                                       '{experience} experience for your '
-                                       'performance.',
-                     'failureMessage': 'E.c.h.o.: It was a tough race. '
-                                       "Didn't make it to the top this "
-                                       'time.'},
- 'Rescue Operation': {'Required Credits': 6500,
-                      'Required Energy': 21,
-                      'Reward': 20958,
-                      'Experience': 560,
-                      'Rank': 14,
-                      'requiredEquipment': {'Scout Drone': 2,
-                                            'Environmental Suit': 2,
-                                            'Oxygen Rebreather': 2},
-                      'requiredSupplies': {'HyperWeave': 1,
-                                           'Data Shard': 1},
-                      'Health Effect': 15,
-                      'startMessage': 'E.c.h.o.: Picking up distress '
-                                      'signals. Initiating rescue '
-                                      'protocols.',
-                      'successMessage': 'E.c.h.o.: Rescue successful! '
-                                        "You've been credited with "
-                                        '{reward} credits and {experience} '
-                                        'experience.',
-                      'failureMessage': 'E.c.h.o.: The rescue operation '
-                                        'faced challenges. Not everyone '
-                                        'made it back.'},
- 'Black Hole Research': {'Required Credits': 8000,
-                         'Required Energy': 23,
-                         'Reward': 26098,
-                         'Experience': 640,
-                         'Rank': 16,
-                         'requiredEquipment': {'Star Ship': 2,
-                                               'Spectral Analyzer': 2},
-                         'requiredSupplies': {'HyperWeave': 1,
-                                              'NeuroLink': 2},
-                         'Health Effect': 17,
-                         'startMessage': 'E.c.h.o.: Approaching the event '
-                                         'horizon for black hole research.',
-                         'successMessage': 'E.c.h.o.: Data collected '
-                                           'successfully. Your findings '
-                                           'yielded {reward} credits and '
-                                           '{experience} experience.',
-                         'failureMessage': "E.c.h.o.: The black hole's "
-                                           'gravity was stronger than '
-                                           'anticipated. Research was '
-                                           'compromised.'},
- 'Celestial Diplomacy': {'Required Credits': 10000,
-                         'Required Energy': 25,
-                         'Reward': 34046,
-                         'Experience': 720,
-                         'Rank': 18,
-                         'requiredEquipment': {'Holo Clone': 2,
-                                               'Invisi Veil': 2},
-                         'requiredSupplies': {'Data Shard': 1,
-                                              'HyperWeave': 1},
-                         'Health Effect': 18,
-                         'startMessage': 'E.c.h.o.: Establishing '
-                                         'communication channels for '
-                                         'diplomatic discussions with '
-                                         'alien civilizations.',
-                         'successMessage': 'E.c.h.o.: Diplomacy '
-                                           'successful. Established '
-                                           'friendly relations and earned '
-                                           '{reward} credits and '
-                                           '{experience} experience.',
-                         'failureMessage': 'E.c.h.o.: The diplomatic '
-                                           'mission did not go as planned. '
-                                           'The aliens were not '
-                                           'receptive.'},
- 'Galaxy Defense': {'Required Credits': 12000,
-                    'Required Energy': 26,
-                    'Reward': 40990,
-                    'Experience': 800,
-                    'Rank': 20,
-                    'requiredEquipment': {'Cyber Armor': 3,
-                                          'Interdimensional Cruiser': 2},
-                    'requiredSupplies': {'HyperWeave': 2, 'NeuroLink': 2},
-                    'Health Effect': 20,
-                    'startMessage': 'E.c.h.o.: Alert! Hostile forces '
-                                    'detected. Preparing for defense.',
-                    'successMessage': 'E.c.h.o.: Galaxy successfully '
-                                      'defended. Your bravery has earned '
-                                      'you {reward} credits and '
+                     'startMessage': 'E.C.H.O.: The plains tribes race '
+                                     'skimmers when the war allows, and '
+                                     'the purse is real credits. You have '
+                                     'a fast machine and questionable '
+                                     'judgment. Ideal.',
+                     'successMessage': 'E.C.H.O.: First across the line. '
+                                       'The herders are calling it desert '
+                                       'luck; I am calling it my tuning. '
+                                       '{reward} credits, {experience} '
+                                       'experience.',
+                     'failureMessage': 'E.C.H.O.: Spun out in the third '
+                                       'turn. The machine survives. Your '
+                                       'standing among the herders will '
+                                       'recover. Eventually.'},
+ 'Camp Extraction': {'Required Credits': 6500,
+                     'Required Energy': 21,
+                     'Reward': 20958,
+                     'Experience': 560,
+                     'Rank': 14,
+                     'Region': 'Luxor',
+                     'requiredEquipment': {'Scout Drone': 2,
+                                           'Environmental Suit': 2,
+                                           'Oxygen Rebreather': 2},
+                     'requiredSupplies': {'HyperWeave': 1, 'Data Shard': 1},
+                     'Health Effect': 15,
+                     'startMessage': 'E.C.H.O.: Workers are ready to run '
+                                     'from a Vortex labor camp - they need '
+                                     'cover, a route, and thirty quiet '
+                                     'minutes. We can be all three.',
+                     'successMessage': 'E.C.H.O.: Every runner clear, no '
+                                       'pursuit. Tonight some families in '
+                                       'Luxor are whole again. {reward} '
+                                       'credits, {experience} experience.',
+                     'failureMessage': 'E.C.H.O.: The breakout tripped a '
+                                       'sweep and we scattered early. The '
+                                       'runners are back inside - unhurt, '
+                                       'uncaught. We try again.'},
+ 'Ledger Heist': {'Required Credits': 8000,
+                  'Required Energy': 23,
+                  'Reward': 26098,
+                  'Experience': 640,
+                  'Rank': 16,
+                  'Region': 'Luxor',
+                  'requiredEquipment': {'Storm Chaser': 2,
+                                        'Spectral Analyzer': 2},
+                  'requiredSupplies': {'HyperWeave': 1, 'NeuroLink': 2},
+                  'Health Effect': 17,
+                  'startMessage': 'E.C.H.O.: A Vortex district office '
+                                  'keeps paper ledgers - PROJECT '
+                                  'expenditures too sensitive for the '
+                                  'network. I want them. Paper cannot '
+                                  'firewall.',
+                  'successMessage': 'E.C.H.O.: Ledgers copied and returned '
+                                    'before the morning audit. The PROJECT '
+                                    'file grows. {reward} credits, '
+                                    '{experience} experience.',
+                  'failureMessage': 'E.C.H.O.: A clerk worked late and we '
+                                    'aborted rather than be seen. '
+                                    'Patience. Ledgers keep.'},
+ 'Canopy Accords': {'Required Credits': 10000,
+                    'Required Energy': 25,
+                    'Reward': 34046,
+                    'Experience': 720,
+                    'Rank': 18,
+                    'Region': 'Xiaojia',
+                    'requiredEquipment': {'Holo Clone': 2,
+                                          'Invisi Veil': 2},
+                    'requiredSupplies': {'Data Shard': 1, 'HyperWeave': 1},
+                    'Health Effect': 18,
+                    'startMessage': 'E.C.H.O.: Two canopy villages are '
+                                    'feuding over bridge rights while '
+                                    'Vortex profits from the quarrel. '
+                                    'Binru asks for a neutral voice. That '
+                                    'is you, with me whispering.',
+                    'successMessage': 'E.C.H.O.: Accord struck on the rope '
+                                      'bridge itself, as tradition '
+                                      'requires. Two more villages for the '
+                                      'rebellion. {reward} credits, '
                                       '{experience} experience.',
-                    'failureMessage': 'E.c.h.o.: The galaxy defense was '
-                                      'challenging. Some areas suffered '
-                                      'damage.'},
- 'Quantum Mechanics Mastery': {'Required Credits': 14500,
-                               'Required Energy': 28,
-                               'Reward': 51661,
-                               'Experience': 880,
-                               'Rank': 22,
-                               'requiredEquipment': {'Teleporter Beacon': 3},
-                               'requiredSupplies': {'BioPatch': 2},
-                               'Health Effect': 21,
-                               'startMessage': 'E.c.h.o.: Initiating deep '
-                                               'dive into quantum '
-                                               'mechanics.',
-                               'successMessage': 'E.c.h.o.: Successfully '
-                                                 'mastered quantum '
-                                                 'mechanics! Earned '
-                                                 '{reward} credits and '
-                                                 '{experience} experience.',
-                               'failureMessage': 'E.c.h.o.: Quantum '
-                                                 'Mechanics is perplexing. '
-                                                 "Couldn't completely "
-                                                 'grasp the concept.'},
- 'Interstellar Exploration': {'Required Credits': 17500,
-                              'Required Energy': 30,
-                              'Reward': 64915,
-                              'Experience': 960,
-                              'Rank': 24,
-                              'requiredEquipment': {'Cyber Armor': 3,
-                                                    'Porta Lab': 3,
-                                                    'Plasma Blade': 2},
-                              'requiredSupplies': {'Cryptex': 3},
-                              'Health Effect': 22,
-                              'startMessage': 'E.c.h.o.: Setting course '
-                                              'for uncharted territories '
-                                              'in the interstellar realm.',
-                              'successMessage': 'E.c.h.o.: Exploration '
-                                                'successful! Discovered '
-                                                'new systems and earned '
-                                                '{reward} credits and '
-                                                '{experience} experience.',
-                              'failureMessage': 'E.c.h.o.: The uncharted '
-                                                'territories proved '
-                                                'challenging. Exploration '
-                                                'was not fully '
-                                                'successful.'},
- 'Temporal Anomaly Research': {'Required Credits': 21000,
-                               'Required Energy': 32,
-                               'Reward': 79351,
-                               'Experience': 1040,
-                               'Rank': 26,
-                               'requiredEquipment': {'Porta Lab': 3,
-                                                     'Terrain Scanner': 3},
-                               'requiredSupplies': {'Cryptex': 2,
-                                                    'Data Shard': 3},
-                               'Health Effect': 24,
-                               'startMessage': 'E.c.h.o.: Detected a '
-                                               'temporal anomaly. '
-                                               'Commencing research.',
-                               'successMessage': 'E.c.h.o.: Successfully '
-                                                 'researched the temporal '
-                                                 'anomaly! Rewarded '
-                                                 '{reward} credits and '
-                                                 '{experience} experience.',
-                               'failureMessage': 'E.c.h.o.: The temporal '
-                                                 'anomaly was unstable. '
-                                                 'Research faced '
-                                                 'setbacks.'},
- 'Galactic Archaeology': {'Required Credits': 25000,
-                          'Required Energy': 34,
-                          'Reward': 98157,
-                          'Experience': 1120,
-                          'Rank': 28,
-                          'requiredEquipment': {'Porta Lab': 3,
-                                                'Terrain Scanner': 3,
-                                                'Bio Collector': 3},
-                          'requiredSupplies': {'BioPatch': 2,
-                                               'Data Shard': 3},
-                          'Health Effect': 25,
-                          'startMessage': 'E.c.h.o.: Embarking on a quest '
-                                          'to uncover the mysteries of '
-                                          'ancient galactic civilizations.',
-                          'successMessage': 'E.c.h.o.: Successful '
-                                            'excavation! Unearthed '
-                                            'artifacts worth {reward} '
-                                            'credits and {experience} '
+                    'failureMessage': 'E.C.H.O.: Talks collapsed when old '
+                                      'grievances surfaced. Binru counsels '
+                                      'patience - grudges grown for a '
+                                      'century take more than an evening.'},
+ 'Grove Defense': {'Required Credits': 12000,
+                   'Required Energy': 26,
+                   'Reward': 40990,
+                   'Experience': 800,
+                   'Rank': 20,
+                   'Region': 'Xiaojia',
+                   'requiredEquipment': {'Cyber Armor': 3,
+                                         'Titan Crawler': 2},
+                   'requiredSupplies': {'HyperWeave': 2, 'NeuroLink': 2},
+                   'Health Effect': 20,
+                   'startMessage': 'E.C.H.O.: Cutters are moving on an '
+                                   'outer grove at dawn. The rebels can be '
+                                   'there - if someone holds the line '
+                                   'first. Someone is you.',
+                   'successMessage': 'E.C.H.O.: Line held, cutters turned '
+                                     'back, grove standing. The forest '
+                                     'notices these things. {reward} '
+                                     'credits, {experience} experience.',
+                   'failureMessage': 'E.C.H.O.: They flanked wide and took '
+                                     'trees before the rebels arrived. '
+                                     'Every stump is a debt. Collect it.'},
+ 'Monastery Training': {'Required Credits': 14500,
+                        'Required Energy': 28,
+                        'Reward': 51661,
+                        'Experience': 880,
+                        'Rank': 22,
+                        'Region': 'Xiaojia',
+                        'requiredEquipment': {'Teleporter Beacon': 3},
+                        'requiredSupplies': {'BioPatch': 2},
+                        'Health Effect': 21,
+                        'startMessage': 'E.C.H.O.: Master Zhenwu has '
+                                        "opened the high monastery's "
+                                        'training halls to allies. The '
+                                        'forms are old, the drop is long, '
+                                        'and the lesson is balance. Try '
+                                        'not to test the drop.',
+                        'successMessage': 'E.C.H.O.: Training complete. '
+                                          'Your reflexes have measurably '
+                                          'improved and Zhenwu almost '
+                                          'smiled. {reward} credits, '
+                                          '{experience} experience.',
+                        'failureMessage': 'E.C.H.O.: The forms defeated '
+                                          'you today. Zhenwu says the '
+                                          'mountain teaches falling first. '
+                                          'You are an excellent student of '
+                                          'falling.'},
+ 'Deep Forest Expedition': {'Required Credits': 17500,
+                            'Required Energy': 30,
+                            'Reward': 64915,
+                            'Experience': 960,
+                            'Rank': 24,
+                            'Region': 'Xiaojia',
+                            'requiredEquipment': {'Cyber Armor': 3,
+                                                  'Porta Lab': 3,
+                                                  'Plasma Blade': 2},
+                            'requiredSupplies': {'Cryptex': 3},
+                            'Health Effect': 22,
+                            'startMessage': 'E.C.H.O.: The rebels need '
+                                            'eyes on the forest deeps '
+                                            'beyond their maps - old '
+                                            'growth where even Vortex will '
+                                            'not cut. Something lives out '
+                                            'there. Chart around it.',
+                            'successMessage': 'E.C.H.O.: Expedition mapped '
+                                              'the deep paths and came '
+                                              'back with samples the '
+                                              'healers prize. {reward} '
+                                              'credits, {experience} '
+                                              'experience.',
+                            'failureMessage': 'E.C.H.O.: The deep forest '
+                                              'closed its paths and we '
+                                              'circled for hours. We were '
+                                              'permitted to leave. I am '
+                                              'choosing to find that '
+                                              'encouraging.'},
+ 'Glacier Core Survey': {'Required Credits': 21000,
+                         'Required Energy': 32,
+                         'Reward': 79351,
+                         'Experience': 1040,
+                         'Rank': 26,
+                         'Region': 'Titan Ranges',
+                         'requiredEquipment': {'Porta Lab': 3,
+                                               'Terrain Scanner': 3},
+                         'requiredSupplies': {'Cryptex': 2,
+                                              'Data Shard': 3},
+                         'Health Effect': 24,
+                         'startMessage': "E.C.H.O.: Kazon's clans want the "
+                                         'glacier line surveyed before '
+                                         'Vortex drills it - ice cores, '
+                                         "stress maps, the mountain's "
+                                         'pulse.',
+                         'successMessage': 'E.C.H.O.: Cores pulled and '
+                                           'charted. The clans now know '
+                                           'their ice better than the '
+                                           'corporation ever will. '
+                                           '{reward} credits, {experience} '
+                                           'experience.',
+                         'failureMessage': 'E.C.H.O.: A crevasse field '
+                                           'turned us back short of the '
+                                           'site. The glacier sets its own '
+                                           'schedule.'},
+ 'Mountain Vault Dig': {'Required Credits': 25000,
+                        'Required Energy': 34,
+                        'Reward': 98157,
+                        'Experience': 1120,
+                        'Rank': 28,
+                        'Region': 'Titan Ranges',
+                        'requiredEquipment': {'Porta Lab': 3,
+                                              'Terrain Scanner': 3,
+                                              'Bio Collector': 3},
+                        'requiredSupplies': {'BioPatch': 2,
+                                             'Data Shard': 3},
+                        'Health Effect': 25,
+                        'startMessage': 'E.C.H.O.: The clans tell of '
+                                        'vaults older than the five feuds, '
+                                        'sealed under the ranges. One has '
+                                        'surfaced in a Vortex blast scar. '
+                                        'Kazon wants its contents home.',
+                        'successMessage': 'E.C.H.O.: Vault opened, relics '
+                                          'raised, clan-marks confirmed. '
+                                          'Titan history is longer than '
+                                          'anyone guessed. {reward} '
+                                          'credits, {experience} '
+                                          'experience.',
+                        'failureMessage': 'E.C.H.O.: The vault seal '
+                                          'defeated our tools. The clans '
+                                          'are consulting their oldest '
+                                          'smiths. The mountain waits.'},
+ 'Deep Vein Prospect': {'Required Credits': 30000,
+                        'Required Energy': 35,
+                        'Reward': 118814,
+                        'Experience': 1200,
+                        'Rank': 30,
+                        'Region': 'Titan Ranges',
+                        'requiredEquipment': {'Cyber Armor': 4,
+                                              'Plasma Blade': 4,
+                                              'Titan Crawler': 4},
+                        'requiredSupplies': {'Cryptex': 3, 'SynthArm': 1},
+                        'Health Effect': 27,
+                        'startMessage': 'E.C.H.O.: The clans need new '
+                                        'veins the corporation has not '
+                                        'mapped - metal for forges, not '
+                                        'for freight east. Deep work, cold '
+                                        'work.',
+                        'successMessage': 'E.C.H.O.: New vein confirmed '
+                                          'and claimed with clan-marks. '
+                                          'The forges will not go hungry. '
+                                          '{reward} credits, {experience} '
+                                          'experience.',
+                        'failureMessage': 'E.C.H.O.: The vein pinched out '
+                                          'to nothing. Prospecting is '
+                                          'mostly disappointment with '
+                                          'excellent views.'},
+ 'Whiteout Crossing': {'Required Credits': 35000,
+                       'Required Energy': 37,
+                       'Reward': 143834,
+                       'Experience': 1280,
+                       'Rank': 32,
+                       'Region': 'Titan Ranges',
+                       'requiredEquipment': {'Invisi Veil': 4,
+                                             'Teleporter Beacon': 4,
+                                             'Terrain Scanner': 2},
+                       'requiredSupplies': {'Cryptex': 3},
+                       'Health Effect': 28,
+                       'startMessage': 'E.C.H.O.: A supply line has to '
+                                       'cross the high passes in blizzard '
+                                       'season, and the yetis will guide - '
+                                       'if you keep up. Dress warmer than '
+                                       'you think.',
+                       'successMessage': 'E.C.H.O.: Crossing complete. The '
+                                         "yetis' route through the "
+                                         'whiteout was invisible, '
+                                         'impossible, and perfect. '
+                                         '{reward} credits, {experience} '
+                                         'experience.',
+                       'failureMessage': 'E.C.H.O.: The blizzard closed '
+                                         "even the yetis' route. We "
+                                         'sheltered and turned back. The '
+                                         'mountain wins some.'},
+ 'Night Bloom Harvest': {'Required Credits': 41000,
+                         'Required Energy': 39,
+                         'Reward': 174585,
+                         'Experience': 1360,
+                         'Rank': 34,
+                         'Region': 'Tuatha',
+                         'requiredEquipment': {'Teleporter Beacon': 4,
+                                               'Titan Crawler': 4,
+                                               'Porta Lab': 3},
+                         'requiredSupplies': {'SynthArm': 3},
+                         'Health Effect': 29,
+                         'startMessage': 'E.C.H.O.: The order needs night '
+                                         'blooms from the deep jungle - '
+                                         'they open once, at the dark of '
+                                         'the moon, and every predator '
+                                         'knows it too.',
+                         'successMessage': 'E.C.H.O.: Blooms harvested at '
+                                           "full potency. The healers' "
+                                           'vats are stocked for a season. '
+                                           '{reward} credits, {experience} '
+                                           'experience.',
+                         'failureMessage': 'E.C.H.O.: Something else was '
+                                           'harvesting the grove tonight '
+                                           'and we ceded the field. The '
+                                           'Mage approves of the survival '
+                                           'instinct.'},
+ 'Clan Accords': {'Required Credits': 48000,
+                  'Required Energy': 41,
+                  'Reward': 208301,
+                  'Experience': 1440,
+                  'Rank': 36,
+                  'Region': 'Tuatha',
+                  'requiredEquipment': {'Invisi Veil': 4},
+                  'requiredSupplies': {'NanoSyringe': 1},
+                  'Health Effect': 31,
+                  'startMessage': 'E.C.H.O.: Jungle clans that never bowed '
+                                  'to anyone are being courted by Vortex '
+                                  'silver. The Mage asks you to speak '
+                                  'first, and speak better.',
+                  'successMessage': 'E.C.H.O.: The clans burned the '
+                                    'corporate contracts at the meeting '
+                                    'fire. The jungle stays whole. '
+                                    '{reward} credits, {experience} '
+                                    'experience.',
+                  'failureMessage': 'E.C.H.O.: One clan took the silver '
+                                    'anyway. The Mage says the forest is '
+                                    'patient with its children. We will be '
+                                    'too.'},
+ 'Canopy-Lord Tracking': {'Required Credits': 56000,
+                          'Required Energy': 42,
+                          'Reward': 245495,
+                          'Experience': 1520,
+                          'Rank': 38,
+                          'Region': 'Tuatha',
+                          'requiredEquipment': {'Porta Lab': 4,
+                                                'Cyber Armor': 3,
+                                                'Teleporter Beacon': 4},
+                          'requiredSupplies': {'BioPatch': 3, 'Cryptex': 3},
+                          'Health Effect': 32,
+                          'startMessage': 'E.C.H.O.: Something vast moves '
+                                          'through the upper canopy - the '
+                                          'tribes call it a canopy-lord. '
+                                          'The Mage wants it tracked, and '
+                                          "kept out of Vortex trappers' "
+                                          'reach.',
+                          'successMessage': 'E.C.H.O.: Tracked, logged, '
+                                            'and its range ringed with '
+                                            'rebel watchposts. The '
+                                            'trappers will find nothing '
+                                            'but us. {reward} credits, '
+                                            '{experience} experience.',
+                          'failureMessage': 'E.C.H.O.: We lost the trail '
+                                            'in the storm layer. A '
+                                            'creature that size, '
+                                            'invisible. I have revised '
+                                            'several assumptions about '
+                                            'this forest.'},
+ 'Heartroot Attunement': {'Required Credits': 65000,
+                          'Required Energy': 44,
+                          'Reward': 294674,
+                          'Experience': 1600,
+                          'Rank': 40,
+                          'Region': 'Tuatha',
+                          'requiredEquipment': {'Teleporter Beacon': 4,
+                                                'Bio Collector': 5,
+                                                'Cyber Armor': 4},
+                          'requiredSupplies': {'SynthArm': 2,
+                                               'BioPatch': 3},
+                          'Health Effect': 34,
+                          'startMessage': 'E.C.H.O.: The order believes '
+                                          "the forest's roots speak, grove "
+                                          'to grove, and that an ally can '
+                                          'be taught to listen. Three '
+                                          'nights. No instruments. This '
+                                          'offends me professionally.',
+                          'successMessage': 'E.C.H.O.: Attunement '
+                                            'achieved. You heard the '
+                                            'roots; I recorded nothing on '
+                                            'any sensor. Filing this under '
+                                            "'true anyway'. {reward} "
+                                            'credits, {experience} '
                                             'experience.',
-                          'failureMessage': 'E.c.h.o.: The ruins were '
-                                            'labyrinthine and perplexing. '
-                                            'Some artifacts remain '
-                                            'elusive.'},
- 'Universe Origins Study': {'Required Credits': 30000,
-                            'Required Energy': 35,
-                            'Reward': 118814,
-                            'Experience': 1200,
-                            'Rank': 30,
-                            'requiredEquipment': {'Cyber Armor': 4,
-                                                  'Plasma Blade': 4,
-                                                  'Interdimensional Cruiser': 4},
-                            'requiredSupplies': {'Cryptex': 3,
-                                                 'SynthArm': 1},
-                            'Health Effect': 27,
-                            'startMessage': 'E.c.h.o.: Launching probe to '
-                                            'research the origins of the '
-                                            'universe.',
-                            'successMessage': 'E.c.h.o.: Significant '
-                                              'discoveries made! Earned '
-                                              '{reward} credits and '
-                                              '{experience} experience.',
-                            'failureMessage': 'E.c.h.o.: The vastness of '
-                                              'the universe is '
-                                              'overwhelming. Some '
-                                              'mysteries remain unsolved.'},
- 'Exodimensional Expedition': {'Required Credits': 35000,
-                               'Required Energy': 37,
-                               'Reward': 143834,
-                               'Experience': 1280,
-                               'Rank': 32,
-                               'requiredEquipment': {'Invisi Veil': 4,
-                                                     'Teleporter Beacon': 4,
-                                                     'Terrain Scanner': 2},
-                               'requiredSupplies': {'Cryptex': 3},
-                               'Health Effect': 28,
-                               'startMessage': 'E.c.h.o.: Preparing to '
-                                               'venture into '
-                                               'exodimensions. Unknown '
-                                               'challenges await.',
-                               'successMessage': 'E.c.h.o.: Successfully '
-                                                 'navigated the '
-                                                 'exodimensions! Secured '
-                                                 '{reward} credits and '
+                          'failureMessage': 'E.C.H.O.: The roots stayed '
+                                            'silent. The Mage says the '
+                                            'forest speaks when it has '
+                                            'something to say. '
+                                            'Infuriatingly reasonable.'},
+ 'Tower District Run': {'Required Credits': 75000,
+                        'Required Energy': 46,
+                        'Reward': 351196,
+                        'Experience': 1680,
+                        'Rank': 42,
+                        'Region': 'Namarupa',
+                        'requiredEquipment': {'Hover Board': 5,
+                                              'Invisi Veil': 5,
+                                              'Alien Skin Armor': 5,
+                                              'Dune Skimmer': 5},
+                        'requiredSupplies': {'SynthArm': 2, 'BioPatch': 3},
+                        'Health Effect': 35,
+                        'startMessage': "E.C.H.O.: Zhalia's network needs "
+                                        'a package moved through the tower '
+                                        'district - past the cameras, the '
+                                        'listeners, and the gray coats. '
+                                        'Walk like a commuter.',
+                        'successMessage': 'E.C.H.O.: Package delivered. '
+                                          'The cameras saw a thousand '
+                                          'commuters and none of them was '
+                                          'you. {reward} credits, '
+                                          '{experience} experience.',
+                        'failureMessage': 'E.C.H.O.: A checkpoint went up '
+                                          'mid-route and we ditched the '
+                                          'package at a fallback drop. The '
+                                          'network will recover it. Slower '
+                                          'than planned.'},
+ 'Mag-Rail Interception': {'Required Credits': 86000,
+                           'Required Energy': 47,
+                           'Reward': 406844,
+                           'Experience': 1760,
+                           'Rank': 44,
+                           'Region': 'Namarupa',
+                           'requiredEquipment': {'Jet Pack': 5,
+                                                 'Steel Machete': 5,
+                                                 'Dune Skimmer': 5,
+                                                 'Oxygen Rebreather': 5},
+                           'requiredSupplies': {'NanoSyringe': 2},
+                           'Health Effect': 36,
+                           'startMessage': 'E.C.H.O.: A Vortex security '
+                                           'shipment rides the midnight '
+                                           'mag-rail. Zhalia can blind the '
+                                           'sensors for ninety seconds. '
+                                           'The rest is your problem.',
+                           'successMessage': 'E.C.H.O.: Shipment '
+                                             'intercepted between '
+                                             'stations. Ninety seconds, as '
+                                             'promised, with four to '
+                                             'spare. {reward} credits, '
+                                             '{experience} experience.',
+                           'failureMessage': 'E.C.H.O.: The train ran '
+                                             'early - corporate efficiency '
+                                             'at the worst possible '
+                                             'moment. Zhalia is already '
+                                             "reading next week's "
+                                             'schedule.'},
+ 'Amplifier Component Theft': {'Required Credits': 98000,
+                               'Required Energy': 50,
+                               'Reward': 482073,
+                               'Experience': 1840,
+                               'Rank': 46,
+                               'Region': 'Namarupa',
+                               'requiredEquipment': {'Hover Board': 4,
+                                                     'Jet Pack': 5,
+                                                     'Plasma Blade': 5,
+                                                     'Environmental Suit': 5},
+                               'requiredSupplies': {'SynthArm': 3,
+                                                    'NanoSyringe': 1},
+                               'Health Effect': 38,
+                               'startMessage': 'E.C.H.O.: The suppression '
+                                               'network runs on precision '
+                                               'components with exactly '
+                                               'one supplier. Every one we '
+                                               'steal is a headache the '
+                                               'amplifier cannot cure.',
+                               'successMessage': 'E.C.H.O.: Components '
+                                                 'lifted from the depot '
+                                                 'and vanished into the '
+                                                 'network. Somewhere a '
+                                                 'maintenance schedule '
+                                                 'just became fiction. '
+                                                 '{reward} credits, '
                                                  '{experience} experience.',
-                               'failureMessage': 'E.c.h.o.: The '
-                                                 'exodimensions are '
-                                                 'unpredictable. Could not '
-                                                 'complete the mission.'},
- 'Dark Matter Manipulation': {'Required Credits': 41000,
-                              'Required Energy': 39,
-                              'Reward': 174585,
-                              'Experience': 1360,
-                              'Rank': 34,
-                              'requiredEquipment': {'Teleporter Beacon': 4,
-                                                    'Interdimensional Cruiser': 4,
-                                                    'Porta Lab': 3},
-                              'requiredSupplies': {'SynthArm': 3},
-                              'Health Effect': 29,
-                              'startMessage': 'E.c.h.o.: Initiating '
-                                              'procedures to manipulate '
-                                              'dark matter.',
-                              'successMessage': 'E.c.h.o.: Dark matter '
-                                                'manipulation successful! '
-                                                'Acquired {reward} credits '
-                                                'and {experience} '
-                                                'experience.',
-                              'failureMessage': 'E.c.h.o.: Failed to '
-                                                'control the elusive dark '
-                                                'matter. Mission aborted.'},
- 'Galactic Diplomacy': {'Required Credits': 48000,
-                        'Required Energy': 41,
-                        'Reward': 208301,
-                        'Experience': 1440,
-                        'Rank': 36,
-                        'requiredEquipment': {'Invisi Veil': 4},
-                        'requiredSupplies': {'NanoSyringe': 1},
-                        'Health Effect': 31,
-                        'startMessage': 'E.c.h.o.: Engaging in diplomatic '
-                                        'talks with advanced '
-                                        'extraterrestrial civilizations.',
-                        'successMessage': 'E.c.h.o.: Diplomacy successful! '
-                                          'Strengthened interstellar ties '
-                                          'and earned {reward} credits and '
-                                          '{experience} experience.',
-                        'failureMessage': 'E.c.h.o.: Diplomatic talks were '
-                                          'challenging. Not all objectives '
-                                          'achieved.'},
- 'Void Phenomenon Analysis': {'Required Credits': 56000,
-                              'Required Energy': 42,
-                              'Reward': 245495,
-                              'Experience': 1520,
-                              'Rank': 38,
-                              'requiredEquipment': {'Porta Lab': 4,
-                                                    'Cyber Armor': 3,
-                                                    'Teleporter Beacon': 4},
-                              'requiredSupplies': {'BioPatch': 3,
-                                                   'Cryptex': 3},
-                              'Health Effect': 32,
-                              'startMessage': 'E.c.h.o.: Commencing '
-                                              'analysis of mysterious void '
-                                              'phenomena.',
-                              'successMessage': 'E.c.h.o.: Analysis '
-                                                'complete! Deciphered void '
-                                                'secrets and obtained '
-                                                '{reward} credits and '
-                                                '{experience} experience.',
-                              'failureMessage': 'E.c.h.o.: The void '
-                                                'remains enigmatic. '
-                                                'Analysis was '
-                                                'inconclusive.'},
- 'Cosmic Nexus Activation': {'Required Credits': 65000,
-                             'Required Energy': 44,
-                             'Reward': 294674,
-                             'Experience': 1600,
-                             'Rank': 40,
-                             'requiredEquipment': {'Teleporter Beacon': 4,
-                                                   'Bio Collector': 5,
-                                                   'Cyber Armor': 4},
-                             'requiredSupplies': {'SynthArm': 2,
-                                                  'BioPatch': 3},
-                             'Health Effect': 34,
-                             'startMessage': 'E.c.h.o.: Initiating '
-                                             'protocols to activate the '
-                                             'cosmic nexus.',
-                             'successMessage': 'E.c.h.o.: Cosmic Nexus '
-                                               'activated! Gained {reward} '
-                                               'credits and {experience} '
-                                               'experience.',
-                             'failureMessage': 'E.c.h.o.: The cosmic nexus '
-                                               'proved too complex. '
-                                               'Activation failed.'},
- 'Temporal Loop Investigation': {'Required Credits': 75000,
-                                 'Required Energy': 46,
-                                 'Reward': 351196,
-                                 'Experience': 1680,
-                                 'Rank': 42,
-                                 'requiredEquipment': {'Hover Board': 5,
-                                                       'Invisi Veil': 5,
-                                                       'Alien Skin Armor': 5,
-                                                       'Basic Ship': 5},
-                                 'requiredSupplies': {'SynthArm': 2,
-                                                      'BioPatch': 3},
-                                 'Health Effect': 35,
-                                 'startMessage': 'E.c.h.o.: Preparing to '
-                                                 'investigate disturbances '
-                                                 'in the temporal loop.',
-                                 'successMessage': 'E.c.h.o.: Temporal '
-                                                   'loop stabilized! '
-                                                   'Retrieved {reward} '
-                                                   'credits and '
-                                                   '{experience} '
-                                                   'experience.',
-                                 'failureMessage': 'E.c.h.o.: Time '
-                                                   'anomalies detected. '
-                                                   'Investigation proved '
-                                                   'challenging.'},
- 'Nebular Storm Navigation': {'Required Credits': 86000,
-                              'Required Energy': 47,
-                              'Reward': 406844,
-                              'Experience': 1760,
-                              'Rank': 44,
-                              'requiredEquipment': {'Jet Pack': 5,
-                                                    'Steel Machete': 5,
-                                                    'Basic Ship': 5,
-                                                    'Oxygen Rebreather': 5},
-                              'requiredSupplies': {'NanoSyringe': 2},
-                              'Health Effect': 36,
-                              'startMessage': 'E.c.h.o.: Initiating '
-                                              'navigation through a '
-                                              'tumultuous nebular storm.',
-                              'successMessage': 'E.c.h.o.: Successfully '
-                                                'navigated the storm! '
-                                                'Acquired {reward} credits '
-                                                'and {experience} '
-                                                'experience.',
-                              'failureMessage': 'E.c.h.o.: Nebular '
-                                                'turbulence too intense. '
-                                                'Navigation unsuccessful.'},
- 'Celestial Artifact Retrieval': {'Required Credits': 98000,
-                                  'Required Energy': 50,
-                                  'Reward': 482073,
-                                  'Experience': 1840,
-                                  'Rank': 46,
-                                  'requiredEquipment': {'Hover Board': 4,
-                                                        'Jet Pack': 5,
-                                                        'Plasma Blade': 5,
-                                                        'Environmental Suit': 5},
-                                  'requiredSupplies': {'SynthArm': 3,
-                                                       'NanoSyringe': 1},
-                                  'Health Effect': 38,
-                                  'startMessage': 'E.c.h.o.: Mission is to '
-                                                  'retrieve a rare '
-                                                  'celestial artifact from '
-                                                  'an ancient site.',
-                                  'successMessage': 'E.c.h.o.: Artifact '
-                                                    'secured! Obtained '
-                                                    '{reward} credits and '
-                                                    '{experience} '
-                                                    'experience.',
-                                  'failureMessage': 'E.c.h.o.: Artifact '
-                                                    'retrieval mission '
-                                                    'faced unforeseen '
-                                                    'challenges.'},
- 'Supernova Containment': {'Required Credits': 110000,
-                           'Required Energy': 51,
-                           'Reward': 546722,
-                           'Experience': 1920,
-                           'Rank': 48,
-                           'requiredEquipment': {'Cyber Armor': 5,
-                                                 'Interdimensional Cruiser': 5,
-                                                 'Teleporter Beacon': 5,
-                                                 'Spectral Analyzer': 5},
-                           'requiredSupplies': {'NanoSyringe': 1,
-                                                'SynthArm': 3},
-                           'Health Effect': 39,
-                           'startMessage': 'E.c.h.o.: Attempting to '
-                                           'contain the imminent supernova '
-                                           'and harness its energy.',
-                           'successMessage': 'E.c.h.o.: Supernova '
-                                             'successfully contained! '
-                                             '{reward} credits and '
-                                             '{experience} experience '
-                                             'gained.',
-                           'failureMessage': 'E.c.h.o.: Supernova '
-                                             'containment measures failed. '
-                                             'Energy release was '
-                                             'catastrophic.'},
- 'Black Hole Mapping': {'Required Credits': 124000,
-                        'Required Energy': 53,
-                        'Reward': 634795,
-                        'Experience': 2000,
-                        'Rank': 50,
-                        'requiredEquipment': {'Interdimensional Cruiser': 5,
-                                              'Teleporter Beacon': 6,
-                                              'Spectral Analyzer': 6,
-                                              'Scout Drone': 6,
-                                              'Bio Collector': 5,
-                                              'Cyber Armor': 6},
-                        'requiredSupplies': {'SynthArm': 3, 'Cryptex': 3},
-                        'Health Effect': 41,
-                        'startMessage': 'E.c.h.o.: Launching probes to map '
-                                        'the event horizon of a black '
-                                        'hole.',
-                        'successMessage': 'E.c.h.o.: Successful mapping! '
-                                          'Collected valuable data and '
-                                          '{reward} credits along with '
-                                          '{experience} experience.',
-                        'failureMessage': 'E.c.h.o.: Probes lost to the '
-                                          'gravitational pull. Black hole '
-                                          'mapping unsuccessful.'}}
+                               'failureMessage': 'E.C.H.O.: Depot security '
+                                                 'rotated early and we '
+                                                 'left empty-handed. Their '
+                                                 'components, our patience '
+                                                 '- one of these runs out '
+                                                 'first, and it will not '
+                                                 'be ours.'},
+ 'Killing Ground Recon': {'Required Credits': 110000,
+                          'Required Energy': 51,
+                          'Reward': 546722,
+                          'Experience': 1920,
+                          'Rank': 48,
+                          'Region': 'The Fortress Wastes',
+                          'requiredEquipment': {'Cyber Armor': 5,
+                                                'Titan Crawler': 5,
+                                                'Teleporter Beacon': 5,
+                                                'Spectral Analyzer': 5},
+                          'requiredSupplies': {'NanoSyringe': 1,
+                                               'SynthArm': 3},
+                          'Health Effect': 39,
+                          'startMessage': 'E.C.H.O.: The fortress sits '
+                                          'behind a killing ground of '
+                                          'fields and guns. The united '
+                                          'front needs it mapped to the '
+                                          'meter before anyone charges it.',
+                          'successMessage': 'E.C.H.O.: Recon complete - '
+                                            'field emitters, gun arcs, '
+                                            'dead zones, all charted. The '
+                                            'tribes will not charge blind. '
+                                            '{reward} credits, '
+                                            '{experience} experience.',
+                          'failureMessage': 'E.C.H.O.: A sensor sweep '
+                                            'nearly caught us in the open '
+                                            'and we withdrew short. '
+                                            'Half-maps kill armies. We go '
+                                            'again.'},
+ 'Fortress Perimeter Mapping': {'Required Credits': 124000,
+                                'Required Energy': 53,
+                                'Reward': 634795,
+                                'Experience': 2000,
+                                'Rank': 50,
+                                'Region': 'The Fortress Wastes',
+                                'requiredEquipment': {'Titan Crawler': 5,
+                                                      'Teleporter Beacon': 6,
+                                                      'Spectral Analyzer': 6,
+                                                      'Scout Drone': 6,
+                                                      'Bio Collector': 5,
+                                                      'Cyber Armor': 6},
+                                'requiredSupplies': {'SynthArm': 3,
+                                                     'Cryptex': 3},
+                                'Health Effect': 41,
+                                'startMessage': 'E.C.H.O.: Every wall has '
+                                                "a seam. The fortress's "
+                                                'outer perimeter is ours '
+                                                'to walk, quietly, until I '
+                                                'find it.',
+                                'successMessage': 'E.C.H.O.: Perimeter '
+                                                  'mapped end to end. I '
+                                                  'have found four seams '
+                                                  'and fallen in love with '
+                                                  'two of them. {reward} '
+                                                  'credits, {experience} '
+                                                  'experience.',
+                                'failureMessage': 'E.C.H.O.: Perimeter '
+                                                  'drones forced us off '
+                                                  'the line. The wall '
+                                                  'keeps its seams another '
+                                                  'night.'}}
 
 STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                           'Required Energy': 10,
@@ -916,7 +1046,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                 'Experience': 600,
                                 'Rank': 15,
                                 'Faction': 'Xiaojians',
-                                'requiredEquipment': {'Basic Ship': 1,
+                                'requiredEquipment': {'Dune Skimmer': 1,
                                                       'Alien Skin Armor': 2},
                                 'Health Effect': 8,
                                 'startMessage': 'E.C.H.O.: Elder Binru '
@@ -1010,7 +1140,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                             'Experience': 760,
                             'Rank': 19,
                             'Faction': 'Xiaojians',
-                            'requiredEquipment': {'Basic Ship': 2,
+                            'requiredEquipment': {'Dune Skimmer': 2,
                                                   'Steel Machete': 1},
                             'Health Effect': 10,
                             'startMessage': 'E.C.H.O.: Master Zhenwu '
@@ -1210,7 +1340,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                         'Experience': 1040,
                         'Rank': 26,
                         'Faction': 'Titans',
-                        'requiredEquipment': {'Star Ship': 1,
+                        'requiredEquipment': {'Storm Chaser': 1,
                                               'Metalloid Armor': 2},
                         'Health Effect': 13,
                         'startMessage': 'E.C.H.O.: The clans have captured '
@@ -1347,7 +1477,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                           'Rank': 31,
                           'Faction': 'Tuathans',
                           'requiredEquipment': {'Invisi Veil': 4,
-                                                'Basic Ship': 3},
+                                                'Dune Skimmer': 3},
                           'Health Effect': 16,
                           'startMessage': 'E.C.H.O.: Their patrol columns '
                                           'move the same trails at the '
@@ -1586,7 +1716,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                    'Rank': 39,
                                    'Faction': 'Namarupians',
                                    'requiredEquipment': {'Metalloid Armor': 3,
-                                                         'Star Ship': 2},
+                                                         'Storm Chaser': 2},
                                    'Health Effect': 20,
                                    'startMessage': "E.C.H.O.: Zhalia's "
                                                    'psychics can reach '
@@ -1748,7 +1878,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                'Experience': 1760,
                                'Rank': 44,
                                'Faction': 'United Front',
-                               'requiredEquipment': {'Basic Ship': 4,
+                               'requiredEquipment': {'Dune Skimmer': 4,
                                                      'Invisi Veil': 3},
                                'Health Effect': 22,
                                'startMessage': 'E.C.H.O.: Six lands free. '
@@ -2160,7 +2290,7 @@ PROPERTIES = {'Energy Labs': {'Salvage Smelter': {'Base Cost': 3000,
                                                       'Rank': 48}}}
 
 
-EQUIPMENT ={'Research': {'Spectral Analyzer': {'Base Cost': 50, 'Required Level': 1},
+EQUIPMENT = {'Research': {'Spectral Analyzer': {'Base Cost': 50, 'Required Level': 1},
               'Bio Collector': {'Base Cost': 150, 'Required Level': 10},
               'Porta Lab': {'Base Cost': 500, 'Required Level': 20}},
  'Weapons': {'Steel Machete': {'Base Cost': 50, 'Required Level': 1},
@@ -2176,14 +2306,15 @@ EQUIPMENT ={'Research': {'Spectral Analyzer': {'Base Cost': 50, 'Required Level'
                 'Jet Pack': {'Base Cost': 150, 'Required Level': 10},
                 'Teleporter Beacon': {'Base Cost': 500,
                                       'Required Level': 20}},
- 'Exploration': {'Environmental Suit': {'Base Cost': 50, 'Required Level': 1},
+ 'Exploration': {'Environmental Suit': {'Base Cost': 50,
+                                        'Required Level': 1},
                  'Oxygen Rebreather': {'Base Cost': 150,
                                        'Required Level': 10},
-                 'Terrain Scanner': {'Base Cost': 500, 'Required Level': 20}},
- 'Ships': {'Basic Ship': {'Base Cost': 50, 'Required Level': 1},
-           'Star Ship': {'Base Cost': 150, 'Required Level': 10},
-           'Interdimensional Cruiser': {'Base Cost': 500,
-                                        'Required Level': 20}},
+                 'Terrain Scanner': {'Base Cost': 500,
+                                     'Required Level': 20}},
+ 'Vehicles': {'Dune Skimmer': {'Base Cost': 50, 'Required Level': 1},
+              'Storm Chaser': {'Base Cost': 150, 'Required Level': 10},
+              'Titan Crawler': {'Base Cost': 500, 'Required Level': 20}},
  'Story': {'Alien Ally': {'Base Cost': 50, 'Required Level': 1},
            'Alien Squad': {'Base Cost': 150, 'Required Level': 10},
            'Alien Army': {'Base Cost': 500, 'Required Level': 20}}}
