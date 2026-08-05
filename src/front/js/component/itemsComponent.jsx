@@ -132,7 +132,7 @@ const ItemsComponent = () => {
       <div className="market-item" key={row.item_name}>
         <div className="market-line">
           <span>
-            <strong>{row.item_name}</strong>
+            <strong className="tx-item">{row.item_name}</strong>
             <span className="market-tag">{row.category}</span>
             {row.locked && (
               <span className="tx-info market-tag">
@@ -213,7 +213,7 @@ const ItemsComponent = () => {
             Max
           </button>
           <button
-            className="ms-2"
+            className="ms-2 btn-buy"
             onClick={() => handleBuy(row.item_name)}
             disabled={
               pendingItem !== null ||
@@ -224,19 +224,21 @@ const ItemsComponent = () => {
             {pending ? "..." : "Buy"}
           </button>
           <button
-            className="ms-1"
+            className="ms-1 btn-sell"
             onClick={() => handleSell(row.item_name, quantity)}
             disabled={pendingItem !== null || row.owned < quantity}
+            title={`Sell ${quantity} at the current sell price`}
           >
             Sell
           </button>
           {row.owned > 0 && (
             <button
-              className="ms-1"
+              className="ms-1 btn-sell-all"
               onClick={() => handleSell(row.item_name, row.owned)}
               disabled={pendingItem !== null}
+              title={`Sell your entire holding of ${row.owned}`}
             >
-              All
+              Sell all
             </button>
           )}
         </div>

@@ -415,6 +415,19 @@ const getState = ({ getStore, getActions, setStore }) => {
           });
       },
 
+      outfitMission: (missionName) => {
+        return apiRequest("/api/mission/outfit", {
+          method: "POST",
+          body: { mission_name: missionName },
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            appendActivityEntry(data.activity);
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to outfit mission"));
+      },
+
       buyItem: (itemName, quantity) => {
         return apiRequest("/api/market/buy", {
           method: "POST",

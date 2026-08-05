@@ -145,7 +145,11 @@ const GoalsComponent = () => {
                 <div className="col-12 col-md-6 p-2" key={chain.key}>
                   <div
                     className={`p-2 border rounded h-100 ${
-                      complete ? "achievement-earned" : "achievement-locked"
+                      complete
+                        ? "achievement-earned"
+                        : done > 0
+                        ? "achievement-progressing"
+                        : "achievement-locked"
                     }`}
                   >
                     <div className="d-flex justify-content-between flex-wrap">

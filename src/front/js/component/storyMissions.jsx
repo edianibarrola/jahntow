@@ -44,6 +44,35 @@ const StoryMissions = () => {
   const [isStoryMissionRunning, setStoryMissionRunning] = useState(false);
   const [isChoosing, setChoosing] = useState(false);
 
+  // One-click outfitting for the chapter's gear - estimate only; the
+  // server reprices with merchant/ally discounts applied.
+  const equipCostByName = {};
+  Object.values(gameData.equipment || {}).forEach((items) =>
+    Object.entries(items).forEach(([name, data]) => {
+      equipCostByName[name] = data["Base Cost"];
+    })
+  );
+  const missingFor = (missionData) => {
+    let cost = 0;
+    let count = 0;
+    Object.entries(missionData.requiredEquipment || {}).forEach(([name, qty]) => {
+      const short = qty - (player.equipment[name]?.quantity || 0);
+      if (short > 0) {
+        count += short;
+        cost += short * (equipCostByName[name] || 0);
+      }
+    });
+    return { count, cost: Math.round(cost) };
+  };
+
+  const outfitMission = (missionName) => {
+    setStoryMissionRunning(true);
+    actions
+      .outfitMission(missionName)
+      .catch(() => {})
+      .finally(() => setStoryMissionRunning(false));
+  };
+
   const reputation = player.reputation || {};
   const repEntries = Object.entries(reputation).filter(([, v]) => v > 0);
 
@@ -206,14 +235,34 @@ const StoryMissions = () => {
                             attempt. Recover first.
                           </p>
                         ) : (
-                          <button
-                            onClick={() => runStoryMission(storyMissionName)}
-                            disabled={isStoryMissionRunning}
-                          >
-                            {isStoryMissionRunning
-                              ? "Running..."
-                              : "Run Mission"}
-                          </button>
+                          <>
+                            {(() => {
+                              const missing = missingFor(storyMissionData);
+                              return (
+                                missing.count > 0 && (
+                                  <button
+                                    className="btn-buy mb-2 me-2"
+                                    onClick={() =>
+                                      outfitMission(storyMissionName)
+                                    }
+                                    disabled={isStoryMissionRunning}
+                                    title="Buy every missing requirement in one transaction"
+                                  >
+                                    🧰 Buy missing (≈
+                                    {missing.cost.toLocaleString()} cr)
+                                  </button>
+                                )
+                              );
+                            })()}
+                            <button
+                              onClick={() => runStoryMission(storyMissionName)}
+                              disabled={isStoryMissionRunning}
+                            >
+                              {isStoryMissionRunning
+                                ? "Running..."
+                                : "Run Mission"}
+                            </button>
+                          </>
                         )}
                       </div>
                     </Accordion.Body>

@@ -601,6 +601,22 @@ def _maybe_spawn_price_event(active, now):
     # plain (1 - magnitude) would go negative once magnitude exceeds 1.
     multiplier = (1 + magnitude) if kind == "price_spike" else 1 / (1 + magnitude)
 
+    # These are the biggest price moves in the game, and they were the one
+    # kind absent from the Recent Price Changes feed - only the market's
+    # small random-walk moves were logged there. Typed price-up/price-down
+    # so the feed's existing direction filters catch them.
+    pct = round(abs(multiplier - 1) * 100)
+    if kind == "price_spike":
+        log_notification(
+            f"⚡ Price spike: {category} +{pct}% while the event lasts!",
+            "price-up",
+        )
+    else:
+        log_notification(
+            f"⚡ Price crash: {category} -{pct}% while the event lasts!",
+            "price-down",
+        )
+
     return GameEvent(
         kind=kind,
         category=category,
@@ -1599,34 +1615,41 @@ def player_meets_requirements(player, mission):
             f"Only available when you're below {ceiling} credits - "
             "you've got enough to take on real work."
         )
+    # Collect EVERY blocking problem rather than returning at the first
+    # one: a player missing several items was told about exactly one,
+    # bought it, and got refused again for the next - one round-trip of
+    # confusion per item.
+    problems = []
     if player.credits < mission["Required Credits"]:
-        return False, "Not enough credits for this mission."
+        problems.append("Not enough credits for this mission.")
     if player.energy < mission_energy_cost(player, mission):
-        return False, "Not enough energy for this mission."
+        problems.append("Not enough energy for this mission.")
+    missing = []
     equipment = player.equipment or {}
     for item_name, required_qty in (mission.get("requiredEquipment") or {}).items():
         held_qty = equipment.get(item_name, {}).get("quantity", 0)
         if held_qty < required_qty:
-            return False, f"Requires {required_qty}x {item_name}."
+            missing.append(f"{required_qty - held_qty}x {item_name}")
     # Supplies are market items consumed on every attempt (the fuel for the
     # run), unlike equipment which is only lost on failure.
     inventory = player.inventory or {}
     for item_name, required_qty in (mission.get("requiredSupplies") or {}).items():
         held_qty = inventory.get(item_name, {}).get("quantity", 0)
         if held_qty < required_qty:
-            return False, (
-                f"Requires {required_qty}x {item_name} as supplies - "
-                "buy them on the Market."
-            )
+            missing.append(f"{required_qty - held_qty}x {item_name} (supplies)")
+    if missing:
+        problems.append(f"Missing: {', '.join(missing)}.")
     # A failed attempt costs health equal to the mission's "Health Effect".
     # Refusing to start a mission that could drop health to 0 makes death
     # unreachable, rather than letting it happen and then softening the
     # penalty afterward.
     if player.health - mission["Health Effect"] <= 0:
-        return False, (
+        problems.append(
             "Your health is too low for this mission - a failed attempt "
             "could leave you at 0. Recover first."
         )
+    if problems:
+        return False, " ".join(problems)
     return True, None
 
 
@@ -1788,8 +1811,11 @@ def resolve_mission(player, mission, mission_name=None, is_story=False):
                 f"{message} (Reduced - this mission is below your level; "
                 "harder ones pay far more.)"
             )
+        # Each extra on its own line: a crit + streak + E.c.h.o. remark
+        # jammed into one paragraph read as an unparseable blob in the
+        # activity feed (rendered with white-space: pre-line).
         for extra in extras:
-            message = f"{message} {extra}"
+            message = f"{message}\n{extra}"
     else:
         # Any failure breaks the streak - that's the tension the streak
         # bonus buys. (Guaranteed missions can't reach this branch.)
@@ -1810,7 +1836,7 @@ def resolve_mission(player, mission, mission_name=None, is_story=False):
         message = mission["failureMessage"]
         if narrow_escape:
             message = (
-                f"{message} A narrow escape - gear intact, "
+                f"{message}\nA narrow escape - gear intact, "
                 f"only {health_loss} health lost."
             )
             chatter_trigger = "escape"
@@ -1818,10 +1844,10 @@ def resolve_mission(player, mission, mission_name=None, is_story=False):
             message = f"{message} ({refund} credits recovered.)"
 
     if supplies_note:
-        message = f"{message}{supplies_note}"
+        message = f"{message}\n{supplies_note.strip()}"
 
     if chatter_trigger and random.random() < ECHO_CHATTER_CHANCE:
-        message = f"{message} {random.choice(ECHO_CHATTER[chatter_trigger])}"
+        message = f"{message}\n{random.choice(ECHO_CHATTER[chatter_trigger])}"
 
     player.energy = max(0, player.energy)
     apply_level_ups(player)
@@ -1845,6 +1871,6 @@ def resolve_mission(player, mission, mission_name=None, is_story=False):
     # real post-mutation value, so the stored/toasted message is complete
     # and correct without a separate client-side text transform.
     if player.maxHealth and player.health / player.maxHealth <= LOW_HEALTH_RATIO:
-        message = f"{message} ⚠ Health critically low ({player.health}/{player.maxHealth})."
+        message = f"{message}\n⚠ Health critically low ({player.health}/{player.maxHealth})."
 
     return success, message, goal_entries

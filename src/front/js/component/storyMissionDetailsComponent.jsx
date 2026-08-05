@@ -98,35 +98,9 @@ const StoryMissionDetailsComponent = () => {
 
   return (
     <div className="col-12">
-      {journalChapters.length > 0 && (
-        <details className="holo story-journal mb-3 p-3">
-          <summary className="story-journal-summary">
-            📜 The story so far ({journalChapters.length}{" "}
-            {journalChapters.length === 1 ? "chapter" : "chapters"})
-          </summary>
-          {journalChapters.map((chapter) => (
-            <details className="story-journal-chapter" key={chapter.name}>
-              <summary>
-                {chapter.name}
-                {chapter.faction && chapter.faction !== "United Front" && (
-                  <span className="tx-rep"> · {chapter.faction}</span>
-                )}
-              </summary>
-              {chapter.beats.map(([index, beat]) => (
-                <Beat
-                  key={index}
-                  beat={beat}
-                  beatIndex={index}
-                  choiceCallbacks={choiceCallbacks}
-                  storyChoices={player.storyChoices}
-                  dimmed
-                />
-              ))}
-            </details>
-          ))}
-        </details>
-      )}
-
+      {/* The open scene leads; the journal of finished chapters folds
+          away BELOW it - newest story at the top, older content pushed
+          down, matching how every other list in the game now reads. */}
       <div className="holo story-scene mb-4 p-3 border rounded">
         {currentChapterName && (
           <div className="text-center mb-1">
@@ -208,6 +182,35 @@ const StoryMissionDetailsComponent = () => {
           />
         ))}
       </div>
+
+      {journalChapters.length > 0 && (
+        <details className="holo story-journal mb-3 p-3">
+          <summary className="story-journal-summary">
+            📜 The story so far ({journalChapters.length}{" "}
+            {journalChapters.length === 1 ? "chapter" : "chapters"})
+          </summary>
+          {journalChapters.map((chapter) => (
+            <details className="story-journal-chapter" key={chapter.name}>
+              <summary>
+                {chapter.name}
+                {chapter.faction && chapter.faction !== "United Front" && (
+                  <span className="tx-rep"> · {chapter.faction}</span>
+                )}
+              </summary>
+              {chapter.beats.map(([index, beat]) => (
+                <Beat
+                  key={index}
+                  beat={beat}
+                  beatIndex={index}
+                  choiceCallbacks={choiceCallbacks}
+                  storyChoices={player.storyChoices}
+                  dimmed
+                />
+              ))}
+            </details>
+          ))}
+        </details>
+      )}
     </div>
   );
 };
