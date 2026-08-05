@@ -786,3 +786,106 @@ input.form-control {
   margin-left: 0;
   margin-right: 0;
 }
+
+/* Story tab: the living journal. The current chapter reads as an open
+   scene (latest beat at full strength, earlier beats of the chapter
+   dimmed above it), finished chapters fold away into a collapsible
+   journal, and portraits open character dossiers on tap. */
+.story-journal summary {
+  cursor: pointer;
+  list-style-position: inside;
+}
+.story-journal-summary {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.story-journal-chapter {
+  margin-top: 0.6rem;
+  padding-left: 0.4rem;
+  border-left: 2px solid rgba(126, 200, 255, 0.35);
+}
+.story-journal-chapter > summary {
+  color: #cfe9ff;
+}
+.story-chapter-tag {
+  display: inline-block;
+  padding: 2px 12px;
+  border: 1px solid rgba(126, 200, 255, 0.5);
+  border-radius: 999px;
+  color: #7ec8ff;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+.story-previously {
+  color: rgba(255, 255, 255, 0.55);
+  font-style: italic;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+.story-beat {
+  margin-top: 0.9rem;
+}
+.story-beat-title {
+  color: #7ec8ff;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+.story-beat-past {
+  opacity: 0.6;
+}
+.story-beat-past .story-beat-title {
+  font-size: 0.9rem;
+}
+.story-callback {
+  color: #e0c8ff;
+  font-style: italic;
+  margin-top: 0.35rem;
+}
+.char-portrait-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.char-portrait-btn .char-portrait-active {
+  filter: drop-shadow(0 0 6px rgba(126, 200, 255, 0.9));
+}
+.char-chip {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(126, 200, 255, 0.4);
+  border-radius: 999px;
+  color: #cfe9ff;
+  font-size: 0.8rem;
+  padding: 2px 10px;
+  margin: 2px 3px;
+}
+.char-chip-active {
+  border-color: #7ec8ff;
+  color: #ffffff;
+  box-shadow: 0 0 6px rgba(126, 200, 255, 0.6);
+}
+.dossier-card {
+  border: 1px solid rgba(126, 200, 255, 0.35);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 0.9rem;
+}
+
+/* On phones the mission accordions stack eight padded layers between the
+   viewport and the text (container -> ship -> col -> row -> accordion ->
+   item -> body -> inner .holo list), leaving a ~140px column that wraps
+   one word per line. Slim the two innermost layers - the rest of the
+   chain is shared page scaffolding. */
+@media (max-width: 430px) {
+  .accordion-body {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .accordion-body .holo {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .accordion-body .col-12 {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
