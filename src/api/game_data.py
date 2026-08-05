@@ -589,18 +589,24 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                           'Faction': 'Xictlians',
                           'requiredEquipment': {'Alien Ally': 1},
                           'Health Effect': 4,
-                          'startMessage': 'ECHO: Elevate your vigilance, '
-                                          'Jahntow. Rogue drones sent by '
-                                          'the Corporation threaten the '
-                                          'harmony of Xictlian space.',
-                          'successMessage': 'ECHO: Drones eliminated '
-                                            "successfully. You've earned "
-                                            '{reward} credits and '
-                                            '{experience} experience.',
-                          'failureMessage': 'ECHO: Our attempt to '
-                                            'neutralize the rogue drones '
-                                            'failed. We must ensure '
-                                            'Xictlian safety.'},
+                          'startMessage': 'E.C.H.O.: Corporate-signature '
+                                          'drones over the water lines, '
+                                          'Jahntow. Not scouting the city '
+                                          'anymore - mapping everything '
+                                          'the tribe needs to live. Bring '
+                                          'one down. The Xictlians will '
+                                          'want to see what watches them.',
+                          'successMessage': 'E.C.H.O.: Drone down, chip '
+                                            'recovered. The elders are '
+                                            'looking at their own sky '
+                                            'differently now. {reward} '
+                                            'credits, {experience} '
+                                            'experience.',
+                          'failureMessage': 'E.C.H.O.: The flock scattered '
+                                            'before we could bring one '
+                                            'down - and now they know we '
+                                            'watch back. Regroup and try '
+                                            'again.'},
  'Protect the Caravans': {'Required Credits': 3480,
                           'Required Energy': 11,
                           'Reward': 6960,
@@ -609,21 +615,24 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                           'Faction': 'Xictlians',
                           'requiredEquipment': {'Alien Ally': 1},
                           'Health Effect': 4,
-                          'startMessage': 'ECHO: Jahntow, delve into the '
-                                          'shadows of Corporation '
-                                          'activities. Infiltrate their '
-                                          'base and unveil their plans '
-                                          'against Xictlians.',
-                          'successMessage': "ECHO: Jahntow, we've "
-                                            'successfully gathered '
-                                            'intelligence on Corporation '
-                                            'activities. Rewarded {reward} '
-                                            'credits and {experience} '
+                          'startMessage': 'E.C.H.O.: Veran found twelve '
+                                          'wagons burned to their axles - '
+                                          'nothing taken, water casks '
+                                          'holed and left to drain. '
+                                          'Someone wants the desert '
+                                          'thirsty. The next caravan rolls '
+                                          'at dawn. Be on it.',
+                          'successMessage': 'E.C.H.O.: Caravan through, '
+                                            'water intact, ambush declined '
+                                            'the invitation. The salt '
+                                            'roads breathe again. {reward} '
+                                            'credits, {experience} '
                                             'experience.',
-                          'failureMessage': 'ECHO: Our attempt to '
-                                            'infiltrate the Corporation '
-                                            'base failed. We must refine '
-                                            'our approach.'},
+                          'failureMessage': 'E.C.H.O.: We lost wagons '
+                                            'tonight. Every cask that '
+                                            'drains into the sand is a '
+                                            'village going thirsty. Again '
+                                            '- faster this time.'},
  'Free Oases': {'Required Credits': 6360,
                 'Required Energy': 14,
                 'Reward': 12720,
@@ -632,17 +641,20 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                 'Faction': 'Xictlians',
                 'requiredEquipment': {'Alien Ally': 1},
                 'Health Effect': 4,
-                'startMessage': 'ECHO: The Corporation seeks to disrupt '
-                                'Xictlian energy trade. Engage in '
-                                "negotiations to preserve your species' "
-                                'vitality.',
-                'successMessage': 'ECHO: Negotiations were successful. '
-                                  'Xictlian energy trade remains strong, '
-                                  'earning you {reward} credits and '
-                                  '{experience} experience.',
-                'failureMessage': 'ECHO: Our negotiation attempts '
-                                  'faltered. We must ensure the energy '
-                                  "trade's stability."},
+                'startMessage': 'E.C.H.O.: Vortex has fenced the oases - '
+                                'meters on the wells, guards on the water, '
+                                'invoices to people drinking their own '
+                                'springs. Cut the fences, Jahntow. Water '
+                                'does not belong on a balance sheet.',
+                'successMessage': 'E.C.H.O.: Fences down, meters scrap, '
+                                  'water running free. Word travels '
+                                  'well-to-well faster than any drone. '
+                                  '{reward} credits, {experience} '
+                                  'experience.',
+                'failureMessage': 'E.C.H.O.: The oasis stays caged tonight '
+                                  '- patrols doubled before we reached the '
+                                  'pumps. The tribe is still paying to '
+                                  'drink. Unacceptable.'},
  'Repel Invasions': {'Required Credits': 7800,
                      'Required Energy': 16,
                      'Reward': 15600,
@@ -651,19 +663,19 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                      'Faction': 'Xictlians',
                      'requiredEquipment': {'Alien Ally': 1},
                      'Health Effect': 4,
-                     'startMessage': 'ECHO: Unite with Xictlian leaders in '
-                                     'a celestial ritual. Counter the '
-                                     "Corporation's efforts to disrupt "
-                                     'your cosmic harmony.',
-                     'successMessage': 'ECHO: The celestial ritual was a '
-                                       'success. Xictlian cosmic harmony '
-                                       'remains intact, earning you '
-                                       '{reward} credits and {experience} '
-                                       'experience.',
-                     'failureMessage': 'ECHO: Our attempt to maintain '
-                                       'cosmic harmony faced opposition. '
-                                       'We must continue safeguarding '
-                                       'Xictlian traditions.'},
+                     'startMessage': 'E.C.H.O.: Ground columns crossing '
+                                     'the wastes - Vortex has stopped '
+                                     'pretending this is commerce. The '
+                                     'outriders are forming up, and they '
+                                     'are asking for you by name.',
+                     'successMessage': 'E.C.H.O.: Column broken and turned '
+                                       'back into the wastes. The desert '
+                                       'keeps what it catches. {reward} '
+                                       'credits, {experience} experience.',
+                     'failureMessage': 'E.C.H.O.: The line bent tonight '
+                                       'and they hold ground they should '
+                                       'never have touched. The outriders '
+                                       'are regrouping. So are we.'},
  'Fortify Temples': {'Required Credits': 9240,
                      'Required Energy': 18,
                      'Reward': 18480,
@@ -672,18 +684,20 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                      'Faction': 'Xictlians',
                      'requiredEquipment': {'Alien Ally': 1},
                      'Health Effect': 4,
-                     'startMessage': 'ECHO: The Xictlians face a temporal '
-                                     'distortion crisis. Navigate the '
-                                     'labyrinth of time to restore their '
-                                     "reality's stability.",
-                     'successMessage': 'ECHO: The temporal distortion '
-                                       "crisis has been resolved. You've "
-                                       'earned {reward} credits and '
+                     'startMessage': 'E.C.H.O.: The elders have opened the '
+                                     'temples - walls that outlasted every '
+                                     'empire that ever tried this desert. '
+                                     'Help raise the defenses. Stone '
+                                     'remembers what corporations forget.',
+                     'successMessage': 'E.C.H.O.: Temple fortified - watch '
+                                       'posts sighted, cisterns full, old '
+                                       'walls answering for the first time '
+                                       'in centuries. {reward} credits, '
                                        '{experience} experience.',
-                     'failureMessage': 'ECHO: Our attempt to stabilize '
-                                       "Xictlian reality's timeline "
-                                       'failed. We must safeguard their '
-                                       'existence.'},
+                     'failureMessage': 'E.C.H.O.: Work interrupted - we '
+                                       'fell back before the defenses were '
+                                       'set. The temple stands unfinished, '
+                                       'and Vortex knows where it is.'},
  'Lead Sandstorm Offensives': {'Required Credits': 10680,
                                'Required Energy': 19,
                                'Reward': 21360,
@@ -692,21 +706,29 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                'Faction': 'Xictlians',
                                'requiredEquipment': {'Alien Ally': 1},
                                'Health Effect': 4,
-                               'startMessage': 'ECHO: Descend into the '
-                                               'Xictlian subterranean '
-                                               'depths. Reclaim their '
-                                               'ancient technology from '
-                                               "Corporation's clutches.",
-                               'successMessage': 'ECHO: Ancient technology '
-                                                 'retrieved successfully. '
-                                                 "You've earned {reward} "
-                                                 'credits and {experience} '
-                                                 'experience.',
-                               'failureMessage': 'ECHO: Our attempt to '
-                                                 'reclaim ancient '
-                                                 'technology faced '
-                                                 'obstacles. We must '
-                                                 'secure Xictlian legacy.'},
+                               'startMessage': 'E.C.H.O.: The '
+                                               'stormwatchers read three '
+                                               'days of wall-cloud coming '
+                                               'off the deep desert, and '
+                                               'the tribe means to march '
+                                               'inside it. You lead. '
+                                               'Vortex sensors are blind '
+                                               'in sand - introduce them '
+                                               'to the desert properly.',
+                               'successMessage': 'E.C.H.O.: Offensive '
+                                                 'complete. Their outposts '
+                                                 'opened to the storm and '
+                                                 'the desert walked in. '
+                                                 'Xictlia is clearing its '
+                                                 'skies. {reward} credits, '
+                                                 '{experience} experience.',
+                               'failureMessage': 'E.C.H.O.: The storm '
+                                                 'turned early and the '
+                                                 'assault broke off - the '
+                                                 'outposts still stand. '
+                                                 'The stormwatchers are '
+                                                 'already reading the sky '
+                                                 'for our next window.'},
  'Infiltrate Vortex Camps': {'Required Credits': 12120,
                              'Required Energy': 21,
                              'Reward': 24240,
@@ -715,23 +737,26 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                              'Faction': 'Luxorians',
                              'requiredEquipment': {'Alien Ally': 1},
                              'Health Effect': 4,
-                             'startMessage': 'ECHO: Engage in an astral '
-                                             'harmony ceremony with '
-                                             'Luxorian leaders. Counter '
-                                             "the Corporation's "
-                                             'interference in their '
-                                             'ethereal connection.',
-                             'successMessage': 'ECHO: Astral harmony '
-                                               'achieved. Luxorian '
-                                               'ethereal connection '
-                                               'restored, earning you '
-                                               '{reward} credits and '
+                             'startMessage': 'E.C.H.O.: Axenthon has '
+                                             'mapped the labor camps of '
+                                             'Luxor - no fences, just '
+                                             'debts. Get inside and lift '
+                                             'their rosters and manifests. '
+                                             'I want to know what PROJECT '
+                                             'means to these people.',
+                             'successMessage': 'E.C.H.O.: In and out '
+                                               'before the watch changed. '
+                                               'Rosters, manifests, and '
+                                               'one word that keeps '
+                                               'repeating: PROJECT. '
+                                               '{reward} credits, '
                                                '{experience} experience.',
-                             'failureMessage': 'ECHO: Our attempt to '
-                                               'restore astral harmony '
-                                               'faced opposition. We must '
-                                               'preserve Luxorian '
-                                               'spiritual unity.'},
+                             'failureMessage': 'E.C.H.O.: The perimeter '
+                                               'tightened before we '
+                                               'cleared the wire. The '
+                                               'camps keep their secrets '
+                                               'one more night. Axenthon '
+                                               'is already re-planning.'},
  'Sabotage Supply Lines': {'Required Credits': 15000,
                            'Required Energy': 24,
                            'Reward': 30000,
@@ -740,21 +765,25 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                            'Faction': 'Luxorians',
                            'requiredEquipment': {'Steel Machete': 2},
                            'Health Effect': 5,
-                           'startMessage': 'ECHO: Embark on a cosmic '
-                                           'journey through nebulas with '
-                                           'the Luxorians. Foil the '
-                                           "Corporation's attempt to "
-                                           'manipulate celestial energies.',
-                           'successMessage': 'ECHO: Nebula journey '
-                                             'completed successfully. '
-                                             'Luxorian celestial energies '
-                                             'secured, earning you '
-                                             '{reward} credits and '
+                           'startMessage': 'E.C.H.O.: Everything Vortex '
+                                           'does in Luxor moves on three '
+                                           'convoy roads. Axenthon '
+                                           'proposes we make the roads '
+                                           'unprofitable. I concur. '
+                                           'Precisely, quietly, '
+                                           'repeatedly.',
+                           'successMessage': 'E.C.H.O.: Convoy stopped '
+                                             'where it stood. Their '
+                                             'quartermasters are inventing '
+                                             "new words for 'delayed'. "
+                                             '{reward} credits, '
                                              '{experience} experience.',
-                           'failureMessage': 'ECHO: Our attempt to '
-                                             'navigate the nebulas faced '
-                                             'challenges. We must ensure '
-                                             'Luxorian cosmic balance.'},
+                           'failureMessage': 'E.C.H.O.: The convoy got '
+                                             'through - escorts heavier '
+                                             'than the manifest promised. '
+                                             'Freight that arrives is '
+                                             'leverage they keep. Next '
+                                             'road, next night.'},
  'Persuade Mercenaries to Defect': {'Required Credits': 16440,
                                     'Required Energy': 26,
                                     'Reward': 32880,
@@ -763,27 +792,35 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                     'Faction': 'Luxorians',
                                     'requiredEquipment': {'Jet Pack': 1},
                                     'Health Effect': 6,
-                                    'startMessage': 'ECHO: The harmonious '
-                                                    'frequencies of '
-                                                    'Luxorian music are '
-                                                    'disrupted by '
-                                                    'Corporation '
-                                                    'interference. Restore '
-                                                    'their sonic '
-                                                    'resonance.',
-                                    'successMessage': 'ECHO: Sonic '
-                                                      'resonance restored '
-                                                      'successfully. '
-                                                      "You've earned "
-                                                      '{reward} credits '
-                                                      'and {experience} '
+                                    'startMessage': 'E.C.H.O.: Vortex pays '
+                                                    'its mercenaries badly '
+                                                    'and trusts them '
+                                                    "worse. Axenthon's "
+                                                    'assessment: half '
+                                                    'would walk if someone '
+                                                    'offered them '
+                                                    'somewhere to walk to. '
+                                                    'Be the somewhere, '
+                                                    'Jahntow.',
+                                    'successMessage': 'E.C.H.O.: A whole '
+                                                      'company came over - '
+                                                      'armor, arms and '
+                                                      'grudges included. '
+                                                      'Vortex just paid to '
+                                                      'train our newest '
+                                                      'allies. {reward} '
+                                                      'credits, '
+                                                      '{experience} '
                                                       'experience.',
-                                    'failureMessage': 'ECHO: Our attempt '
-                                                      'to restore sonic '
-                                                      'resonance faced '
-                                                      'obstacles. We must '
-                                                      'ensure Luxorian '
-                                                      'musical harmony.'},
+                                    'failureMessage': 'E.C.H.O.: Talks '
+                                                      'collapsed - a '
+                                                      'Vortex political '
+                                                      'officer reached the '
+                                                      'captains first. '
+                                                      "They're not enemies "
+                                                      "yet. They're not "
+                                                      'friends tonight '
+                                                      'either.'},
  'Hack Vortex Terraforming Tech': {'Required Credits': 17880,
                                    'Required Energy': 27,
                                    'Reward': 35760,
@@ -792,26 +829,35 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                    'Faction': 'Luxorians',
                                    'requiredEquipment': {'Metalloid Armor': 2},
                                    'Health Effect': 6,
-                                   'startMessage': 'ECHO: The Corporation '
-                                                   'exploits Luxorian '
-                                                   'crystal core energy '
-                                                   'sources. Engage in a '
-                                                   'high-stakes operation '
-                                                   'to safeguard their '
-                                                   'essence.',
-                                   'successMessage': 'ECHO: Crystal core '
-                                                     'safeguarded '
-                                                     "successfully. You've "
-                                                     'earned {reward} '
-                                                     'credits and '
+                                   'startMessage': 'E.C.H.O.: They are '
+                                                   "re-plumbing Luxor's "
+                                                   'water table - '
+                                                   'terraforming rigs '
+                                                   'tuned to make the '
+                                                   'lowlands '
+                                                   'corporate-habitable '
+                                                   'and Luxorian-hostile. '
+                                                   'Get me a hardline. '
+                                                   "I'll do the impolite "
+                                                   'part.',
+                                   'successMessage': "E.C.H.O.: I'm in "
+                                                     'their rigs. '
+                                                     'Schedules corrupted, '
+                                                     'calibrations '
+                                                     'creatively revised. '
+                                                     'The land stays '
+                                                     "Luxor's. {reward} "
+                                                     'credits, '
                                                      '{experience} '
                                                      'experience.',
-                                   'failureMessage': 'ECHO: Our attempt to '
-                                                     'safeguard the '
-                                                     'crystal core faced '
-                                                     'opposition. We must '
-                                                     'protect Luxorian '
-                                                     'energy legacy.'},
+                                   'failureMessage': 'E.C.H.O.: Connection '
+                                                     'severed '
+                                                     'mid-intrusion - '
+                                                     'their '
+                                                     'countermeasures are '
+                                                     'learning. The rigs '
+                                                     'keep turning. So do '
+                                                     'we.'},
  'Lead Stampede Assaults': {'Required Credits': 19320,
                             'Required Energy': 29,
                             'Reward': 38640,
@@ -820,22 +866,25 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                             'Faction': 'Luxorians',
                             'requiredEquipment': {'Holo Clone': 1},
                             'Health Effect': 6,
-                            'startMessage': 'ECHO: Join Luxorian leaders '
-                                            'in a luminous unison '
-                                            'ceremony. Counter the '
-                                            "Corporation's manipulation of "
-                                            'their collective light.',
-                            'successMessage': 'ECHO: Luminous unison '
-                                              'achieved. Luxorian '
-                                              'collective light restored, '
-                                              'earning you {reward} '
-                                              'credits and {experience} '
+                            'startMessage': 'E.C.H.O.: The plains herds '
+                                            'outmass anything Vortex '
+                                            'fields, and the herd-callers '
+                                            'claim they can aim them. Ride '
+                                            'at the front, Jahntow. I want '
+                                            'to watch a spreadsheet meet a '
+                                            'stampede.',
+                            'successMessage': 'E.C.H.O.: Assault delivered '
+                                              'at herd velocity. Their '
+                                              'forward base is now '
+                                              'archaeology. {reward} '
+                                              'credits, {experience} '
                                               'experience.',
-                            'failureMessage': 'ECHO: Our attempt to '
-                                              'restore luminous unison '
-                                              'faced challenges. We must '
-                                              'protect Luxorian shared '
-                                              'radiance.'},
+                            'failureMessage': 'E.C.H.O.: The herd broke '
+                                              'wide of the target - '
+                                              'spooked by their sonic '
+                                              'fences. The herd-callers '
+                                              'are adjusting. The plains '
+                                              'are patient.'},
  'Defend Sacred Groves': {'Required Credits': 20760,
                           'Required Energy': 30,
                           'Reward': 41520,
@@ -844,22 +893,23 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                           'Faction': 'Luxorians',
                           'requiredEquipment': {'Laser Sword': 2},
                           'Health Effect': 7,
-                          'startMessage': 'ECHO: Embark on a celestial '
-                                          'pilgrimage with the Luxorians. '
-                                          "Foil the Corporation's attempt "
-                                          'to distort their connection to '
-                                          'stars.',
-                          'successMessage': 'ECHO: Celestial pilgrimage '
-                                            'completed successfully. '
-                                            'Luxorian stellar connection '
-                                            'secured, earning you {reward} '
-                                            'credits and {experience} '
-                                            'experience.',
-                          'failureMessage': 'ECHO: Our attempt to navigate '
-                                            'the celestial pilgrimage '
-                                            'faced challenges. We must '
-                                            'ensure Luxorian starry '
-                                            'bonds.'},
+                          'startMessage': 'E.C.H.O.: Vortex is moving on '
+                                          'the sacred groves - the '
+                                          "lowlands' oldest ground. "
+                                          'Axenthon has never asked for '
+                                          'help before. He is asking now. '
+                                          'Hold the groves.',
+                          'successMessage': 'E.C.H.O.: The groves stand. '
+                                            "Luxor's golden country is "
+                                            'clearing, and its people know '
+                                            'exactly who stood with them. '
+                                            '{reward} credits, '
+                                            '{experience} experience.',
+                          'failureMessage': 'E.C.H.O.: They reached the '
+                                            'outer grove before we turned '
+                                            'them - old trees burned '
+                                            'tonight. Axenthon said '
+                                            'nothing. That was worse.'},
  'Infiltrate Lumber Facility': {'Required Credits': 22200,
                                 'Required Energy': 32,
                                 'Reward': 44400,
@@ -869,25 +919,32 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                 'requiredEquipment': {'Basic Ship': 1,
                                                       'Alien Skin Armor': 2},
                                 'Health Effect': 8,
-                                'startMessage': 'ECHO: The Xiaojian '
-                                                'Eclipse Ritual is '
-                                                'threatened by the '
-                                                "Corporation's "
-                                                'intervention. Assist in '
-                                                'ensuring their cosmic '
-                                                'balance.',
-                                'successMessage': 'ECHO: Eclipse Ritual '
-                                                  'protected successfully. '
-                                                  "You've earned {reward} "
-                                                  'credits and '
-                                                  '{experience} '
+                                'startMessage': 'E.C.H.O.: Elder Binru '
+                                                'spent a season memorizing '
+                                                "this facility's blind "
+                                                "spots, and he'll walk you "
+                                                'in himself. Copy the '
+                                                'manifests - the forest '
+                                                'tribe needs proof of what '
+                                                'leaves on those trucks.',
+                                'successMessage': 'E.C.H.O.: Manifests '
+                                                  'copied. Binru read the '
+                                                  'shipping labels and '
+                                                  'went very quiet - '
+                                                  'thousand-year '
+                                                  'heartwood, harvested '
+                                                  'like a crop. Proof '
+                                                  'enough. {reward} '
+                                                  'credits, {experience} '
                                                   'experience.',
-                                'failureMessage': 'ECHO: Our attempt to '
-                                                  'protect the Eclipse '
-                                                  'Ritual faced '
-                                                  'challenges. We must '
-                                                  'ensure Xiaojian cosmic '
-                                                  'equilibrium.'},
+                                'failureMessage': 'E.C.H.O.: A shift '
+                                                  "change we didn't have "
+                                                  'on file - we withdrew '
+                                                  'empty-handed. Binru '
+                                                  'counsels patience. The '
+                                                  "facility isn't going "
+                                                  'anywhere. '
+                                                  'Unfortunately.'},
  'Join Xiaojian Rebels': {'Required Credits': 25080,
                           'Required Energy': 35,
                           'Reward': 50160,
@@ -897,20 +954,25 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                           'requiredEquipment': {'Alien Squad': 2,
                                                 'Bio Collector': 1},
                           'Health Effect': 8,
-                          'startMessage': 'ECHO: Retrieve the sacred '
-                                          'Flameforged Relics from the '
-                                          "Corporation's grasp. Rekindle "
-                                          'the spirit of the Xiaojian '
-                                          'ancestors.',
-                          'successMessage': 'ECHO: Flameforged Relics '
-                                            'reclaimed successfully. '
-                                            "You've earned {reward} "
-                                            'credits and {experience} '
+                          'startMessage': 'E.C.H.O.: There is a rebel camp '
+                                          'hanging in the canopy, and a '
+                                          'leader named Ava who trusts '
+                                          'exactly as far as she can '
+                                          'verify. Earn it. The forest war '
+                                          "needs the desert war's help - "
+                                          'and the reverse.',
+                          'successMessage': "E.C.H.O.: Ava's rebels count "
+                                            'you as one of their own now - '
+                                            'and their canopy network sees '
+                                            'everything Vortex does under '
+                                            'these trees. {reward} '
+                                            'credits, {experience} '
                                             'experience.',
-                          'failureMessage': 'ECHO: Our attempt to reclaim '
-                                            'Flameforged Relics faced '
-                                            'opposition. We must honor '
-                                            'Xiaojian ancestral heritage.'},
+                          'failureMessage': 'E.C.H.O.: Operation failed, '
+                                            'and with it ground we had '
+                                            'gained with the rebels. Trust '
+                                            'built slow breaks fast up '
+                                            'here. Rebuild it.'},
  'Rescue Caged Pandalings': {'Required Credits': 26520,
                              'Required Energy': 37,
                              'Reward': 53040,
@@ -920,22 +982,28 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                              'requiredEquipment': {'Laser Sword': 1,
                                                    'Oxygen Rebreather': 2},
                              'Health Effect': 9,
-                             'startMessage': 'ECHO: Engage in the creation '
-                                             'of the Stellar Aegis, a '
-                                             'cosmic shield to ward off '
-                                             "the Corporation's astral "
-                                             'intrusion.',
-                             'successMessage': 'ECHO: Stellar Aegis '
-                                               'successfully erected. '
-                                               'Xiaojian astral domain '
-                                               'protected, earning you '
-                                               '{reward} credits and '
-                                               '{experience} experience.',
-                             'failureMessage': 'ECHO: Our attempt to '
-                                               'create the Stellar Aegis '
-                                               'faced challenges. We must '
-                                               'defend Xiaojian astral '
-                                               'sovereignty.'},
+                             'startMessage': 'E.C.H.O.: Vortex is caging '
+                                             'pandalings for offworld '
+                                             "export - 'exotic biological "
+                                             "assets', per the invoice. "
+                                             'Ava has located the holding '
+                                             'pens. I have deleted the '
+                                             "word 'assets' from my "
+                                             'vocabulary. Go.',
+                             'successMessage': 'E.C.H.O.: Pens open, '
+                                               'pandalings away into the '
+                                               'deep canopy. Some cargo '
+                                               'should never have a '
+                                               'manifest. {reward} '
+                                               'credits, {experience} '
+                                               'experience.',
+                             'failureMessage': 'E.C.H.O.: Extraction '
+                                               'aborted - too many guards, '
+                                               'too many small lives at '
+                                               'risk in a crossfire. The '
+                                               'pens stay shut one more '
+                                               'night. This one costs, '
+                                               'Jahntow. I know.'},
  'Dragonbone Bombing Run': {'Required Credits': 27960,
                             'Required Energy': 38,
                             'Reward': 55920,
@@ -945,22 +1013,29 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                             'requiredEquipment': {'Basic Ship': 2,
                                                   'Steel Machete': 1},
                             'Health Effect': 10,
-                            'startMessage': 'ECHO: Navigate the Celestial '
-                                            'Confluence with the '
-                                            'Xiaojians. Counter the '
-                                            "Corporation's manipulation of "
-                                            'their cosmic connection.',
-                            'successMessage': 'ECHO: Celestial Confluence '
-                                              'completed successfully. '
-                                              'Xiaojian cosmic connection '
-                                              'reinforced, earning you '
-                                              '{reward} credits and '
-                                              '{experience} experience.',
-                            'failureMessage': 'ECHO: Our attempt to '
-                                              'navigate the Celestial '
-                                              'Confluence faced '
-                                              'challenges. We must ensure '
-                                              'Xiaojian celestial ties.'},
+                            'startMessage': 'E.C.H.O.: Master Zhenwu '
+                                            'offers gliders framed in '
+                                            'dragonbone - older than '
+                                            "Vortex's whole civilization "
+                                            'and silent as owl wings. '
+                                            'Their airships are seeding '
+                                            'defoliant over the forest. '
+                                            'Take the sky back.',
+                            'successMessage': 'E.C.H.O.: Airship down, '
+                                              'defoliant with it. The '
+                                              'dragonbone wings never even '
+                                              'registered on their '
+                                              'sensors. Zhenwu is quietly '
+                                              'delighted. {reward} '
+                                              'credits, {experience} '
+                                              'experience.',
+                            'failureMessage': 'E.C.H.O.: Their flak grid '
+                                              'drove the gliders wide and '
+                                              'the airships finished their '
+                                              'run - brown streaks in '
+                                              'green canopy this morning. '
+                                              'Zhenwu says the sky keeps '
+                                              'score. So do I.'},
  'Defection and Tragedy': {'Required Credits': 29400,
                            'Required Energy': 40,
                            'Reward': 58800,
@@ -970,19 +1045,27 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                            'requiredEquipment': {'Alien Army': 2,
                                                  'Bio Collector': 3},
                            'Health Effect': 10,
-                           'startMessage': 'ECHO: The harmonic light '
-                                           'patterns of the Xiaojian realm '
-                                           'are being disrupted. Restore '
-                                           'their luminous correlation.',
-                           'successMessage': 'ECHO: Luminous correlation '
-                                             'restored successfully. '
-                                             "You've earned {reward} "
-                                             'credits and {experience} '
-                                             'experience.',
-                           'failureMessage': 'ECHO: Our attempt to restore '
-                                             'luminous correlation faced '
-                                             'obstacles. We must ensure '
-                                             'Xiaojian radiant unity.'},
+                           'startMessage': 'E.C.H.O.: A high Vortex '
+                                           'commander wants out - Zerrok. '
+                                           'What he carries could crack '
+                                           'their whole forest operation. '
+                                           'Extractions like this go wrong '
+                                           'in one of nine ways. I have '
+                                           'planned for eleven.',
+                           'successMessage': 'E.C.H.O.: Zerrok is out. The '
+                                             'price was paid by people who '
+                                             'knew what they were buying - '
+                                             'remember them. What he '
+                                             'carries changes this war. '
+                                             '{reward} credits, '
+                                             '{experience} experience.',
+                           'failureMessage': 'E.C.H.O.: The extraction '
+                                             'window collapsed - Zerrok '
+                                             'remains inside, and Vortex '
+                                             'is hunting its own halls for '
+                                             'the leak. Every hour costs. '
+                                             'We go again the moment I '
+                                             'find a seam.'},
  'Final Stand in Ancient Tree City': {'Required Credits': 30840,
                                       'Required Energy': 42,
                                       'Reward': 61680,
@@ -992,29 +1075,41 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                       'requiredEquipment': {'Environmental Suit': 3,
                                                             'Terrain Scanner': 1},
                                       'Health Effect': 10,
-                                      'startMessage': 'ECHO: The '
-                                                      'Corporation seeks '
-                                                      'to exploit Xiaojian '
-                                                      'ethereal nexus for '
-                                                      'power. Protect '
-                                                      'their '
-                                                      'interdimensional '
-                                                      'heritage.',
-                                      'successMessage': 'ECHO: Ethereal '
-                                                        'nexus protected '
-                                                        'successfully. '
-                                                        "You've earned "
-                                                        '{reward} credits '
-                                                        'and {experience} '
+                                      'startMessage': 'E.C.H.O.: Vortex is '
+                                                      'coming for the '
+                                                      'Ancient Tree City '
+                                                      'itself - everything '
+                                                      'the forest tribe '
+                                                      'is, in one place, '
+                                                      "on one day. Ava's "
+                                                      "rebels, Zhenwu's "
+                                                      "monks, Binru's "
+                                                      'people. And you. '
+                                                      'Hold.',
+                                      'successMessage': 'E.C.H.O.: The '
+                                                        'Tree City stands. '
+                                                        'Their assault '
+                                                        'broke against ten '
+                                                        'thousand years of '
+                                                        'roots and '
+                                                        'everyone Xiaojia '
+                                                        'could muster. The '
+                                                        'forest is '
+                                                        'clearing. '
+                                                        '{reward} credits, '
+                                                        '{experience} '
                                                         'experience.',
-                                      'failureMessage': 'ECHO: Our attempt '
-                                                        'to protect the '
-                                                        'ethereal nexus '
-                                                        'faced opposition. '
-                                                        'We must secure '
-                                                        'Xiaojian '
-                                                        'multidimensional '
-                                                        'legacy.'},
+                                      'failureMessage': 'E.C.H.O.: We held '
+                                                        'the heartwood but '
+                                                        'lost the outer '
+                                                        'boughs - fires in '
+                                                        'the lower canopy '
+                                                        'all night. The '
+                                                        'city survives; '
+                                                        'the margin was '
+                                                        'too thin. '
+                                                        'Reinforce and go '
+                                                        'again.'},
  'Scout Vortex Mines': {'Required Credits': 33720,
                         'Required Energy': 45,
                         'Reward': 67440,
@@ -1024,20 +1119,27 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                         'requiredEquipment': {'Plasma Blade': 1,
                                               'Steel Machete': 2},
                         'Health Effect': 12,
-                        'startMessage': 'ECHO: Join Titan leaders in a '
-                                        'harmonic resonance ceremony. '
-                                        "Counter the Corporation's "
-                                        'disruption of their cosmic '
-                                        'connection.',
-                        'successMessage': 'ECHO: Harmonic resonance '
-                                          'achieved. Titan cosmic '
-                                          'connection restored, earning '
-                                          'you {reward} credits and '
-                                          '{experience} experience.',
-                        'failureMessage': 'ECHO: Our attempt to restore '
-                                          'harmonic resonance faced '
-                                          'challenges. We must protect '
-                                          'Titan celestial bonds.'},
+                        'startMessage': 'E.C.H.O.: Kazon will take you up '
+                                        'the high trail. The mountains are '
+                                        'bleeding tailings-grey, and I '
+                                        'want their mine mapped - haul '
+                                        'roads, guard rotations, and '
+                                        'whatever PROJECT is taking out of '
+                                        'that rock.',
+                        'successMessage': 'E.C.H.O.: Mine mapped. The '
+                                          'manifest is wrong in an '
+                                          'interesting way - refined '
+                                          'exotics crated east, '
+                                          'PROJECT-tagged. Not ore for '
+                                          'sale. Noted and filed. {reward} '
+                                          'credits, {experience} '
+                                          'experience.',
+                        'failureMessage': 'E.C.H.O.: Weather closed the '
+                                          'ridge before the survey '
+                                          'finished, and half a map helps '
+                                          'no one on these cliffs. Kazon '
+                                          'knows another approach. Colder. '
+                                          'Naturally.'},
  'Collapse Mining Tunnels': {'Required Credits': 35160,
                              'Required Energy': 46,
                              'Reward': 70320,
@@ -1047,22 +1149,27 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                              'requiredEquipment': {'Alien Squad': 2,
                                                    'Jet Pack': 3},
                              'Health Effect': 12,
-                             'startMessage': 'ECHO: Embark on an astral '
-                                             'rhapsody through cosmic '
-                                             'harmonies with the Titans. '
-                                             "Prevent the Corporation's "
-                                             'cosmic disharmony.',
-                             'successMessage': 'ECHO: Astral rhapsody '
-                                               'completed successfully. '
-                                               'Titan cosmic melodies '
-                                               'protected, earning you '
-                                               '{reward} credits and '
-                                               '{experience} experience.',
-                             'failureMessage': 'ECHO: Our attempt to '
-                                               'navigate the astral '
-                                               'rhapsody faced challenges. '
-                                               'We must ensure Titan '
-                                               'cosmic harmony.'},
+                             'startMessage': 'E.C.H.O.: The seams under '
+                                             'the glacier line are '
+                                             'load-bearing - their whole '
+                                             'extraction grid hangs on six '
+                                             "tunnels. Kazon's clans know "
+                                             'where the mountain wants to '
+                                             'break. Help it.',
+                             'successMessage': 'E.C.H.O.: Six charges, six '
+                                               'echoes, zero tunnels. The '
+                                               'mountain closed like a '
+                                               'fist. Extraction grid: '
+                                               'discontinued. {reward} '
+                                               'credits, {experience} '
+                                               'experience.',
+                             'failureMessage': 'E.C.H.O.: Charges '
+                                               'discovered before the '
+                                               'sequence armed. The '
+                                               'tunnels stand and the deep '
+                                               'patrols have doubled. The '
+                                               'mountain is still willing. '
+                                               'So am I.'},
  'Use Yeti Allies for Spying': {'Required Credits': 36600,
                                 'Required Energy': 48,
                                 'Reward': 73200,
@@ -1072,22 +1179,31 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                 'requiredEquipment': {'Hover Board': 3,
                                                       'Teleporter Beacon': 1},
                                 'Health Effect': 12,
-                                'startMessage': 'ECHO: The ethereal echoes '
-                                                'of the Titan realm are '
-                                                'fading. Revive their '
-                                                'celestial harmonies for '
-                                                'eternal existence.',
-                                'successMessage': 'ECHO: Celestial echoes '
-                                                  'revived successfully. '
-                                                  "You've earned {reward} "
-                                                  'credits and '
-                                                  '{experience} '
+                                'startMessage': 'E.C.H.O.: The high-slope '
+                                                'yetis move through '
+                                                'blizzard like still air, '
+                                                'and Vortex sensors read '
+                                                'them as weather. Kazon '
+                                                'has brokered an '
+                                                'arrangement. Teach them '
+                                                'what to watch for.',
+                                'successMessage': 'E.C.H.O.: The white '
+                                                  'watchers report in. '
+                                                  'Every Vortex movement '
+                                                  'above the snowline is '
+                                                  'on my map now - and '
+                                                  "they never see what's "
+                                                  'watching. {reward} '
+                                                  'credits, {experience} '
                                                   'experience.',
-                                'failureMessage': 'ECHO: Our attempt to '
-                                                  'revive celestial echoes '
-                                                  'faced obstacles. We '
-                                                  'must ensure Titan '
-                                                  'ethereal vitality.'},
+                                'failureMessage': 'E.C.H.O.: The '
+                                                  'rendezvous failed - a '
+                                                  'patrol crossed the '
+                                                  'meeting ground and our '
+                                                  'new allies melted back '
+                                                  'into the white. Kazon '
+                                                  'will re-broker. Bring '
+                                                  'fish.'},
  'Lead Mech Assaults': {'Required Credits': 38040,
                         'Required Energy': 50,
                         'Reward': 76080,
@@ -1097,19 +1213,23 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                         'requiredEquipment': {'Star Ship': 1,
                                               'Metalloid Armor': 2},
                         'Health Effect': 13,
-                        'startMessage': 'ECHO: The Titan nebulae are being '
-                                        "disrupted by the Corporation's "
-                                        'intrusion. Achieve nebula '
-                                        'synchrony to maintain cosmic '
-                                        'order.',
-                        'successMessage': 'ECHO: Nebula synchrony achieved '
-                                          "successfully. You've earned "
-                                          '{reward} credits and '
+                        'startMessage': 'E.C.H.O.: The clans have captured '
+                                        'and re-forged Vortex mechs - '
+                                        'mountain-tuned, Titan-crewed, '
+                                        'extremely illegal in nine '
+                                        'corporate jurisdictions. They '
+                                        'want you in the command seat.',
+                        'successMessage': 'E.C.H.O.: Assault delivered in '
+                                          'their own machines. There is a '
+                                          'poetry to that I have chosen '
+                                          'not to delete. The ridge line '
+                                          'is ours. {reward} credits, '
                                           '{experience} experience.',
-                        'failureMessage': 'ECHO: Our attempt to achieve '
-                                          'nebula synchrony faced '
-                                          'opposition. We must preserve '
-                                          'Titan cosmic balance.'},
+                        'failureMessage': 'E.C.H.O.: Two mechs down to '
+                                          'anti-armor fire - crews '
+                                          'extracted, machines lost. The '
+                                          'clans are already rebuilding. '
+                                          'Titans do not stay down.'},
  'Persuade Titan Clans to Unite': {'Required Credits': 39480,
                                    'Required Energy': 51,
                                    'Reward': 78960,
@@ -1119,27 +1239,34 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                    'requiredEquipment': {'Alien Ally': 2,
                                                          'Holo Clone': 3},
                                    'Health Effect': 14,
-                                   'startMessage': 'ECHO: Join the Titan '
-                                                   'council in an ethereal '
-                                                   'convergence ceremony. '
-                                                   'Counter the '
-                                                   "Corporation's "
-                                                   'disruption of their '
-                                                   'cosmic bond.',
-                                   'successMessage': 'ECHO: Ethereal '
-                                                     'convergence '
-                                                     'achieved. Titan '
-                                                     'cosmic bond '
-                                                     'restored, earning '
-                                                     'you {reward} credits '
-                                                     'and {experience} '
+                                   'startMessage': 'E.C.H.O.: Five clans, '
+                                                   'five feuds, one '
+                                                   'mountain range under '
+                                                   'one threat. Kazon '
+                                                   'believes only an '
+                                                   'outsider can say what '
+                                                   'needs saying at the '
+                                                   'fire circle. You are '
+                                                   'the outsider, Jahntow.',
+                                   'successMessage': 'E.C.H.O.: Five knots '
+                                                     'on one belt - the '
+                                                     'clans march together '
+                                                     'for the first time '
+                                                     'in living memory. '
+                                                     'Kazon calls it your '
+                                                     'doing. {reward} '
+                                                     'credits, '
+                                                     '{experience} '
                                                      'experience.',
-                                   'failureMessage': 'ECHO: Our attempt to '
-                                                     'restore ethereal '
-                                                     'convergence faced '
-                                                     'challenges. We must '
-                                                     'protect Titan cosmic '
-                                                     'unity.'},
+                                   'failureMessage': 'E.C.H.O.: The '
+                                                     'council broke '
+                                                     'without accord - old '
+                                                     'feuds die harder '
+                                                     'than corporations. '
+                                                     'Kazon is unbothered. '
+                                                     "'Mountains move "
+                                                     "slow,' he says. We "
+                                                     'sit the fire again.'},
  'Defend Mountain Fortresses': {'Required Credits': 42360,
                                 'Required Energy': 54,
                                 'Reward': 84720,
@@ -1149,24 +1276,31 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                 'requiredEquipment': {'Scout Drone': 3,
                                                       'Porta Lab': 1},
                                 'Health Effect': 14,
-                                'startMessage': 'ECHO: Embark on a cosmic '
-                                                'overture with the Titans. '
-                                                "Foil the Corporation's "
-                                                'attempt to disrupt their '
-                                                'cosmic symphony.',
-                                'successMessage': 'ECHO: Cosmic overture '
-                                                  'completed successfully. '
-                                                  'Titan cosmic symphony '
-                                                  'safeguarded, earning '
-                                                  'you {reward} credits '
-                                                  'and {experience} '
+                                'startMessage': 'E.C.H.O.: Vortex wants '
+                                                'the high fortresses '
+                                                'before winter - take the '
+                                                'forts and they take the '
+                                                'range. All five clans are '
+                                                'on the walls together. '
+                                                'Hold the mountains, '
+                                                'Jahntow.',
+                                'successMessage': 'E.C.H.O.: The '
+                                                  'fortresses hold. Their '
+                                                  'assault spent itself on '
+                                                  'Titan stone and united '
+                                                  'clans - the range is '
+                                                  'clearing, and the '
+                                                  'forges stand ready for '
+                                                  'new work. {reward} '
+                                                  'credits, {experience} '
                                                   'experience.',
-                                'failureMessage': 'ECHO: Our attempt to '
-                                                  'navigate the cosmic '
-                                                  'overture faced '
-                                                  'challenges. We must '
-                                                  'ensure Titan cosmic '
-                                                  'harmony.'},
+                                'failureMessage': 'E.C.H.O.: The west wall '
+                                                  'was breached before the '
+                                                  'counterattack sealed '
+                                                  'it. The fortress holds '
+                                                  'tonight, but winter is '
+                                                  'coming - and so are '
+                                                  'they. Again.'},
  'Infiltrate Logging Facilities': {'Required Credits': 43800,
                                    'Required Energy': 56,
                                    'Reward': 87600,
@@ -1176,32 +1310,36 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                    'requiredEquipment': {'Oxygen Rebreather': 3,
                                                          'Laser Sword': 2},
                                    'Health Effect': 15,
-                                   'startMessage': 'ECHO: The time has '
-                                                   'come, Jahntow. Begin '
-                                                   "the united alliance's "
-                                                   'cosmic confrontation '
-                                                   'against the Space '
-                                                   'Corporation. This is '
-                                                   'the first step towards '
-                                                   'liberation.',
-                                   'successMessage': 'ECHO: Part 1 of the '
-                                                     'cosmic confrontation '
-                                                     'completed '
-                                                     'successfully. Your '
-                                                     'alliance advances, '
-                                                     'earning you {reward} '
-                                                     'credits and '
+                                   'startMessage': "E.C.H.O.: Tuatha's "
+                                                   'jungle is being eaten '
+                                                   'by machines the size '
+                                                   'of villages. Your '
+                                                   'guide is the Emerald '
+                                                   'Mage - the sensors '
+                                                   'will be, I am told, '
+                                                   "'convinced to look "
+                                                   "elsewhere'. Get the "
+                                                   'schedules.',
+                                   'successMessage': 'E.C.H.O.: Schedules '
+                                                     'and shipping data '
+                                                     'extracted while the '
+                                                     'jungle itself ran '
+                                                     'interference. The '
+                                                     'Mage says the stumps '
+                                                     'are still screaming. '
+                                                     'Writing faster. '
+                                                     '{reward} credits, '
                                                      '{experience} '
-                                                     'experience. The '
-                                                     'fight gains '
-                                                     'momentum.',
-                                   'failureMessage': 'ECHO: Our attempt to '
-                                                     'begin the cosmic '
-                                                     'confrontation faced '
-                                                     'resistance. The '
-                                                     'fight is not over; '
-                                                     "we'll keep pushing "
-                                                     'forward.'},
+                                                     'experience.',
+                                   'failureMessage': 'E.C.H.O.: A sweep '
+                                                     'team crossed our '
+                                                     'path and the Mage '
+                                                     'pulled us out. The '
+                                                     'jungle hides us, but '
+                                                     'it cannot fight '
+                                                     'harvesters with '
+                                                     'vines alone. Yet. '
+                                                     'Regroup.'},
  'Ambush Vortex Forces': {'Required Credits': 45240,
                           'Required Energy': 58,
                           'Reward': 90480,
@@ -1211,24 +1349,25 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                           'requiredEquipment': {'Invisi Veil': 4,
                                                 'Basic Ship': 3},
                           'Health Effect': 16,
-                          'startMessage': 'ECHO: Continue the cosmic '
-                                          'confrontation, Jahntow. This is '
-                                          'the second part of the united '
-                                          "alliance's struggle. Together, "
-                                          "we'll break the Corporation's "
-                                          'grasp.',
-                          'successMessage': 'ECHO: Part 2 of the cosmic '
-                                            'confrontation completed '
-                                            'successfully. Your alliance '
-                                            'grows stronger, earning you '
-                                            '{reward} credits and '
-                                            '{experience} experience. The '
-                                            'path to victory is clear.',
-                          'failureMessage': 'ECHO: Our attempt to advance '
-                                            'the cosmic confrontation '
-                                            'faced challenges. The united '
-                                            'alliance remains resolute; '
-                                            "we'll overcome."},
+                          'startMessage': 'E.C.H.O.: Their patrol columns '
+                                          'move the same trails at the '
+                                          'same hours - efficient, '
+                                          'predictable, careless. The Mage '
+                                          'knows where the jungle narrows. '
+                                          'We will be waiting in it.',
+                          'successMessage': 'E.C.H.O.: Ambush executed. '
+                                            'The column entered the '
+                                            'narrows; the narrows kept '
+                                            'them. Their patrol schedules '
+                                            'just became less predictable '
+                                            '- fear does that. {reward} '
+                                            'credits, {experience} '
+                                            'experience.',
+                          'failureMessage': 'E.C.H.O.: They ran scout '
+                                            'drones ahead this time and '
+                                            'the ambush sprang on empty '
+                                            'trail. They are learning. We '
+                                            'learn faster.'},
  'Foil Vortex Trapping': {'Required Credits': 46680,
                           'Required Energy': 59,
                           'Reward': 93360,
@@ -1238,24 +1377,26 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                           'requiredEquipment': {'Alien Skin Armor': 1,
                                                 'Cyber Armor': 4},
                           'Health Effect': 16,
-                          'startMessage': 'ECHO: Jahntow, this is the '
-                                          'final push. Lead the united '
-                                          'alien alliance in the ultimate '
-                                          'cosmic confrontation against '
-                                          'the Space Corporation. The time '
-                                          'for liberation is now.',
-                          'successMessage': 'ECHO: The cosmic '
-                                            'confrontation is victorious. '
-                                            'The united alien alliance '
-                                            'triumphs, earning you '
-                                            '{reward} credits and '
-                                            '{experience} experience. The '
-                                            'cosmos is free once more.',
-                          'failureMessage': 'ECHO: Our attempt at the '
-                                            'final cosmic confrontation '
-                                            'faced tremendous adversity. '
-                                            'But remember, the spirit of '
-                                            'unity endures.'},
+                          'startMessage': 'E.C.H.O.: Trap lines through '
+                                          'the deep jungle - Vortex is '
+                                          "harvesting Tuatha's creatures "
+                                          'for bioweapon research. The '
+                                          'Mage wants every trap sprung '
+                                          'and every cage opened. '
+                                          'Personally.',
+                          'successMessage': 'E.C.H.O.: Trap lines cleared, '
+                                            'cages open, specimens gone '
+                                            'home. Their research division '
+                                            'reports total inventory loss. '
+                                            'My condolences - filed under '
+                                            'fiction. {reward} credits, '
+                                            '{experience} experience.',
+                          'failureMessage': 'E.C.H.O.: We cleared half the '
+                                            'lines before their wardens '
+                                            'converged - creatures still '
+                                            'caged in the eastern sectors. '
+                                            'The Mage is not calm about '
+                                            'this. Neither am I. Back in.'},
  'Destroy Bioweapon Stockpiles': {'Required Credits': 48120,
                                   'Required Energy': 61,
                                   'Reward': 96240,
@@ -1265,32 +1406,33 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                   'requiredEquipment': {'Bio Collector': 2,
                                                         'Alien Army': 1},
                                   'Health Effect': 16,
-                                  'startMessage': 'ECHO: Jahntow, this is '
-                                                  'the final push. Lead '
-                                                  'the united alien '
-                                                  'alliance in the '
-                                                  'ultimate cosmic '
-                                                  'confrontation against '
-                                                  'the Space Corporation. '
-                                                  'The time for liberation '
-                                                  'is now.',
-                                  'successMessage': 'ECHO: The cosmic '
-                                                    'confrontation is '
-                                                    'victorious. The '
-                                                    'united alien alliance '
-                                                    'triumphs, earning you '
-                                                    '{reward} credits and '
+                                  'startMessage': 'E.C.H.O.: I have found '
+                                                  'where the bioweapon '
+                                                  'program lives - '
+                                                  'stockpiles rated for '
+                                                  'defoliation on a '
+                                                  'continental scale. This '
+                                                  'is what they always '
+                                                  'meant for Tuatha, '
+                                                  'Jahntow. Burn it.',
+                                  'successMessage': 'E.C.H.O.: Stockpiles '
+                                                    'destroyed - the '
+                                                    'compounds neutralized '
+                                                    'inside their own '
+                                                    'containment. A '
+                                                    "continent's worth of "
+                                                    'poison, unwritten. '
+                                                    '{reward} credits, '
                                                     '{experience} '
-                                                    'experience. The '
-                                                    'cosmos is free once '
-                                                    'more.',
-                                  'failureMessage': 'ECHO: Our attempt at '
-                                                    'the final cosmic '
-                                                    'confrontation faced '
-                                                    'tremendous adversity. '
-                                                    'But remember, the '
-                                                    'spirit of unity '
-                                                    'endures.'},
+                                                    'experience.',
+                                  'failureMessage': 'E.C.H.O.: The '
+                                                    'demolition sequence '
+                                                    'tripped an alert and '
+                                                    'we pulled out with '
+                                                    'the stockpile intact. '
+                                                    'That inventory cannot '
+                                                    'be allowed to exist. '
+                                                    'Rearm. Return.'},
  'Learn Forest Regrowth Rituals': {'Required Credits': 51000,
                                    'Required Energy': 64,
                                    'Reward': 102000,
@@ -1300,33 +1442,34 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                    'requiredEquipment': {'Terrain Scanner': 3,
                                                          'Environmental Suit': 2},
                                    'Health Effect': 18,
-                                   'startMessage': 'ECHO: Jahntow, this is '
-                                                   'the final push. Lead '
-                                                   'the united alien '
-                                                   'alliance in the '
-                                                   'ultimate cosmic '
-                                                   'confrontation against '
-                                                   'the Space Corporation. '
-                                                   'The time for '
-                                                   'liberation is now.',
-                                   'successMessage': 'ECHO: The cosmic '
-                                                     'confrontation is '
-                                                     'victorious. The '
-                                                     'united alien '
-                                                     'alliance triumphs, '
-                                                     'earning you {reward} '
-                                                     'credits and '
+                                   'startMessage': "E.C.H.O.: The Mage's "
+                                                   'order offers something '
+                                                   'Vortex would never '
+                                                   'understand: the rite '
+                                                   'that regrows forests. '
+                                                   'Three nights under the '
+                                                   'canopy. Learn it. Some '
+                                                   'weapons plant instead '
+                                                   'of burn.',
+                                   'successMessage': 'E.C.H.O.: Rite '
+                                                     'learned. I recorded '
+                                                     'none of it - some '
+                                                     'things the order '
+                                                     'trusts to memory, '
+                                                     'and memory only. The '
+                                                     'clear-cuts have '
+                                                     'started greening. '
+                                                     '{reward} credits, '
                                                      '{experience} '
-                                                     'experience. The '
-                                                     'cosmos is free once '
-                                                     'more.',
-                                   'failureMessage': 'ECHO: Our attempt at '
-                                                     'the final cosmic '
-                                                     'confrontation faced '
-                                                     'tremendous '
-                                                     'adversity. But '
-                                                     'remember, the spirit '
-                                                     'of unity endures.'},
+                                                     'experience.',
+                                   'failureMessage': 'E.C.H.O.: The rite '
+                                                     'refused you tonight '
+                                                     '- the Mage says the '
+                                                     'forest tests before '
+                                                     'it teaches. Rest. '
+                                                     'Return. The canopy '
+                                                     'is patient with '
+                                                     'honest students.'},
  'Defend the Heart of the Forest': {'Required Credits': 52440,
                                     'Required Energy': 66,
                                     'Reward': 104880,
@@ -1336,35 +1479,36 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                     'requiredEquipment': {'Steel Machete': 4,
                                                           'Plasma Blade': 3},
                                     'Health Effect': 18,
-                                    'startMessage': 'ECHO: Jahntow, this '
-                                                    'is the final push. '
-                                                    'Lead the united alien '
-                                                    'alliance in the '
-                                                    'ultimate cosmic '
-                                                    'confrontation against '
-                                                    'the Space '
-                                                    'Corporation. The time '
-                                                    'for liberation is '
-                                                    'now.',
-                                    'successMessage': 'ECHO: The cosmic '
-                                                      'confrontation is '
-                                                      'victorious. The '
-                                                      'united alien '
-                                                      'alliance triumphs, '
-                                                      'earning you '
-                                                      '{reward} credits '
-                                                      'and {experience} '
-                                                      'experience. The '
-                                                      'cosmos is free once '
-                                                      'more.',
-                                    'failureMessage': 'ECHO: Our attempt '
-                                                      'at the final cosmic '
-                                                      'confrontation faced '
-                                                      'tremendous '
-                                                      'adversity. But '
-                                                      'remember, the '
-                                                      'spirit of unity '
-                                                      'endures.'},
+                                    'startMessage': 'E.C.H.O.: Vortex is '
+                                                    'driving for the Heart '
+                                                    'of the Forest - the '
+                                                    'grove every root in '
+                                                    'Tuatha runs back to. '
+                                                    'The order, the rebels '
+                                                    'and the jungle itself '
+                                                    'are massing. Stand '
+                                                    'with them.',
+                                    'successMessage': 'E.C.H.O.: The Heart '
+                                                      'stands. The jungle '
+                                                      'fought beside you - '
+                                                      'I logged vine and '
+                                                      'root doing things I '
+                                                      'decline to model. '
+                                                      'Tuatha is clearing. '
+                                                      '{reward} credits, '
+                                                      '{experience} '
+                                                      'experience.',
+                                    'failureMessage': 'E.C.H.O.: They '
+                                                      'reached the outer '
+                                                      'grove ring before '
+                                                      'the line held - '
+                                                      'burned ground '
+                                                      'within sight of the '
+                                                      'Heart. The Mage '
+                                                      'stood very still '
+                                                      'for a long time. We '
+                                                      'do not let them '
+                                                      'that close again.'},
  'Scout Vortex Facilities': {'Required Credits': 53880,
                              'Required Energy': 67,
                              'Reward': 107760,
@@ -1374,27 +1518,31 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                              'requiredEquipment': {'Jet Pack': 1,
                                                    'Alien Squad': 4},
                              'Health Effect': 18,
-                             'startMessage': 'ECHO: Jahntow, this is the '
-                                             'final push. Lead the united '
-                                             'alien alliance in the '
-                                             'ultimate cosmic '
-                                             'confrontation against the '
-                                             'Space Corporation. The time '
-                                             'for liberation is now.',
-                             'successMessage': 'ECHO: The cosmic '
-                                               'confrontation is '
-                                               'victorious. The united '
-                                               'alien alliance triumphs, '
-                                               'earning you {reward} '
-                                               'credits and {experience} '
-                                               'experience. The cosmos is '
-                                               'free once more.',
-                             'failureMessage': 'ECHO: Our attempt at the '
-                                               'final cosmic confrontation '
-                                               'faced tremendous '
-                                               'adversity. But remember, '
-                                               'the spirit of unity '
-                                               'endures.'},
+                             'startMessage': 'E.C.H.O.: Namarupa - the one '
+                                             'city Vortex never invaded, '
+                                             'because it never had to. '
+                                             'Zhalia will meet you on the '
+                                             'mag-rail. Something here '
+                                             'keeps a million heads bowed, '
+                                             'and I want it found and '
+                                             'mapped.',
+                             'successMessage': 'E.C.H.O.: Facilities '
+                                               'mapped. Zhalia confirms '
+                                               'it: a suppression network '
+                                               'tuned to the psychic city, '
+                                               'humming under every '
+                                               'street. Now we know what '
+                                               'to break. {reward} '
+                                               'credits, {experience} '
+                                               'experience.',
+                             'failureMessage': 'E.C.H.O.: Surveillance '
+                                               'density beyond anything we '
+                                               'have faced - we pulled out '
+                                               'clean but incomplete. '
+                                               'Zhalia knows another route '
+                                               'through the tower '
+                                               'district. Quieter. '
+                                               'Slower.'},
  'Disrupt Executive Speeches': {'Required Credits': 55320,
                                 'Required Energy': 69,
                                 'Reward': 110640,
@@ -1404,30 +1552,33 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                 'requiredEquipment': {'Teleporter Beacon': 2,
                                                       'Hover Board': 1},
                                 'Health Effect': 19,
-                                'startMessage': 'ECHO: Jahntow, this is '
-                                                'the final push. Lead the '
-                                                'united alien alliance in '
-                                                'the ultimate cosmic '
-                                                'confrontation against the '
-                                                'Space Corporation. The '
-                                                'time for liberation is '
-                                                'now.',
-                                'successMessage': 'ECHO: The cosmic '
-                                                  'confrontation is '
-                                                  'victorious. The united '
-                                                  'alien alliance '
-                                                  'triumphs, earning you '
-                                                  '{reward} credits and '
-                                                  '{experience} '
-                                                  'experience. The cosmos '
-                                                  'is free once more.',
-                                'failureMessage': 'ECHO: Our attempt at '
-                                                  'the final cosmic '
-                                                  'confrontation faced '
-                                                  'tremendous adversity. '
-                                                  'But remember, the '
-                                                  'spirit of unity '
-                                                  'endures.'},
+                                'startMessage': 'E.C.H.O.: Vortex '
+                                                'executives broadcast '
+                                                "weekly 'harmony "
+                                                "addresses' - compliance "
+                                                'conditioning with a stage '
+                                                'smile. Zhalia wants one '
+                                                'interrupted in front of '
+                                                'the whole city. Wake them '
+                                                'up.',
+                                'successMessage': 'E.C.H.O.: Broadcast '
+                                                  'disrupted city-wide. A '
+                                                  'million people watched '
+                                                  "an executive's smile "
+                                                  'fail in real time. '
+                                                  'Bowed heads are '
+                                                  'lifting. {reward} '
+                                                  'credits, {experience} '
+                                                  'experience.',
+                                'failureMessage': 'E.C.H.O.: They cut to '
+                                                  'backup transmitters '
+                                                  'faster than we could '
+                                                  'chase - the address '
+                                                  'finished. The city '
+                                                  'heard thirty seconds of '
+                                                  'truth, at least. Seeds. '
+                                                  "Next week's speech is "
+                                                  'ours.'},
  'Make Vortex Mechs Malfunction': {'Required Credits': 56760,
                                    'Required Energy': 70,
                                    'Reward': 113520,
@@ -1437,33 +1588,37 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                    'requiredEquipment': {'Metalloid Armor': 3,
                                                          'Star Ship': 2},
                                    'Health Effect': 20,
-                                   'startMessage': 'ECHO: Jahntow, this is '
-                                                   'the final push. Lead '
-                                                   'the united alien '
-                                                   'alliance in the '
-                                                   'ultimate cosmic '
-                                                   'confrontation against '
-                                                   'the Space Corporation. '
-                                                   'The time for '
-                                                   'liberation is now.',
-                                   'successMessage': 'ECHO: The cosmic '
-                                                     'confrontation is '
-                                                     'victorious. The '
-                                                     'united alien '
-                                                     'alliance triumphs, '
-                                                     'earning you {reward} '
-                                                     'credits and '
+                                   'startMessage': "E.C.H.O.: Zhalia's "
+                                                   'psychics can reach '
+                                                   "into a mech's "
+                                                   'targeting cortex and '
+                                                   'gently rearrange its '
+                                                   'convictions. Escort '
+                                                   'them close enough. I '
+                                                   'want Vortex afraid of '
+                                                   'its own machines.',
+                                   'successMessage': 'E.C.H.O.: Their '
+                                                     'security mechs now '
+                                                     'malfunction at '
+                                                     'inconvenient moments '
+                                                     '- saluting hydrants, '
+                                                     'guarding empty lots. '
+                                                     'Vortex is auditing '
+                                                     'its own hardware for '
+                                                     'ghosts. {reward} '
+                                                     'credits, '
                                                      '{experience} '
-                                                     'experience. The '
-                                                     'cosmos is free once '
-                                                     'more.',
-                                   'failureMessage': 'ECHO: Our attempt at '
-                                                     'the final cosmic '
-                                                     'confrontation faced '
-                                                     'tremendous '
-                                                     'adversity. But '
-                                                     'remember, the spirit '
-                                                     'of unity endures.'},
+                                                     'experience.',
+                                   'failureMessage': 'E.C.H.O.: '
+                                                     'Counter-frequency '
+                                                     'shielding on the new '
+                                                     'patrol units - the '
+                                                     'psychics could not '
+                                                     'reach through. '
+                                                     'Zhalia is composing '
+                                                     'a workaround. '
+                                                     'Machines only get so '
+                                                     'smart.'},
  'Create Illusions to Confuse Vortex': {'Required Credits': 58200,
                                         'Required Energy': 72,
                                         'Reward': 116400,
@@ -1473,42 +1628,44 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                         'requiredEquipment': {'Holo Clone': 1,
                                                               'Alien Ally': 5},
                                         'Health Effect': 20,
-                                        'startMessage': 'ECHO: Jahntow, '
-                                                        'this is the final '
-                                                        'push. Lead the '
-                                                        'united alien '
-                                                        'alliance in the '
-                                                        'ultimate cosmic '
-                                                        'confrontation '
-                                                        'against the Space '
-                                                        'Corporation. The '
-                                                        'time for '
-                                                        'liberation is '
-                                                        'now.',
-                                        'successMessage': 'ECHO: The '
-                                                          'cosmic '
-                                                          'confrontation '
-                                                          'is victorious. '
-                                                          'The united '
-                                                          'alien alliance '
-                                                          'triumphs, '
-                                                          'earning you '
+                                        'startMessage': 'E.C.H.O.: The '
+                                                        'woken psychics '
+                                                        'propose '
+                                                        'misdirection at '
+                                                        'scale - phantom '
+                                                        'convoys, mirage '
+                                                        'armies, doors '
+                                                        'where walls are. '
+                                                        'Vortex trusts its '
+                                                        'sensors '
+                                                        'completely. Let '
+                                                        'us abuse that.',
+                                        'successMessage': 'E.C.H.O.: Their '
+                                                          'sensors now '
+                                                          'faithfully '
+                                                          'report an army '
+                                                          'that is not '
+                                                          'there and miss '
+                                                          'the one that '
+                                                          'is. Vortex '
+                                                          'command is '
+                                                          'redeploying '
+                                                          'against '
+                                                          'weather. '
                                                           '{reward} '
-                                                          'credits and '
+                                                          'credits, '
                                                           '{experience} '
-                                                          'experience. The '
-                                                          'cosmos is free '
-                                                          'once more.',
-                                        'failureMessage': 'ECHO: Our '
-                                                          'attempt at the '
-                                                          'final cosmic '
-                                                          'confrontation '
-                                                          'faced '
-                                                          'tremendous '
-                                                          'adversity. But '
-                                                          'remember, the '
-                                                          'spirit of unity '
-                                                          'endures.'},
+                                                          'experience.',
+                                        'failureMessage': 'E.C.H.O.: An '
+                                                          'empath-auditor '
+                                                          'flagged the '
+                                                          'illusions '
+                                                          'before command '
+                                                          'acted on them. '
+                                                          'Zhalia says the '
+                                                          'next lie will '
+                                                          'be smaller and '
+                                                          'better placed.'},
  'Lead Astral Projection Assaults': {'Required Credits': 61080,
                                      'Required Energy': 75,
                                      'Reward': 122160,
@@ -1518,36 +1675,42 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                      'requiredEquipment': {'Porta Lab': 2,
                                                            'Scout Drone': 1},
                                      'Health Effect': 21,
-                                     'startMessage': 'ECHO: Jahntow, this '
-                                                     'is the final push. '
-                                                     'Lead the united '
-                                                     'alien alliance in '
-                                                     'the ultimate cosmic '
-                                                     'confrontation '
-                                                     'against the Space '
-                                                     'Corporation. The '
-                                                     'time for liberation '
-                                                     'is now.',
-                                     'successMessage': 'ECHO: The cosmic '
-                                                       'confrontation is '
-                                                       'victorious. The '
-                                                       'united alien '
-                                                       'alliance triumphs, '
-                                                       'earning you '
-                                                       '{reward} credits '
-                                                       'and {experience} '
-                                                       'experience. The '
-                                                       'cosmos is free '
-                                                       'once more.',
-                                     'failureMessage': 'ECHO: Our attempt '
-                                                       'at the final '
-                                                       'cosmic '
-                                                       'confrontation '
-                                                       'faced tremendous '
-                                                       'adversity. But '
-                                                       'remember, the '
-                                                       'spirit of unity '
-                                                       'endures.'},
+                                     'startMessage': "E.C.H.O.: Zhalia's "
+                                                     'strongest can walk '
+                                                     'out of their bodies '
+                                                     'and through Vortex '
+                                                     'walls. They need a '
+                                                     'ground team to '
+                                                     'anchor them - and '
+                                                     'someone the '
+                                                     'projections trust to '
+                                                     'lead. That is you.',
+                                     'successMessage': 'E.C.H.O.: Assault '
+                                                       'complete - half '
+                                                       'the strike force '
+                                                       'never physically '
+                                                       'entered the '
+                                                       'building. Their '
+                                                       'security logs '
+                                                       'describe intruders '
+                                                       'who cast no '
+                                                       'shadow. Accurate, '
+                                                       'for once. {reward} '
+                                                       'credits, '
+                                                       '{experience} '
+                                                       'experience.',
+                                     'failureMessage': 'E.C.H.O.: The '
+                                                       'anchor line '
+                                                       'thinned and Zhalia '
+                                                       'pulled every '
+                                                       'walker back to '
+                                                       'their bodies - all '
+                                                       'recovered, mission '
+                                                       'scrubbed. We do '
+                                                       'not spend minds, '
+                                                       'Jahntow. We go '
+                                                       'again, anchored '
+                                                       'deeper.'},
  'Final Psychic Showdown': {'Required Credits': 62520,
                             'Required Energy': 77,
                             'Reward': 125040,
@@ -1557,26 +1720,28 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                             'requiredEquipment': {'Laser Sword': 3,
                                                   'Oxygen Rebreather': 2},
                             'Health Effect': 22,
-                            'startMessage': 'ECHO: Jahntow, this is the '
-                                            'final push. Lead the united '
-                                            'alien alliance in the '
-                                            'ultimate cosmic confrontation '
-                                            'against the Space '
-                                            'Corporation. The time for '
-                                            'liberation is now.',
-                            'successMessage': 'ECHO: The cosmic '
-                                              'confrontation is '
-                                              'victorious. The united '
-                                              'alien alliance triumphs, '
-                                              'earning you {reward} '
-                                              'credits and {experience} '
-                                              'experience. The cosmos is '
-                                              'free once more.',
-                            'failureMessage': 'ECHO: Our attempt at the '
-                                              'final cosmic confrontation '
-                                              'faced tremendous adversity. '
-                                              'But remember, the spirit of '
-                                              'unity endures.'},
+                            'startMessage': 'E.C.H.O.: The suppression '
+                                            'network has a heart - the '
+                                            'amplifier, one machine '
+                                            'bending a million minds. '
+                                            "Vortex's psychic enforcers "
+                                            'are dug in around it. Zhalia '
+                                            'says today her city wakes. '
+                                            'Prove her right.',
+                            'successMessage': 'E.C.H.O.: The amplifier is '
+                                              'dead. A million minds, '
+                                              'unbent in one heartbeat. '
+                                              'Namarupa is awake, and it '
+                                              'is angry, and it is ours. '
+                                              '{reward} credits, '
+                                              '{experience} experience.',
+                            'failureMessage': 'E.C.H.O.: Their enforcers '
+                                              'held the amplifier chamber '
+                                              '- Zhalia got everyone out '
+                                              'breathing. The machine '
+                                              'still hums; her city still '
+                                              'sleeps. Not for long. '
+                                              'Again.'},
  'Vortex Corp: Infiltration': {'Required Credits': 63960,
                                'Required Energy': 78,
                                'Reward': 127920,
@@ -1586,28 +1751,30 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                'requiredEquipment': {'Basic Ship': 4,
                                                      'Invisi Veil': 3},
                                'Health Effect': 22,
-                               'startMessage': 'ECHO: Jahntow, this is the '
-                                               'final push. Lead the '
-                                               'united alien alliance in '
-                                               'the ultimate cosmic '
-                                               'confrontation against the '
-                                               'Space Corporation. The '
-                                               'time for liberation is '
-                                               'now.',
-                               'successMessage': 'ECHO: The cosmic '
-                                                 'confrontation is '
-                                                 'victorious. The united '
-                                                 'alien alliance triumphs, '
-                                                 'earning you {reward} '
-                                                 'credits and {experience} '
-                                                 'experience. The cosmos '
-                                                 'is free once more.',
-                               'failureMessage': 'ECHO: Our attempt at the '
-                                                 'final cosmic '
-                                                 'confrontation faced '
-                                                 'tremendous adversity. '
-                                                 'But remember, the spirit '
-                                                 'of unity endures.'},
+                               'startMessage': 'E.C.H.O.: Six lands free. '
+                                               'One fortress left - '
+                                               "Vortex's continental "
+                                               'headquarters. Direct '
+                                               'assault is suicide, so we '
+                                               'go in first, quiet, and '
+                                               'open it from the inside. '
+                                               'All roads led here, '
+                                               'Jahntow.',
+                               'successMessage': 'E.C.H.O.: We are inside '
+                                                 'the perimeter - past the '
+                                                 'outer grid, footprint '
+                                                 'zero. Whatever happens '
+                                                 'next happens from within '
+                                                 'their walls. {reward} '
+                                                 'credits, {experience} '
+                                                 'experience.',
+                               'failureMessage': 'E.C.H.O.: The outer grid '
+                                                 'caught our approach - we '
+                                                 'broke contact clean, but '
+                                                 'the fortress knows '
+                                                 'something moved in the '
+                                                 'dark. Re-route. There is '
+                                                 'always another seam.'},
  'Vortex Corp: Inside the Fortress': {'Required Credits': 65400,
                                       'Required Energy': 80,
                                       'Reward': 130800,
@@ -1617,37 +1784,38 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                       'requiredEquipment': {'Cyber Armor': 5,
                                                             'Alien Skin Armor': 4},
                                       'Health Effect': 22,
-                                      'startMessage': 'ECHO: Jahntow, this '
-                                                      'is the final push. '
-                                                      'Lead the united '
-                                                      'alien alliance in '
-                                                      'the ultimate cosmic '
-                                                      'confrontation '
-                                                      'against the Space '
-                                                      'Corporation. The '
-                                                      'time for liberation '
-                                                      'is now.',
-                                      'successMessage': 'ECHO: The cosmic '
-                                                        'confrontation is '
-                                                        'victorious. The '
-                                                        'united alien '
-                                                        'alliance '
-                                                        'triumphs, earning '
-                                                        'you {reward} '
-                                                        'credits and '
+                                      'startMessage': 'E.C.H.O.: We are in '
+                                                      'the walls. Now we '
+                                                      'map the beast from '
+                                                      'its guts - command '
+                                                      'levels, the '
+                                                      'generator stack '
+                                                      'that feeds the '
+                                                      'killing-field '
+                                                      'defenses, and '
+                                                      'everything tagged '
+                                                      'PROJECT. Quietly.',
+                                      'successMessage': 'E.C.H.O.: Mapped '
+                                                        '- command spire, '
+                                                        'generator floors, '
+                                                        'the PROJECT '
+                                                        'vaults. This '
+                                                        'fortress has a '
+                                                        'spine, and I know '
+                                                        'where it is now. '
+                                                        '{reward} credits, '
                                                         '{experience} '
-                                                        'experience. The '
-                                                        'cosmos is free '
-                                                        'once more.',
-                                      'failureMessage': 'ECHO: Our attempt '
-                                                        'at the final '
-                                                        'cosmic '
-                                                        'confrontation '
-                                                        'faced tremendous '
-                                                        'adversity. But '
-                                                        'remember, the '
-                                                        'spirit of unity '
-                                                        'endures.'},
+                                                        'experience.',
+                                      'failureMessage': 'E.C.H.O.: '
+                                                        'Internal security '
+                                                        'cycled early and '
+                                                        'we went to ground '
+                                                        'inside the walls. '
+                                                        'Uncomfortable. '
+                                                        'Survivable. The '
+                                                        'map stays '
+                                                        'half-drawn one '
+                                                        'more shift.'},
  'Vortex Corp: Betrayal': {'Required Credits': 66840,
                            'Required Energy': 82,
                            'Reward': 133680,
@@ -1657,24 +1825,26 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                            'requiredEquipment': {'Alien Army': 1,
                                                  'Bio Collector': 5},
                            'Health Effect': 23,
-                           'startMessage': 'ECHO: Jahntow, this is the '
-                                           'final push. Lead the united '
-                                           'alien alliance in the ultimate '
-                                           'cosmic confrontation against '
-                                           'the Space Corporation. The '
-                                           'time for liberation is now.',
-                           'successMessage': 'ECHO: The cosmic '
-                                             'confrontation is victorious. '
-                                             'The united alien alliance '
-                                             'triumphs, earning you '
-                                             '{reward} credits and '
-                                             '{experience} experience. The '
-                                             'cosmos is free once more.',
-                           'failureMessage': 'ECHO: Our attempt at the '
-                                             'final cosmic confrontation '
-                                             'faced tremendous adversity. '
-                                             'But remember, the spirit of '
-                                             'unity endures.'},
+                           'startMessage': 'E.C.H.O.: Something is wrong. '
+                                           'Rotations we predicted are '
+                                           'shifting against us - as if '
+                                           'someone is reading our plan. '
+                                           'Watch everyone, Jahntow. Even '
+                                           'the people we trust. '
+                                           'Especially them.',
+                           'successMessage': 'E.C.H.O.: Objective held. '
+                                             'What it cost is in the log, '
+                                             'and the log is heavier than '
+                                             'I know how to file. {reward} '
+                                             'credits and {experience} '
+                                             'experience.',
+                           'failureMessage': 'E.C.H.O.: We were cut off '
+                                             'before it played out and '
+                                             'fell back deeper into the '
+                                             'walls. Something in this '
+                                             'fortress is still turned '
+                                             'against us - and we go back '
+                                             'in knowing it.'},
  'Vortex Corp: Disabling the Defenses': {'Required Credits': 69720,
                                          'Required Energy': 85,
                                          'Reward': 139440,
@@ -1684,45 +1854,48 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                          'requiredEquipment': {'Environmental Suit': 2,
                                                                'Terrain Scanner': 1},
                                          'Health Effect': 24,
-                                         'startMessage': 'ECHO: Jahntow, '
-                                                         'this is the '
-                                                         'final push. Lead '
-                                                         'the united alien '
-                                                         'alliance in the '
-                                                         'ultimate cosmic '
-                                                         'confrontation '
-                                                         'against the '
-                                                         'Space '
-                                                         'Corporation. The '
-                                                         'time for '
-                                                         'liberation is '
-                                                         'now.',
-                                         'successMessage': 'ECHO: The '
-                                                           'cosmic '
-                                                           'confrontation '
-                                                           'is victorious. '
-                                                           'The united '
-                                                           'alien alliance '
-                                                           'triumphs, '
-                                                           'earning you '
+                                         'startMessage': 'E.C.H.O.: The '
+                                                         'killing-field '
+                                                         'generators die '
+                                                         'today - floor by '
+                                                         'floor, stack by '
+                                                         'stack. When the '
+                                                         'shimmer drops, '
+                                                         'five tribes come '
+                                                         'off the wastes '
+                                                         "at a run. Don't "
+                                                         'let the cage '
+                                                         'outlive her, '
+                                                         'Jahntow.',
+                                         'successMessage': 'E.C.H.O.: '
+                                                           'Generators '
+                                                           'down. The '
+                                                           'fields are '
+                                                           'dropping and I '
+                                                           'can hear the '
+                                                           'tribes through '
+                                                           'the fortress '
+                                                           'walls. The way '
+                                                           'is open. '
                                                            '{reward} '
-                                                           'credits and '
+                                                           'credits, '
                                                            '{experience} '
-                                                           'experience. '
-                                                           'The cosmos is '
-                                                           'free once '
-                                                           'more.',
-                                         'failureMessage': 'ECHO: Our '
-                                                           'attempt at the '
-                                                           'final cosmic '
-                                                           'confrontation '
-                                                           'faced '
-                                                           'tremendous '
-                                                           'adversity. But '
-                                                           'remember, the '
-                                                           'spirit of '
-                                                           'unity '
-                                                           'endures.'},
+                                                           'experience.',
+                                         'failureMessage': 'E.C.H.O.: The '
+                                                           'stack '
+                                                           're-routed to '
+                                                           'auxiliaries - '
+                                                           'fields still '
+                                                           'up, tribes '
+                                                           'still waiting '
+                                                           'on the wastes. '
+                                                           'Every hour the '
+                                                           'shimmer holds '
+                                                           'is an hour she '
+                                                           'bought us. '
+                                                           'Spend it '
+                                                           'better. '
+                                                           'Again.'},
  'Vortex Corp: Confrontation with Xaezor': {'Required Credits': 71160,
                                             'Required Energy': 86,
                                             'Reward': 355800,
@@ -1732,52 +1905,69 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                             'requiredEquipment': {'Plasma Blade': 3,
                                                                   'Steel Machete': 2},
                                             'Health Effect': 48,
-                                            'startMessage': 'ECHO: '
-                                                            'Jahntow, this '
-                                                            'is the final '
-                                                            'push. Lead '
-                                                            'the united '
-                                                            'alien '
-                                                            'alliance in '
-                                                            'the ultimate '
-                                                            'cosmic '
-                                                            'confrontation '
-                                                            'against the '
-                                                            'Space '
-                                                            'Corporation. '
-                                                            'The time for '
-                                                            'liberation is '
-                                                            'now.',
-                                            'successMessage': 'ECHO: The '
-                                                              'cosmic '
-                                                              'confrontation '
-                                                              'is '
-                                                              'victorious. '
-                                                              'The united '
-                                                              'alien '
-                                                              'alliance '
-                                                              'triumphs, '
-                                                              'earning you '
+                                            'startMessage': 'E.C.H.O.: Top '
+                                                            'of the spire. '
+                                                            'One door '
+                                                            'left, and '
+                                                            'behind it the '
+                                                            'man who '
+                                                            'bought a '
+                                                            'world and '
+                                                            'called it '
+                                                            'vision. My '
+                                                            'models cap '
+                                                            'your odds at '
+                                                            'seventy-five '
+                                                            'percent - the '
+                                                            'rest was '
+                                                            'never going '
+                                                            'to be math. '
+                                                            'End this, '
+                                                            'Jahntow.',
+                                            'successMessage': 'E.C.H.O.: '
+                                                              'Xaezor is '
+                                                              'finished. '
+                                                              'The '
+                                                              'fortress is '
+                                                              'ours, the '
+                                                              'sky is '
+                                                              'open, and '
+                                                              'every land '
+                                                              'that armed '
+                                                              'you just '
+                                                              'felt it. It '
+                                                              'is done, '
+                                                              'Jahntow. It '
+                                                              'is actually '
+                                                              'done. '
                                                               '{reward} '
                                                               'credits and '
                                                               '{experience} '
-                                                              'experience. '
-                                                              'The cosmos '
-                                                              'is free '
-                                                              'once more.',
-                                            'failureMessage': 'ECHO: Our '
-                                                              'attempt at '
-                                                              'the final '
-                                                              'cosmic '
-                                                              'confrontation '
-                                                              'faced '
-                                                              'tremendous '
-                                                              'adversity. '
-                                                              'But '
-                                                              'remember, '
-                                                              'the spirit '
-                                                              'of unity '
-                                                              'endures.',
+                                                              'experience '
+                                                              '- not that '
+                                                              'any number '
+                                                              'covers '
+                                                              'this.',
+                                            'failureMessage': 'E.C.H.O.: '
+                                                              'He threw '
+                                                              'you back - '
+                                                              'that power '
+                                                              'of his is '
+                                                              'borrowed '
+                                                              'from '
+                                                              'something '
+                                                              'my sensors '
+                                                              'refuse to '
+                                                              'parse. You '
+                                                              'are alive; '
+                                                              'that is the '
+                                                              'asset that '
+                                                              'matters. '
+                                                              'Heal, '
+                                                              're-arm, and '
+                                                              'we climb '
+                                                              'the spire '
+                                                              'again.',
                                             'Boss': True},
  'Victory and Aftermath': {'Required Credits': 72600,
                            'Required Energy': 88,
@@ -1788,24 +1978,25 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                            'requiredEquipment': {'Alien Squad': 2,
                                                  'Jet Pack': 1},
                            'Health Effect': 25,
-                           'startMessage': 'ECHO: Jahntow, this is the '
-                                           'final push. Lead the united '
-                                           'alien alliance in the ultimate '
-                                           'cosmic confrontation against '
-                                           'the Space Corporation. The '
-                                           'time for liberation is now.',
-                           'successMessage': 'ECHO: The cosmic '
-                                             'confrontation is victorious. '
-                                             'The united alien alliance '
-                                             'triumphs, earning you '
-                                             '{reward} credits and '
-                                             '{experience} experience. The '
-                                             'cosmos is free once more.',
-                           'failureMessage': 'ECHO: Our attempt at the '
-                                             'final cosmic confrontation '
-                                             'faced tremendous adversity. '
-                                             'But remember, the spirit of '
-                                             'unity endures.'}}
+                           'startMessage': 'E.C.H.O.: The war is over; the '
+                                           'work is not. Wells to unmeter, '
+                                           'forests to replant, minds to '
+                                           'unbend, a fortress to turn '
+                                           'into something better. The '
+                                           'tribes are asking for you. '
+                                           'They always will be.',
+                           'successMessage': 'E.C.H.O.: Another piece of '
+                                             'the peace, built and '
+                                             'holding. This is my favorite '
+                                             'kind of operations log. '
+                                             '{reward} credits, '
+                                             '{experience} experience.',
+                           'failureMessage': 'E.C.H.O.: A setback - '
+                                             'rebuilding has those too. '
+                                             'Nothing today that tomorrow '
+                                             'cannot mend. The peace '
+                                             'holds, Jahntow. We keep '
+                                             'working.'}}
 
 PROPERTIES = {'Energy Labs': {'Salvage Smelter': {'Base Cost': 3000,
                                       'Item Generated': 'Alpha Core',
