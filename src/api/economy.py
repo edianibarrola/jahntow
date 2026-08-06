@@ -7,7 +7,7 @@ of trusting values sent by the client.
 import math
 import random
 import statistics
-from datetime import timedelta
+from datetime import datetime, timedelta
 from functools import lru_cache
 
 from api.models import (
@@ -208,6 +208,179 @@ def prestige_bonus(player):
     level = min(player.prestige_level or 0, 5)
     return min(PRESTIGE_REWARD_BONUS_CAP,
                level * PRESTIGE_REWARD_BONUS_PER_LEVEL)
+
+
+# --- Allied warbands ------------------------------------------------------
+# The tribes' own forces, funded/armed/provisioned by the player (never
+# commanded - canon). The gate rule: gate on what's PERMANENT (strength,
+# which never decays - access earned is never lost), modulate by what
+# DECAYS (readiness, which sags to a floor when provisions run dry and
+# springs back the moment they're restocked - the constant-player
+# protection, same principle as rested energy).
+WARBAND_MAX_STRENGTH = 100
+# Volunteers get pricier as a company grows: cost = base * (1 + n/50).
+WARBAND_COST_GROWTH = 50
+# One gear kit outfits 10 volunteers; kits cost 5x the volunteer base.
+WARBAND_KIT_SIZE = 10
+WARBAND_KIT_COST_MULT = 5
+# Provisions drain per hour per 10 strength (in provision-item units),
+# capped at 72 hours of stock so provisioning is upkeep, not a vault.
+WARBAND_PROVISION_DRAIN = 1.0
+WARBAND_PROVISION_CAP_HOURS = 72
+# Readiness: 40% floor (dry), up to 100% with full kits + provisions.
+WARBAND_READINESS_FLOOR = 40
+# Escorted missions: success bonus up to +5% at 100% readiness (halved
+# for an out-of-region escort), and failure health loss reduced up to 20%.
+ESCORT_SUCCESS_MAX = 0.05
+ESCORT_HEALTH_REDUCTION_MAX = 0.20
+# Regular ops start needing an escort above the solo ranks (canon: one
+# man and a drone handles the early war personally).
+ESCORT_SOLO_RANK = 8
+
+
+def warband_state(player, faction):
+    """A faction's warband record with defaults filled in (never None)."""
+    state = (player.warbands or {}).get(faction) or {}
+    return {
+        "strength": state.get("strength", 0),
+        "kits": state.get("kits", 0),
+        "provisions": state.get("provisions", 0.0),
+        "last_provision_tick_at": state.get("last_provision_tick_at"),
+    }
+
+
+def warband_unlocked(player, faction):
+    cfg = game_data.WARBANDS.get(faction)
+    return bool(cfg) and (player.storyWins or 0) >= cfg["unlock_wins"]
+
+
+def warband_volunteer_cost(faction, current_strength):
+    base = game_data.WARBANDS[faction]["volunteer_cost"]
+    return max(1, round(base * (1 + current_strength / WARBAND_COST_GROWTH)))
+
+
+def warband_kit_cost(faction):
+    return game_data.WARBANDS[faction]["volunteer_cost"] * WARBAND_KIT_COST_MULT
+
+
+def warband_provision_drain_per_hour(strength):
+    return (strength / WARBAND_KIT_SIZE) * WARBAND_PROVISION_DRAIN
+
+
+def warband_readiness(state):
+    """
+    40 (dry floor) .. 100 (full kits, provisioned). Computed live from
+    the raw state - nothing stored, nothing to drift. Kits cover 10
+    volunteers each; provisions are binary here (any stock = fed).
+    """
+    strength = state["strength"]
+    if strength <= 0:
+        return 0
+    kits_needed = max(1, math.ceil(strength / WARBAND_KIT_SIZE))
+    gear_coverage = min(1.0, state["kits"] / kits_needed)
+    provisioned = state["provisions"] > 0
+    if not provisioned:
+        return WARBAND_READINESS_FLOOR
+    return round(WARBAND_READINESS_FLOOR
+                 + (100 - WARBAND_READINESS_FLOOR) * gear_coverage)
+
+
+def escort_strength_required(mission):
+    """Regular ops: escort size scales with rank; solo below rank 9."""
+    rank = mission.get("Rank", 1)
+    if mission.get("Guaranteed") or rank <= ESCORT_SOLO_RANK:
+        return 0
+    return min(60, math.ceil((rank - ESCORT_SOLO_RANK) / 8) * 10)
+
+
+def pick_escort(player, mission):
+    """
+    (faction, state) of the escorting warband for a regular op. The
+    region's own warband escorts when it can actually meet the strength
+    gate (it fights at full effect at home); otherwise the strongest
+    unlocked warband marches instead. None when nothing is unlocked.
+    """
+    region = mission.get("Region")
+    need = escort_strength_required(mission)
+    candidates = [
+        (faction, warband_state(player, faction))
+        for faction in game_data.WARBANDS
+        if warband_unlocked(player, faction)
+    ]
+    if not candidates:
+        return None
+    home = next(
+        ((faction, state) for faction, state in candidates
+         if game_data.WARBANDS[faction]["region"] == region),
+        None,
+    )
+    if home and home[1]["strength"] >= need:
+        return home
+    return max(candidates, key=lambda pair: pair[1]["strength"])
+
+
+def escort_bonus(player, mission):
+    """
+    Success-chance bonus from the escorting warband on a regular op
+    (0.0 when the op is solo-rank or no escort exists). Out-of-region
+    escorts fight at half effect - a land's ops go best beside its own.
+    """
+    if escort_strength_required(mission) == 0:
+        return 0.0
+    escort = pick_escort(player, mission)
+    if not escort:
+        return 0.0
+    faction, state = escort
+    readiness = warband_readiness(state)
+    if readiness <= 0:
+        return 0.0
+    home = game_data.WARBANDS[faction]["region"] == mission.get("Region")
+    return ESCORT_SUCCESS_MAX * (readiness / 100) * (1.0 if home else 0.5)
+
+
+def host_average_strength(player):
+    """Mean strength across all six warbands - the united front's weight."""
+    total = sum(warband_state(player, f)["strength"]
+                for f in game_data.WARBANDS)
+    return total / max(1, len(game_data.WARBANDS))
+
+
+def apply_warband_ticks(player, now):
+    """
+    Lazy provision drain, wall-clock based like every other resource.
+    Called from apply_passive_tick. Copy-reassign (JSON column).
+    """
+    warbands = dict(player.warbands or {})
+    changed = False
+    for faction, raw in warbands.items():
+        state = dict(raw or {})
+        strength = state.get("strength", 0)
+        provisions = state.get("provisions", 0.0)
+        last = state.get("last_provision_tick_at")
+        if strength <= 0 or provisions <= 0:
+            # Nothing to drain; keep the clock current so a restock
+            # doesn't get billed for the dry spell.
+            state["last_provision_tick_at"] = now.isoformat()
+            warbands[faction] = state
+            changed = True
+            continue
+        if last:
+            try:
+                hours = max(
+                    0.0,
+                    (now - datetime.fromisoformat(last)).total_seconds() / 3600,
+                )
+            except ValueError:
+                hours = 0.0
+        else:
+            hours = 0.0
+        drain = hours * warband_provision_drain_per_hour(strength)
+        state["provisions"] = round(max(0.0, provisions - drain), 3)
+        state["last_provision_tick_at"] = now.isoformat()
+        warbands[faction] = state
+        changed = True
+    if changed:
+        player.warbands = warbands
 
 # Mission success chance scales with how prepared the player actually is,
 # instead of being a flat coin flip regardless of level or gear:
@@ -1100,6 +1273,10 @@ def apply_passive_tick(player):
     now = utcnow()
     changed = False
 
+    # Warband provisions drain on their own wall clock (lazy, like
+    # everything else here). Strength and kits never decay.
+    apply_warband_ticks(player, now)
+
     # Idle credit trickle, expressed as one credit per interval so it uses
     # the same whole-ticks-with-carry mechanism as everything else. The old
     # int(hours * rate) form floored to zero on every sub-144s poll.
@@ -1634,6 +1811,48 @@ def player_meets_requirements(player, mission):
     # bought it, and got refused again for the next - one round-trip of
     # confusion per item.
     problems = []
+
+    # Warband strength gates - permanent capability, so a passed gate can
+    # never un-pass (readiness only modulates, it never blocks).
+    if region is not None:
+        need = escort_strength_required(mission)
+        if need > 0:
+            escort = pick_escort(player, mission)
+            strength = escort[1]["strength"] if escort else 0
+            if strength < need:
+                problems.append(
+                    f"This operation needs a warband escort of {need} "
+                    f"(your best: {strength}). Fund your allies on the "
+                    "Warbands tab."
+                )
+    else:
+        # Story battles: act finales want that land's own warband; the
+        # fortress endgame wants the whole host. Keyed by name, matched
+        # by object identity (the catalog dicts are shared).
+        gate = next(
+            (game_data.STORY_WARBAND_GATES[name]
+             for name, m in game_data.STORY_MISSIONS.items()
+             if m is mission and name in game_data.STORY_WARBAND_GATES),
+            None,
+        )
+        if gate and "faction" in gate:
+            state = warband_state(player, gate["faction"])
+            if state["strength"] < gate["strength"]:
+                band = game_data.WARBANDS[gate["faction"]]["name"]
+                problems.append(
+                    f"The {band} must number {gate['strength']} for this "
+                    f"battle (now: {state['strength']}). Fund them on the "
+                    "Warbands tab."
+                )
+        elif gate:
+            average = host_average_strength(player)
+            if average < gate["host"]:
+                problems.append(
+                    "The united front is not ready - the host must "
+                    f"average {gate['host']} strength across all six "
+                    f"warbands (now: {average:.0f})."
+                )
+
     if player.credits < mission["Required Credits"]:
         problems.append("Not enough credits for this mission.")
     if player.energy < mission_energy_cost(player, mission):
@@ -1692,6 +1911,10 @@ def mission_success_chance(player, mission):
 
     # Faction standing helps on that faction's own story missions.
     chance += story_faction_bonus(player, mission)
+
+    # A ready warband escort helps on regular ops (scaled by readiness,
+    # halved out of region). Applied before the ceiling clamps.
+    chance += escort_bonus(player, mission)
 
     ceiling = MAX_SUCCESS_CHANCE
     # The boss fight keeps an irreducible one-in-four risk no matter how
@@ -1840,6 +2063,13 @@ def resolve_mission(player, mission, mission_name=None, is_story=False):
         # Armor perk shaves failure damage before the narrow-escape halving.
         if health_loss > 0 and perks["Armor"] > 0:
             health_loss = max(1, round(health_loss * (1 - perks["Armor"])))
+        # A ready escort pulls you out of failures lighter, too. The
+        # bonus/ESCORT_SUCCESS_MAX ratio is the readiness x home factor.
+        escort_factor = escort_bonus(player, mission) / ESCORT_SUCCESS_MAX
+        if health_loss > 0 and escort_factor > 0:
+            health_loss = max(1, round(
+                health_loss * (1 - ESCORT_HEALTH_REDUCTION_MAX * escort_factor)
+            ))
         narrow_escape = health_loss > 0 and random.random() < NARROW_ESCAPE_CHANCE
         if narrow_escape:
             health_loss -= health_loss // 2

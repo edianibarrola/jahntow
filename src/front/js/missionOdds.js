@@ -42,11 +42,70 @@ const factionBonus = (player, mission) => {
   return 0;
 };
 
+// Mirrors economy.WARBAND_* / ESCORT_*: warband escorts on regular ops.
+const WARBAND_KIT_SIZE = 10;
+const WARBAND_READINESS_FLOOR = 40;
+const ESCORT_SUCCESS_MAX = 0.05;
+const ESCORT_SOLO_RANK = 8;
+
+const warbandReadiness = (state) => {
+  const strength = state.strength || 0;
+  if (strength <= 0) return 0;
+  if ((state.provisions || 0) <= 0) return WARBAND_READINESS_FLOOR;
+  const kitsNeeded = Math.max(1, Math.ceil(strength / WARBAND_KIT_SIZE));
+  const coverage = Math.min(1, (state.kits || 0) / kitsNeeded);
+  return Math.round(
+    WARBAND_READINESS_FLOOR + (100 - WARBAND_READINESS_FLOOR) * coverage
+  );
+};
+
+// Mirrors economy.pick_escort/escort_bonus: which warband escorts this op,
+// whether the strength gate is met, and the success bonus it contributes.
+export const escortInfo = (player, mission, warbandCatalog) => {
+  if (!warbandCatalog || !mission.Region || mission.Guaranteed) return null;
+  const need =
+    mission.Rank <= ESCORT_SOLO_RANK
+      ? 0
+      : Math.min(60, Math.ceil((mission.Rank - ESCORT_SOLO_RANK) / 8) * 10);
+  if (need === 0) return null;
+  const unlocked = Object.entries(warbandCatalog).filter(
+    ([, cfg]) => (player.storyWins || 0) >= cfg.unlock_wins
+  );
+  const strengthOf = (faction) => player.warbands?.[faction]?.strength || 0;
+  // Home escorts when it can meet the gate; otherwise the strongest
+  // unlocked warband marches (mirrors economy.pick_escort).
+  const home =
+    unlocked.find(([, cfg]) => cfg.region === mission.Region) || null;
+  let pick = home && strengthOf(home[0]) >= need ? home : null;
+  if (!pick) {
+    unlocked.forEach((entry) => {
+      if (!pick || strengthOf(entry[0]) > strengthOf(pick[0])) pick = entry;
+    });
+  }
+  const state = pick
+    ? { strength: 0, kits: 0, provisions: 0, ...(player.warbands?.[pick[0]] || {}) }
+    : { strength: 0 };
+  const readiness = pick ? warbandReadiness(state) : 0;
+  const isHome = !!pick && pick[1].region === mission.Region;
+  return {
+    need,
+    name: pick ? pick[1].name : null,
+    strength: state.strength,
+    readiness,
+    isHome,
+    met: state.strength >= need,
+    bonus:
+      pick && readiness > 0
+        ? ESCORT_SUCCESS_MAX * (readiness / 100) * (isHome ? 1 : 0.5)
+        : 0,
+  };
+};
+
 // Broken out so the UI can explain *why* the odds are what they are - and
 // in particular show that the gear bonus is capped, which was previously
 // invisible: stockpiling spares past the cap changed nothing on screen and
 // nothing told you why.
-export const successBreakdown = (player, mission) => {
+export const successBreakdown = (player, mission, warbandCatalog = null) => {
   const levelAdvantage = player.level - mission.Rank;
   // Only the upside is capped, matching the server: being under-levelled
   // still hurts without limit.
@@ -71,6 +130,8 @@ export const successBreakdown = (player, mission) => {
   const equipmentBonus = Math.min(rawEquipmentBonus, MAX_EQUIPMENT_BONUS);
 
   const repBonus = factionBonus(player, mission);
+  const escort = escortInfo(player, mission, warbandCatalog);
+  const escortBonus = escort ? escort.bonus : 0;
   // The boss fight's odds are hard-capped server-side; mirror it so the
   // preview never overstates.
   const ceiling = mission.Boss
@@ -80,11 +141,13 @@ export const successBreakdown = (player, mission) => {
     MIN_SUCCESS_CHANCE,
     Math.min(
       ceiling,
-      BASE_SUCCESS_CHANCE + advantageBonus + equipmentBonus + repBonus
+      BASE_SUCCESS_CHANCE + advantageBonus + equipmentBonus + repBonus +
+        escortBonus
     )
   );
 
   return {
+    escort,
     chance: Math.round(chance * 100),
     basePct: Math.round(BASE_SUCCESS_CHANCE * 100),
     levelPct: Math.round(advantageBonus * 100),
