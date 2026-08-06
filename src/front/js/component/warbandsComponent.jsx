@@ -12,14 +12,29 @@ const COST_GROWTH = 50;
 const MAX_STRENGTH = 200;
 const READINESS_FLOOR = 40;
 const PROVISION_CAP_HOURS = 24;
-const DRAIN_PER_HOUR = (strength) => (strength / KIT_SIZE) * 1.0;
 
-// Yield-rate mirrors of economy.WARBAND_PATROL_RATE / SALVAGE_RATE /
-// BANNER_REP_PER_DAY - display only, the server accrues the real stash.
-const PATROL_RATE = 0.1;
-const SALVAGE_RATE = 0.8;
+// Yield/upkeep mirrors of economy.WARBAND_* (round-5 rebalance) -
+// display only, the server accrues the real stash and drains the real
+// provisions. Upkeep and salvage are credit-anchored at the item's BASE
+// cost, so drain needs the tribe config plus that base price.
+const PATROL_RATE = 1.25;
+const UPKEEP_TIER_RATE = 5.0;
+const SALVAGE_TARGET_MULT = 1.2;
 const BANNER_REP_PER_DAY = 2.0;
 const BANNER_MIN = 10;
+const drainPerHour = (strength, cfg, baseCost) =>
+  ((strength / 100) * cfg.volunteer_cost * UPKEEP_TIER_RATE) /
+  24 /
+  (baseCost || 1);
+const salvageUnitsPerDay = (cfg, baseCost) =>
+  Math.min(
+    30,
+    Math.max(
+      0.3,
+      (PATROL_RATE * cfg.volunteer_cost * 24 * SALVAGE_TARGET_MULT) /
+        (baseCost || 1)
+    )
+  );
 
 const volunteerCost = (base, current) =>
   Math.max(1, Math.round(base * (1 + current / COST_GROWTH)));
@@ -55,6 +70,12 @@ const WarbandsComponent = () => {
 
   const priceOf = (itemName) =>
     (marketPrices || []).find((r) => r.item_name === itemName)?.buy_price || 0;
+  const baseCostByItem = {};
+  Object.values(gameData.items || {}).forEach((items) =>
+    Object.entries(items).forEach(([itemName, data]) => {
+      baseCostByItem[itemName] = data["Base Cost"];
+    })
+  );
 
   const act = (kind, faction, amount) => {
     setBusy(faction);
@@ -137,10 +158,15 @@ const WarbandsComponent = () => {
           ? Math.min(state.deployed || state.strength, state.strength)
           : 0;
         // Deployed troops eat double; reserves eat normal rations.
+        const provBase = baseCostByItem[cfg.provision_item];
         const drain =
-          DRAIN_PER_HOUR(state.strength) + DRAIN_PER_HOUR(deployed);
+          drainPerHour(state.strength, cfg, provBase) +
+          drainPerHour(deployed, cfg, provBase);
         const hoursLeft = drain > 0 ? state.provisions / drain : 0;
-        const provisionCap = Math.floor(drain * PROVISION_CAP_HOURS);
+        // +1 mirrors the server's unit-rounding forgiveness: with the
+        // credit-anchored drain a small band's 24h burn can be under one
+        // whole item, and flooring to 0 would disable the button forever.
+        const provisionCap = Math.floor(drain * PROVISION_CAP_HOURS + 1);
         const restock = Math.max(
           0,
           Math.min(provisionCap - Math.ceil(state.provisions),
@@ -361,7 +387,12 @@ const WarbandsComponent = () => {
                             cfg.volunteer_cost * PATROL_RATE * effect * 24
                           ).toLocaleString()} cr/day`
                         : state.assignment === "salvage"
-                        ? `~${(SALVAGE_RATE * effect * 24).toFixed(1)} goods/day`
+                        ? `~${(
+                            salvageUnitsPerDay(
+                              cfg,
+                              baseCostByItem[cfg.salvage_item]
+                            ) * effect
+                          ).toFixed(1)} goods/day`
                         : deployed >= BANNER_MIN
                         ? `~${(BANNER_REP_PER_DAY * (readiness / 100)).toFixed(
                             1
@@ -451,6 +482,13 @@ const WarbandsComponent = () => {
           🔒 The {nextLocked[1].name} join the war at{" "}
           {nextLocked[1].unlock_wins} story wins (you:{" "}
           {player.storyWins || 0}).
+          {/* Chronicle retellings re-lock the tribes until the story
+              reaches them again - but their strength is preserved, and
+              nothing used to say so ("did I just lose my warbands?"). */}
+          {(player.warbands?.[nextLocked[0]]?.strength || 0) > 0 &&
+            ` They remember you — ${
+              player.warbands[nextLocked[0]].strength
+            } veterans will answer the muster.`}
         </p>
       )}
     </div>

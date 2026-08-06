@@ -1074,13 +1074,27 @@ def warband_provision():
     state = economy.warband_state(player, faction)
     if state["strength"] <= 0:
         return jsonify({"message": "fund some volunteers first"}), 400
-    drain = economy.warband_provision_drain_per_hour(state["strength"])
+    # The cap must be sized at the band's ACTUAL burn rate: a deployed
+    # detachment eats double, and the tick drains at that rate - capping
+    # at the idle rate rejected the UI's own (correct) 24h restock the
+    # moment any detachment was in the field.
+    raw = (player.warbands or {}).get(faction) or {}
+    active = raw.get("assignment") in economy.WARBAND_OP_KINDS
+    deployed = min(state["deployed"] or 0, state["strength"]) if active else 0
+    if active and deployed <= 0:
+        deployed = state["strength"]  # legacy records: whole band deployed
+    drain = (
+        economy.warband_provision_drain_per_hour(state["strength"], faction)
+        + economy.warband_provision_drain_per_hour(deployed, faction)
+        * (economy.WARBAND_OP_DRAIN_MULT - 1.0)
+    )
     cap = drain * economy.WARBAND_PROVISION_CAP_HOURS
-    if state["provisions"] + units > cap:
+    if state["provisions"] + units > cap + 1:  # +1 forgives unit rounding
         return jsonify({
             "message": (
                 f"provision stores cap at {cap:.0f} units "
-                f"({economy.WARBAND_PROVISION_CAP_HOURS}h of supply)"
+                f"({economy.WARBAND_PROVISION_CAP_HOURS}h of supply at the "
+                "current burn rate)"
             )
         }), 400
 
@@ -1106,7 +1120,7 @@ def warband_provision():
         player,
         f"🍞 {units}x {item_name} provisioned to the "
         f"{game_data.WARBANDS[faction]['name']} ({total_cost:,} credits) - "
-        f"{state['provisions'] / drain:.0f}h of supply.",
+        f"{stored['provisions'] / drain:.0f}h of supply.",
         "warband",
     )
     db.session.commit()
@@ -1694,15 +1708,32 @@ def prestige():
         stats = dict(player.stats or {})
         stats["chronicle_cycles"] = int(stats.get("chronicle_cycles", 0) or 0) + 1
         player.stats = stats
+        # Peacetime thins the musters: warriors go home, so the retold war
+        # starts with a light rebuild instead of a maxed host trivially
+        # meeting every escalated gate. Kits, provisions and stashes keep;
+        # standing orders end - there is no war to patrol yet.
+        warbands = dict(player.warbands or {})
+        for wb_faction, wb_raw in warbands.items():
+            band = dict(wb_raw or {})
+            band["strength"] = int(round(
+                (band.get("strength") or 0) * economy.CHRONICLE_MUSTER_RATE))
+            band["assignment"] = None
+            band["deployed"] = 0
+            band["assigned_at"] = None
+            warbands[wb_faction] = band
+        player.warbands = warbands
         escalation = round(
             economy.CHRONICLE_GATE_ESCALATION
             * stats["chronicle_cycles"] * 100)
+        muster = round(economy.CHRONICLE_MUSTER_RATE * 100)
         extra_activities.append(economy.log_activity(
             player,
             f"📜 E.C.H.O.: \"Chronicle {stats['chronicle_cycles']} archived. "
             "I will tell the war again from the first landing - but the "
             "tribes' legends have grown in the telling: every warband "
-            f"battle now demands +{escalation}% strength.\"",
+            f"battle now demands +{escalation}% strength, and peacetime "
+            f"sent warriors home - the musters stand at {muster}%. Your "
+            "veterans rejoin as the story reaches their lands.\"",
             "choice",
         ))
     activity = economy.log_activity(

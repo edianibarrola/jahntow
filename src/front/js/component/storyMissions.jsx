@@ -389,12 +389,20 @@ const StoryMissions = () => {
                               const strength =
                                 player.warbands?.[gate.faction]?.strength || 0;
                               const met = strength >= need;
+                              // Gates count TOTAL strength by design - a
+                              // band out on operations still answers the
+                              // war horn. Say so, or a deployed band
+                              // passing its gate looks like a bug.
+                              const fieldNote = player.warbands?.[gate.faction]
+                                ?.assignment
+                                ? " They're in the field — they'll answer the horn when you strike."
+                                : "";
                               return (
                                 <li className={met ? "tx-rep" : "tx-error"}>
                                   ⚔️ War host: the {band.name || gate.faction}{" "}
                                   must number {need} —{" "}
                                   {met
-                                    ? `ready (${strength} strong).${raggedNote}`
+                                    ? `ready (${strength} strong).${fieldNote}${raggedNote}`
                                     : `now ${strength}. Recruit on the Warbands tab.`}
                                 </li>
                               );
