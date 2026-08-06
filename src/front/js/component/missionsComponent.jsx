@@ -301,25 +301,27 @@ const MissionsComponent = () => {
                               ` Locked above ${missionData.AvailableBelowCredits} credits.`}
                           </li>
                         ) : (
-                          <li>
-                            Est. Success Chance: {odds.chance}%{" "}
-                            <span className="tx-info">
-                              (base {odds.basePct}%
-                              {odds.levelPct !== 0 &&
-                                ` · your level ${odds.levelPct > 0 ? "+" : ""}${odds.levelPct}%`}
-                              {` · spare equipment +${odds.gearPct}% (max ${odds.gearMaxPct}%)`}
-                              {odds.escort && odds.escort.bonus > 0 &&
-                                ` · warband escort +${(odds.escort.bonus * 100).toFixed(1)}%`}
-                              )
-                            </span>
-                          </li>
-                          {Object.keys(missionData.requiredSupplies || {})
-                            .length > 0 && (
-                            <li className="tx-info">
-                              Supplies are fuel — they're consumed every
-                              attempt but never change the odds.
+                          <>
+                            <li>
+                              Est. Success Chance: {odds.chance}%{" "}
+                              <span className="tx-info">
+                                (base {odds.basePct}%
+                                {odds.levelPct !== 0 &&
+                                  ` · your level ${odds.levelPct > 0 ? "+" : ""}${odds.levelPct}%`}
+                                {` · spare equipment +${odds.gearPct}% (max ${odds.gearMaxPct}%)`}
+                                {odds.escort && odds.escort.bonus > 0 &&
+                                  ` · warband escort +${(odds.escort.bonus * 100).toFixed(1)}%`}
+                                )
+                              </span>
                             </li>
-                          )}
+                            {Object.keys(missionData.requiredSupplies || {})
+                              .length > 0 && (
+                              <li className="tx-info">
+                                Supplies are fuel — they're consumed every
+                                attempt but never change the odds.
+                              </li>
+                            )}
+                          </>
                         )}
                         {/* One number, in the same units as the "Owned: N"
                             line below: the total holding that maxes the
