@@ -217,7 +217,9 @@ def prestige_bonus(player):
 # DECAYS (readiness, which sags to a floor when provisions run dry and
 # springs back the moment they're restocked - the constant-player
 # protection, same principle as rested energy).
-WARBAND_MAX_STRENGTH = 100
+# Raised 100 -> 200 with detachments (round 4): the escalating volunteer
+# cost curve is the soft limit - the 200th costs 5x the first.
+WARBAND_MAX_STRENGTH = 200
 # Volunteers get pricier as a company grows: cost = base * (1 + n/50).
 WARBAND_COST_GROWTH = 50
 # One gear kit outfits 10 volunteers; kits cost 5x the volunteer base.
@@ -343,6 +345,7 @@ def warband_state(player, faction):
         "strength": state.get("strength", 0),
         "kits": state.get("kits", 0),
         "provisions": state.get("provisions", 0.0),
+        "deployed": state.get("deployed", 0),
         "last_provision_tick_at": state.get("last_provision_tick_at"),
     }
 
@@ -481,10 +484,17 @@ def apply_warband_ticks(player, now):
                 hours = 0.0
         state["last_provision_tick_at"] = now.isoformat()
 
+        # Detachments (round 4): only the DEPLOYED detachment works the
+        # operation and eats double; the reserves eat normal rations and
+        # stand ready for gates/escorts (which always use total strength).
+        deployed = min(state.get("deployed", 0) or 0, strength)
+        if assignment and deployed <= 0:
+            deployed = strength  # legacy records: whole band deployed
         if strength > 0 and hours > 0 and provisions > 0:
             drain_rate = warband_provision_drain_per_hour(strength)
             if assignment:
-                drain_rate *= WARBAND_OP_DRAIN_MULT
+                drain_rate += warband_provision_drain_per_hour(deployed) * (
+                    WARBAND_OP_DRAIN_MULT - 1.0)
             # Yields only accrue while there was food on the wagons.
             worked = min(hours, provisions / drain_rate) if drain_rate else 0.0
             state["provisions"] = round(
@@ -497,7 +507,7 @@ def apply_warband_ticks(player, now):
                     dict(state, provisions=1.0),
                     warband_boon_points(player, faction),
                 )
-                effect = (strength / 100) * (readiness / 100)
+                effect = (deployed / 100) * (readiness / 100)
                 tier = game_data.WARBANDS[faction]["volunteer_cost"]
                 stash = dict(state.get("stash") or
                              {"credits": 0.0, "items": 0.0, "rep": 0.0})
@@ -510,7 +520,7 @@ def apply_warband_ticks(player, now):
                         stash["items"]
                         + worked * WARBAND_SALVAGE_RATE * effect, 3)
                 elif (assignment == "banners"
-                      and strength >= WARBAND_BANNER_MIN_STRENGTH):
+                      and deployed >= WARBAND_BANNER_MIN_STRENGTH):
                     stash["rep"] = round(
                         stash["rep"]
                         + worked * WARBAND_BANNER_REP_PER_DAY / 24
@@ -921,12 +931,15 @@ def _maybe_spawn_price_event(active, now):
     if len(price_events) >= MAX_CONCURRENT_EVENTS:
         return None
 
-    busy_categories = {event.category for event in price_events}
-    candidates = [c for c in game_data.ITEMS.keys() if c not in busy_categories]
+    # Per ITEM now (round 4): "BioPatch is crashing" is a play; "Advanced
+    # Medicines are crashing" was weather.
+    busy_items = {event.category for event in price_events}
+    candidates = [name for items in game_data.ITEMS.values()
+                  for name in items if name not in busy_items]
 
-    # Cooldown is per-category too: a category that just finished an event
-    # shouldn't immediately start another, but an untouched category
-    # shouldn't be blocked by an unrelated one.
+    # Cooldown is per-item too: an item that just finished an event
+    # shouldn't immediately start another, but an untouched one shouldn't
+    # be blocked by an unrelated event.
     recent_cutoff = now - EVENT_CHECK_COOLDOWN
     cooling = {
         row.category for row in
@@ -935,14 +948,14 @@ def _maybe_spawn_price_event(active, now):
             GameEvent.ends_at > recent_cutoff,
         ).all()
     }
-    candidates = [c for c in candidates if c not in cooling]
+    candidates = [name for name in candidates if name not in cooling]
     if not candidates:
         return None
 
     if random.random() > EVENT_SPAWN_CHANCE:
         return None
 
-    category = random.choice(candidates)
+    category = random.choice(candidates)  # the item name, stored in .category
     kind = random.choice(["price_spike", "price_crash"])
     magnitude = random.uniform(EVENT_MAGNITUDE_MIN, EVENT_MAGNITUDE_MAX)
     # Symmetric in log space: a crash divides where a spike multiplies. A
@@ -1086,11 +1099,12 @@ def get_active_events():
     )
 
 
-def get_event_multiplier(category, events=None):
+def get_event_multiplier(item_name, events=None):
     """
-    Combined multiplier for a category. `events` should be a prefetched
-    list from get_active_events() - passing it avoids re-querying once per
-    market row, which is what the old per-row get_active_event() call did.
+    Combined multiplier for one ITEM. Price events target a single item
+    now (round 4: "per item, not per category, to make it more gamey") -
+    a GameEvent's `category` field stores the item name for price kinds.
+    `events` should be a prefetched list from get_active_events().
     """
     if events is None:
         events = get_active_events()
@@ -1098,9 +1112,9 @@ def get_event_multiplier(category, events=None):
     for event in events:
         # Only price events touch market prices. Bounty/merchant events
         # store a mission name / equipment category in `category`, which
-        # can never collide with an item category today - but filtering on
-        # kind keeps that a non-assumption.
-        if event.kind in PRICE_EVENT_KINDS and event.category == category:
+        # can never collide with an item name - but filtering on kind
+        # keeps that a non-assumption.
+        if event.kind in PRICE_EVENT_KINDS and event.category == item_name:
             multiplier *= event.multiplier
     return multiplier
 
@@ -1137,7 +1151,7 @@ def get_effective_price(price_row, events=None):
     current_cost itself, so an event needs no cleanup when it expires - the
     multiplier just stops applying.
     """
-    return price_row.current_cost * get_event_multiplier(price_row.category, events)
+    return price_row.current_cost * get_event_multiplier(price_row.item_name, events)
 
 
 def get_buy_price(price_row, events=None):
@@ -1247,7 +1261,7 @@ def get_market_prices():
         serialized["sell_price"] = int(get_sell_price(row, events))
         # Let the UI mark which items are under an active event rather than
         # silently baking the multiplier into the price with no cue.
-        serialized["event_multiplier"] = round(get_event_multiplier(row.category, events), 4)
+        serialized["event_multiplier"] = round(get_event_multiplier(row.item_name, events), 4)
         # How far the price sits from its anchor, and how jumpy this item
         # is. The raw base number on its own told the player very little;
         # the *distance* from it is the actual trading signal, and the
