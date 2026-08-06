@@ -225,11 +225,17 @@ WARBAND_COST_GROWTH = 50
 # One gear kit outfits 10 volunteers; kits cost 5x the volunteer base.
 WARBAND_KIT_SIZE = 10
 WARBAND_KIT_COST_MULT = 5
-# Provisions drain per hour per 10 strength (in provision-item units).
-# The cap is a single DAY of stock - deliberately short, so a warband
+# Provision drain is CREDIT-anchored (round 5 rebalance): an idle
+# 100-strong band eats WARBAND_UPKEEP_TIER_RATE x its tier in credits'
+# worth of its provision item per day, at BASE prices - whatever that
+# item costs. The old model drained a flat 1 item per 10 strength per
+# hour, but provision items span a 36x price range, so feeding a band
+# cost 100-1000x what its patrol earned and provisioning was (correctly)
+# judged pointless by playtesting.
+# The cap stays a single DAY of stock - deliberately short, so a warband
 # that's working needs the player back roughly daily. (72h in the first
 # release; playtesting found nobody ever needed to return.)
-WARBAND_PROVISION_DRAIN = 1.0
+WARBAND_UPKEEP_TIER_RATE = 5.0
 WARBAND_PROVISION_CAP_HOURS = 24
 # Readiness: 40% floor (dry), up to 100% with full kits + provisions.
 WARBAND_READINESS_FLOOR = 40
@@ -250,11 +256,21 @@ ESCORT_SOLO_RANK = 8
 # provision cap, that's the come-back loop.
 WARBAND_OP_KINDS = ("patrol", "salvage", "banners")
 WARBAND_OP_DRAIN_MULT = 2.0
-# Patrol: credits/hour at full strength(100) and readiness = tier cost x
-# this factor. Outriders (tier 100): 30 strength, 100% ready ~ 300/h.
-WARBAND_PATROL_RATE = 0.10
-# Salvage: items/hour per 100 strength at full readiness.
-WARBAND_SALVAGE_RATE = 0.8
+# Patrol: credits/hour per tier point at full effect (100 deployed, 100%
+# ready) - ~30x tier per day gross. With upkeep at ~1/3 of that when
+# fully deployed, a maxed 100-band nets ~20x tier/day and pays back its
+# ~200x tier funding cost in about ten days. Readiness is the other
+# lever: a kitless-but-fed band works at 40% effect, so gear kits ~2.5x
+# the yield - that's what they're FOR.
+WARBAND_PATROL_RATE = 1.25
+# Salvage: credit-anchored like upkeep - targets ~1.2x patrol's daily
+# value in the tribe's salvage item at BASE price (you take market risk
+# and inventory space for the premium), clamped so cheap-item tribes
+# don't bury the hold in units and 100k-item tribes still bank
+# something visible.
+WARBAND_SALVAGE_TARGET_MULT = 1.2
+WARBAND_SALVAGE_MAX_UNITS_PER_DAY = 30.0
+WARBAND_SALVAGE_MIN_UNITS_PER_DAY = 0.3
 # Banners: rep points per full day deployed (at any strength >= 10).
 WARBAND_BANNER_REP_PER_DAY = 2.0
 WARBAND_BANNER_MIN_STRENGTH = 10
@@ -277,6 +293,11 @@ CHRONICLE_GATE_ESCALATION = 0.5
 # repeatable Remnant Hunts paying this much extra credits on top of the
 # normal story reward.
 REMNANT_REWARD_BONUS = 0.5
+# Closing a chronicle thins the musters: peacetime sends warriors home,
+# so each retelling starts with a light rebuild (which the escalated
+# gates eventually demand anyway) instead of a fully mustered host
+# trivially meeting every re-told battle.
+CHRONICLE_MUSTER_RATE = 0.75
 
 
 def chronicle_cycles(player):
@@ -391,8 +412,35 @@ def warband_kit_cost(faction):
     return game_data.WARBANDS[faction]["volunteer_cost"] * WARBAND_KIT_COST_MULT
 
 
-def warband_provision_drain_per_hour(strength):
-    return (strength / WARBAND_KIT_SIZE) * WARBAND_PROVISION_DRAIN
+def _item_base_cost(item_name):
+    for items in game_data.ITEMS.values():
+        if item_name in items:
+            return items[item_name]["Base Cost"]
+    return None
+
+
+def warband_provision_drain_per_hour(strength, faction):
+    """
+    Provision-item units burned per hour by `strength` warriors of this
+    tribe. Credit-anchored: the units are sized so an idle 100-band eats
+    WARBAND_UPKEEP_TIER_RATE x tier credits' worth per day at base
+    prices, regardless of what its tribe's foodstuff happens to cost.
+    """
+    cfg = game_data.WARBANDS[faction]
+    base_cost = _item_base_cost(cfg["provision_item"]) or 1
+    credits_per_day = (strength / 100.0) * cfg["volunteer_cost"] * WARBAND_UPKEEP_TIER_RATE
+    return credits_per_day / 24.0 / base_cost
+
+
+def warband_salvage_units_per_day(faction):
+    """Salvage-item units banked per day at full effect (see the
+    WARBAND_SALVAGE_* constants for the credit-anchored sizing)."""
+    cfg = game_data.WARBANDS[faction]
+    base_cost = _item_base_cost(cfg["salvage_item"]) or 1
+    target = (WARBAND_PATROL_RATE * cfg["volunteer_cost"] * 24.0
+              * WARBAND_SALVAGE_TARGET_MULT) / base_cost
+    return min(WARBAND_SALVAGE_MAX_UNITS_PER_DAY,
+               max(WARBAND_SALVAGE_MIN_UNITS_PER_DAY, target))
 
 
 def warband_readiness(state, boon=0):
@@ -518,10 +566,10 @@ def apply_warband_ticks(player, now):
         if assignment and deployed <= 0:
             deployed = strength  # legacy records: whole band deployed
         if strength > 0 and hours > 0 and provisions > 0:
-            drain_rate = warband_provision_drain_per_hour(strength)
+            drain_rate = warband_provision_drain_per_hour(strength, faction)
             if assignment:
-                drain_rate += warband_provision_drain_per_hour(deployed) * (
-                    WARBAND_OP_DRAIN_MULT - 1.0)
+                drain_rate += warband_provision_drain_per_hour(
+                    deployed, faction) * (WARBAND_OP_DRAIN_MULT - 1.0)
             # Yields only accrue while there was food on the wagons.
             worked = min(hours, provisions / drain_rate) if drain_rate else 0.0
             state["provisions"] = round(
@@ -556,7 +604,8 @@ def apply_warband_ticks(player, now):
                 elif assignment == "salvage":
                     stash["items"] = round(
                         stash["items"]
-                        + worked * WARBAND_SALVAGE_RATE * effect, 3)
+                        + worked * warband_salvage_units_per_day(faction)
+                        / 24.0 * effect, 3)
                 elif (assignment == "banners"
                       and deployed >= WARBAND_BANNER_MIN_STRENGTH):
                     stash["rep"] = round(
@@ -793,16 +842,22 @@ def ensure_market_seeded():
         db.session.commit()
 
 
-def _record_price_point(price_row, now):
+def _record_price_point(price_row, now, events=None):
     """
     Append this tick's price to the item's rolling history and trim to the
     most recent PRICE_HISTORY_POINTS. Riding the existing tick means the
     chart needs no separate mechanism, and trimming on write bounds the
     table without a background job.
+
+    History records the EFFECTIVE price - event multiplier included - so
+    the sparkline shows the very spike/crash the banner is shouting about
+    (it used to chart the pre-event simulator price, which made events
+    invisible on the trend line).
     """
     db.session.add(MarketPriceHistory(
         item_name=price_row.item_name,
-        cost=price_row.current_cost,
+        cost=round(price_row.current_cost
+                   * get_event_multiplier(price_row.item_name, events), 2),
         recorded_at=now,
     ))
 
@@ -861,7 +916,7 @@ def volatility_label(item_name):
     return "volatile"
 
 
-def _tick_price(price_row, now):
+def _tick_price(price_row, now, events=None):
     elapsed = now - (price_row.updated_at or now)
     if elapsed < PRICE_TICK_INTERVAL:
         return False
@@ -905,7 +960,7 @@ def _tick_price(price_row, now):
     price_row.current_cost = max(1, round(new_cost))
     price_row.updated_at = now
 
-    _record_price_point(price_row, now)
+    _record_price_point(price_row, now, events)
 
     # Post a global "price changed" notification once cumulative drift
     # since the last one crosses the threshold - server-side equivalent
@@ -929,9 +984,12 @@ def apply_price_ticks():
     """Advance any market prices that are due for their next random-walk step."""
     ensure_market_seeded()
     now = utcnow()
+    # Fetched once so every ticking row can record its event-adjusted
+    # price into history without a per-row event query.
+    events = get_active_events()
     changed = False
     for row in MarketPrice.query.all():
-        if _tick_price(row, now):
+        if _tick_price(row, now, events):
             changed = True
     if changed:
         db.session.commit()
