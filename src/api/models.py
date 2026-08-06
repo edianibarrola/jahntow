@@ -200,19 +200,30 @@ class Player(db.Model):
     def __repr__(self):
         return f'<Player {self.name}>'
 
-    def current_title(self):
-        """
-        The most recently earned achievement title (or None). Earn order is
-        the order of the achievements list, so a newly earned title
-        replaces an older one rather than the catalog deciding.
-        """
+    def earned_titles(self):
+        """Every achievement title this player has earned, in earn order."""
         by_id = {a["id"]: a for a in game_data.ACHIEVEMENTS}
-        title = None
+        titles = []
         for ach_id in (self.achievements or []):
             ach = by_id.get(ach_id)
-            if ach and ach.get("title"):
-                title = ach["title"]
-        return title
+            if ach and ach.get("title") and ach["title"] not in titles:
+                titles.append(ach["title"])
+        return titles
+
+    def current_title(self):
+        """
+        The player's chosen title if they've picked one (stats JSON,
+        validated against what's actually earned so a stale pick can't
+        stick), otherwise the most recently earned achievement title (or
+        None). Earn order is the order of the achievements list, so a
+        newly earned title replaces an older one rather than the catalog
+        deciding.
+        """
+        titles = self.earned_titles()
+        selected = (self.stats or {}).get("selected_title")
+        if selected and selected in titles:
+            return selected
+        return titles[-1] if titles else None
 
     def pending_story_choice(self):
         """
@@ -265,6 +276,7 @@ class Player(db.Model):
             "dailyContracts": self.daily_contracts or {},
             "achievements": self.achievements or [],
             "title": self.current_title(),
+            "earnedTitles": self.earned_titles(),
             "reputation": self.reputation or {},
             "storyChoices": self.story_choices or {},
             "pendingChoice": self.pending_story_choice(),

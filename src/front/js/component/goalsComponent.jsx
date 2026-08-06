@@ -33,11 +33,12 @@ const ProgressBar = ({ value, goal }) => {
 };
 
 const GoalsComponent = () => {
-  const { store } = useContext(Context);
+  const { store, actions } = useContext(Context);
   const { player, gameData } = store;
   const contracts = (player.dailyContracts || {}).contracts || [];
   const achievements = gameData.achievements || [];
   const earned = new Set(player.achievements || []);
+  const earnedTitles = player.earnedTitles || [];
 
   // Group the flat catalog into its progression tracks, tiers in order.
   // Achievements are still earned individually server-side; this is purely
@@ -63,6 +64,24 @@ const GoalsComponent = () => {
             )}
           </p>
         </div>
+        {/* Titles are earned flair shown on the leaderboard; with more
+            than one earned, the player picks which to wear (playtest
+            note: earning a new one silently replaced the old). */}
+        {earnedTitles.length > 1 && (
+          <div className="col-12 text-center pb-2">
+            <label className="tx-info small me-2">🎖 Wear title:</label>
+            <select
+              value={player.title || ""}
+              onChange={(e) => actions.selectTitle(e.target.value || null)}
+            >
+              {earnedTitles.map((title) => (
+                <option key={title} value={title}>
+                  {title}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="row mb-3">

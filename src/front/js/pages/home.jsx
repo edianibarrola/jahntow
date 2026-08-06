@@ -21,9 +21,11 @@ import ActivityToast from "../component/ActivityToast";
 
 import StoryMissions from "../component/storyMissions";
 import WarbandsComponent from "../component/warbandsComponent";
+import CharactersComponent from "../component/charactersComponent";
+import EchoIntro from "../component/echoIntro";
 
 import "../../styles/home.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 // i like this for the Ai Robot that helps the player (tells him about the missions)
 //  Eco-conscious Consultant for Habitability Optimization:
@@ -95,6 +97,7 @@ export const Home = () => {
         { key: "missions", title: "Missions", bg: "ship", render: () => <MissionsComponent /> },
         { key: "storyMissions", title: "Story Missions", bg: "ship", render: () => <StoryMissions /> },
         { key: "warbands", title: "Warbands", bg: "ship", render: () => <WarbandsComponent /> },
+        { key: "characters", title: "Characters", bg: "ship", render: () => <CharactersComponent /> },
       ],
     },
     {
@@ -137,6 +140,7 @@ export const Home = () => {
 
   const [activeGroup, setActiveGroup] = useState("Trade");
   const [tabByGroup, setTabByGroup] = useState({});
+  const [guideOpen, setGuideOpen] = useState(false);
   const currentGroup =
     TAB_GROUPS.find((g) => g.name === activeGroup) || TAB_GROUPS[0];
   const activeTab =
@@ -146,6 +150,7 @@ export const Home = () => {
   return (
     <div className="mt-2 container-fluid holobg">
       <ActivityToast />
+      <EchoIntro open={guideOpen} setOpen={setGuideOpen} />
       <div className="row mb-2 holo app-header">
         {/* Auto-width chips in a wrapping flex strip. The old version gave
             every stat a col-4 - five 33% columns plus a logout in one row,
@@ -158,6 +163,13 @@ export const Home = () => {
           <ExperienceComponent experience={player.experience} xpForNextLevel={player.xpForNextLevel} />
           <LoginStreakComponent streak={player.loginStreak} />
           <WinStreakComponent streak={player.winStreak} />
+          <button
+            className="stat-chip"
+            onClick={() => setGuideOpen(true)}
+            title="Replay E.C.H.O.'s briefing"
+          >
+            🤖 guide
+          </button>
           <button
             className="logout-chip"
             onClick={() => actions.logout()}
