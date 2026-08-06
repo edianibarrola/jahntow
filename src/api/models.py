@@ -393,6 +393,9 @@ class GameEvent(db.Model):
     multiplier = db.Column(db.Float, nullable=False)
     starts_at = db.Column(db.DateTime(), default=utcnow)
     ends_at = db.Column(db.DateTime(), nullable=False)
+    # The revert (multiplier ceasing to apply) is announced in the price
+    # feed exactly once; this marks events already announced.
+    ended_notified = db.Column(db.Boolean, nullable=False, default=False)
 
     def serialize(self):
         return {

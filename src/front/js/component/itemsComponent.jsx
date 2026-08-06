@@ -145,7 +145,12 @@ const ItemsComponent = () => {
             {" / "}
             <span className="tx-price-down">{row.sell_price}</span>
             {hasEvent && (
-              <span className={row.eventMult > 1 ? "tx-price-up" : "tx-price-down"}>
+              <span
+                className={row.eventMult > 1 ? "tx-price-up" : "tx-price-down"}
+                title={`Event pricing — settles back to ~${Math.round(
+                  row.current_cost / row.eventMult
+                )} when the event ends`}
+              >
                 {" "}⚡{row.eventMult > 1 ? "+" : ""}
                 {Math.round((row.eventMult - 1) * 100)}%
               </span>
