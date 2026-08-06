@@ -32,6 +32,10 @@ const ItemsComponent = () => {
   const [quantities, setQuantities] = useState({});
   const [pendingItem, setPendingItem] = useState(null);
   const [sortKey, setSortKey] = useState("category");
+  // Real tabs, not stacked panels: with both lists rendered at once, a
+  // buy inserted a row into the positions panel above and shifted every
+  // row of All Goods mid-click. One list on screen at a time.
+  const [view, setView] = useState("all");
 
   const rankByItem = {};
   Object.values(gameData.items || {}).forEach((items) => {
@@ -263,6 +267,63 @@ const ItemsComponent = () => {
     </div>
   );
 
+  // The portfolio view is deliberately NOT the trading board filtered:
+  // it answers a different question (what am I holding, what did it cost
+  // me, what would selling realize) with sell-side actions only.
+  const positionHeader = (
+    <div className="market-line market-head">
+      <span>Item</span>
+      <span>Holding</span>
+      <span>Sell price</span>
+      <span title="What liquidating at the current sell price would gain or lose vs what you paid">
+        Unrealized P/L
+      </span>
+      <span></span>
+    </div>
+  );
+
+  const renderPositionRow = (row) => {
+    const pending = pendingItem === row.item_name;
+    return (
+      <div className="market-item" key={row.item_name}>
+        <div className="market-line">
+          <span>
+            <strong className="tx-item">{row.item_name}</strong>
+            {row.locked && (
+              <span className="tx-info market-tag">sell only</span>
+            )}
+          </span>
+          <span>
+            {row.owned} @{" "}
+            {row.avgCost > 0 ? row.avgCost.toFixed(2) : "—"}
+          </span>
+          <span className="tx-price-down">{row.sell_price}</span>
+          <span className={row.unrealized >= 0 ? "tx-sell" : "tx-error"}>
+            {row.unrealized >= 0 ? "+" : ""}
+            {row.unrealized.toFixed(2)}
+          </span>
+          <span>
+            <button
+              className="btn-sell"
+              onClick={() => handleSell(row.item_name, 1)}
+              disabled={pendingItem !== null}
+            >
+              {pending ? "..." : "Sell 1"}
+            </button>
+            <button
+              className="ms-1 btn-sell-all"
+              onClick={() => handleSell(row.item_name, row.owned)}
+              disabled={pendingItem !== null}
+              title={`Sell your entire holding of ${row.owned}`}
+            >
+              Sell all
+            </button>
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="row  mb-3">
       <div className="row mb-2 holo sticky-top">
@@ -274,41 +335,67 @@ const ItemsComponent = () => {
 
         <div className="col-12 text-center d-flex justify-content-center align-items-center flex-wrap gap-2 pb-1">
           <span>Market</span>
-          <select
-            className="market-sort"
-            value={sortKey}
-            onChange={(e) => setSortKey(e.target.value)}
-            title="Sort the board"
+          <button
+            className={view === "all" ? "btn-buy" : ""}
+            onClick={() => setView("all")}
           >
-            {Object.entries(SORTS).map(([key, s]) => (
-              <option key={key} value={key}>
-                {s.label}
-              </option>
-            ))}
-          </select>
+            All goods
+          </button>
+          <button
+            className={view === "positions" ? "btn-buy" : ""}
+            onClick={() => setView("positions")}
+          >
+            📊 Positions ({positions.length})
+          </button>
+          {view === "all" && (
+            <select
+              className="market-sort"
+              value={sortKey}
+              onChange={(e) => setSortKey(e.target.value)}
+              title="Sort the board"
+            >
+              {Object.entries(SORTS).map(([key, s]) => (
+                <option key={key} value={key}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
 
-      {positions.length > 0 && (
-        <div className="col-12 holo mb-2">
-          <h5 className="text-center mb-1">
-            Your positions ({positions.length}) · value{" "}
-            {Math.round(positionValue).toLocaleString()} ·{" "}
-            <span className={positionPl >= 0 ? "tx-sell" : "tx-error"}>
-              {positionPl >= 0 ? "+" : ""}
-              {positionPl.toFixed(2)}
-            </span>
-          </h5>
+      {view === "positions" ? (
+        <div className="col-12 holo">
+          {positions.length === 0 ? (
+            <p className="tx-info text-center m-2">
+              No holdings yet — buy on the All goods tab and your positions
+              (with cost basis and live profit/loss) appear here.
+            </p>
+          ) : (
+            <>
+              <h5 className="text-center mb-1">
+                {positions.length} position{positions.length === 1 ? "" : "s"}{" "}
+                · value {Math.round(positionValue).toLocaleString()} ·{" "}
+                <span className={positionPl >= 0 ? "tx-sell" : "tx-error"}>
+                  {positionPl >= 0 ? "+" : ""}
+                  {positionPl.toFixed(2)}
+                </span>
+              </h5>
+              {positionHeader}
+              {positions
+                .slice()
+                .sort((a, b) => b.unrealized - a.unrealized)
+                .map(renderPositionRow)}
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="col-12 holo">
+          <h5 className="text-center mb-1">All goods</h5>
           {header}
-          {positions.map(renderRow)}
+          {rows.map(renderRow)}
         </div>
       )}
-
-      <div className="col-12 holo">
-        <h5 className="text-center mb-1">All goods</h5>
-        {header}
-        {rows.map(renderRow)}
-      </div>
     </div>
   );
 };
