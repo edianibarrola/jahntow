@@ -763,6 +763,11 @@ input.form-control {
     padding: 2px 8px;
     font-size: 0.85rem;
   }
+  /* Four pages in the Missions group (Characters joined it): wrap to a
+     second row on phones instead of scrolling a half-cut button. */
+  .tab-subs {
+    flex-wrap: wrap;
+  }
 }
 
 

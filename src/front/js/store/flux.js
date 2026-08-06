@@ -403,6 +403,19 @@ const getState = ({ getStore, getActions, setStore }) => {
           .catch((error) => reportError(error, "Failed to prestige"));
       },
 
+      selectTitle: (title) => {
+        return apiRequest("/api/player/title", {
+          method: "POST",
+          body: { title },
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            appendActivityEntry(data.activity);
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to change title"));
+      },
+
       resetPlayer: () => {
         return apiRequest("/api/player/reset", { method: "POST" })
           .then((data) => {

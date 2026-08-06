@@ -1687,6 +1687,42 @@ def _prestige_player(player):
     _reset_tick_clocks(player)
 
 
+@game_api.route('/player/title', methods=['POST'])
+@jwt_required()
+def select_title():
+    """
+    Choose which earned achievement title shows on the leaderboard.
+    Titles are earned flair - the pick is validated against what the
+    player has actually earned. null clears the pick (back to newest).
+    """
+    player, err = _player_or_404()
+    if err:
+        return err
+
+    data = request.get_json(silent=True) or {}
+    title = data.get("title")
+    if title is not None and title not in player.earned_titles():
+        return jsonify({"message": "you haven't earned that title"}), 400
+
+    stats = dict(player.stats or {})
+    if title is None:
+        stats.pop("selected_title", None)
+    else:
+        stats["selected_title"] = title
+    player.stats = stats
+
+    activity = economy.log_activity(
+        player,
+        f"🎖 Now known as: {player.current_title() or 'no title'}.",
+        "achievement",
+    )
+    db.session.commit()
+    return jsonify({
+        "player": player.serialize(),
+        "activity": activity.serialize(),
+    }), 200
+
+
 @game_api.route('/prestige', methods=['POST'])
 @jwt_required()
 def prestige():
