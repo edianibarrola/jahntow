@@ -454,6 +454,32 @@ const getState = ({ getStore, getActions, setStore }) => {
           .catch((error) => reportError(error, "Failed to provision warband"));
       },
 
+      assignWarband: (faction, assignment) => {
+        return apiRequest("/api/warband/assign", {
+          method: "POST",
+          body: { faction, assignment },
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            appendActivityEntry(data.activity);
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to assign warband"));
+      },
+
+      collectWarband: (faction) => {
+        return apiRequest("/api/warband/collect", {
+          method: "POST",
+          body: { faction },
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            appendActivityEntry(data.activity);
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to collect report"));
+      },
+
       outfitMission: (missionName) => {
         return apiRequest("/api/mission/outfit", {
           method: "POST",

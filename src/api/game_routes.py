@@ -1073,6 +1073,149 @@ def warband_provision():
     }), 200
 
 
+@game_api.route('/warband/assign', methods=['POST'])
+@jwt_required()
+def warband_assign():
+    """
+    Set (or clear, with assignment: null) a warband's standing operation.
+    A deployed warband burns provisions at double rate and accrues its
+    yield only while provisioned - assigning a dry warband is allowed,
+    it just stalls until fed.
+    """
+    player, err = _player_or_404()
+    if err:
+        return err
+    economy.apply_passive_tick(player)
+
+    data = request.get_json(silent=True) or {}
+    faction, err = _warband_or_400(player, data)
+    if err:
+        return err
+    assignment = data.get("assignment")
+    if assignment is not None and assignment not in economy.WARBAND_OP_KINDS:
+        return jsonify({
+            "message": f"assignment must be one of {economy.WARBAND_OP_KINDS} or null"
+        }), 400
+
+    state = economy.warband_state(player, faction)
+    if assignment and state["strength"] <= 0:
+        return jsonify({"message": "recruit some volunteers first"}), 400
+    if (assignment == "banners"
+            and state["strength"] < economy.WARBAND_BANNER_MIN_STRENGTH):
+        return jsonify({
+            "message": (
+                f"showing the banners takes at least "
+                f"{economy.WARBAND_BANNER_MIN_STRENGTH} strength"
+            )
+        }), 400
+
+    warbands = dict(player.warbands or {})
+    stored = dict(warbands.get(faction) or {})
+    stored.update(state)
+    stored["assignment"] = assignment
+    warbands[faction] = stored
+    player.warbands = warbands
+
+    cfg = game_data.WARBANDS[faction]
+    labels = {"patrol": "patrolling their land (credits)",
+              "salvage": "running salvage sweeps (goods)",
+              "banners": "showing the banners (reputation)",
+              None: "standing down"}
+    activity = economy.log_activity(
+        player, f"🎯 The {cfg['name']} are now {labels[assignment]}.",
+        "warband",
+    )
+    db.session.commit()
+    return jsonify({
+        "player": player.serialize(),
+        "activity": activity.serialize(),
+    }), 200
+
+
+@game_api.route('/warband/collect', methods=['POST'])
+@jwt_required()
+def warband_collect():
+    """
+    Claim a warband's operation stash: whole credits, whole items (into
+    inventory, clipped to space - the remainder stays banked), whole rep
+    points. One quartermaster report per claim.
+    """
+    player, err = _player_or_404()
+    if err:
+        return err
+    economy.apply_passive_tick(player)
+
+    data = request.get_json(silent=True) or {}
+    faction, err = _warband_or_400(player, data)
+    if err:
+        return err
+
+    state = economy.warband_state(player, faction)
+    warbands = dict(player.warbands or {})
+    stored = dict(warbands.get(faction) or {})
+    stash = dict(stored.get("stash") or {"credits": 0.0, "items": 0.0, "rep": 0.0})
+    cfg = game_data.WARBANDS[faction]
+
+    credits = int(stash.get("credits", 0.0))
+    items = int(stash.get("items", 0.0))
+    rep = int(stash.get("rep", 0.0))
+    parts = []
+
+    if credits > 0:
+        player.credits += credits
+        stash["credits"] = round(stash["credits"] - credits, 3)
+        parts.append(f"+{credits:,} credits")
+    if items > 0:
+        item_name = cfg["salvage_item"]
+        inventory = dict(player.inventory or {})
+        entry = inventory.get(item_name, {})
+        held = entry.get("quantity", 0)
+        space = max(0, (player.maxInventoryCount or 0) - math.floor(held))
+        take = min(items, space)
+        if take > 0:
+            # Salvage has no cost basis - it's found, not bought.
+            new_qty = held + take
+            new_avg = round(
+                (entry.get("avg_cost", 0) * held) / new_qty, 2) if new_qty else 0
+            inventory[item_name] = {"quantity": new_qty, "avg_cost": new_avg}
+            player.inventory = inventory
+            stash["items"] = round(stash["items"] - take, 3)
+            parts.append(f"+{take}x {item_name}")
+            if take < items:
+                parts.append(f"({items - take}x held back - hold full)")
+        else:
+            parts.append(f"({items}x {item_name} held back - hold full)")
+    if rep > 0:
+        reputation = dict(player.reputation or {})
+        reputation[faction] = reputation.get(faction, 0) + rep
+        player.reputation = reputation
+        stash["rep"] = round(stash["rep"] - rep, 3)
+        parts.append(f"+{rep} {faction} reputation")
+
+    if not parts:
+        return jsonify({
+            "message": "Nothing to collect yet - give the operation time."
+        }), 400
+
+    stored.update(state)
+    stored["stash"] = stash
+    warbands[faction] = stored
+    player.warbands = warbands
+
+    activity = economy.log_activity(
+        player,
+        f"📦 Quartermaster's report - {cfg['name']}: {', '.join(parts)}.",
+        "warband",
+    )
+    goal_entries = economy.check_achievements(player)
+    db.session.commit()
+    return jsonify({
+        "player": player.serialize(),
+        "activity": activity.serialize(),
+        "extra_activities": [e.serialize() for e in goal_entries],
+    }), 200
+
+
 @game_api.route('/story-mission/start', methods=['POST'])
 @jwt_required()
 def story_mission_start():

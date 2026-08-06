@@ -199,9 +199,58 @@ const StoryMissions = () => {
                           <li style={{ color: wouldSurvive ? undefined : "#ff8a8a" }}>
                             Health Risk: -{storyMissionData["Health Effect"]}
                           </li>
+                          {(() => {
+                            const gate = (gameData.storyWarbandGates || {})[
+                              storyMissionName
+                            ];
+                            if (!gate) return null;
+                            const bands = gameData.warbands || {};
+                            if (gate.faction) {
+                              const band = bands[gate.faction] || {};
+                              const strength =
+                                player.warbands?.[gate.faction]?.strength || 0;
+                              const met = strength >= gate.strength;
+                              return (
+                                <li className={met ? "tx-rep" : "tx-error"}>
+                                  ⚔️ War host: the {band.name || gate.faction}{" "}
+                                  must number {gate.strength} —{" "}
+                                  {met
+                                    ? `ready (${strength} strong; their readiness boosts your odds below)`
+                                    : `now ${strength}. Recruit on the Warbands tab.`}
+                                </li>
+                              );
+                            }
+                            const factions = Object.keys(bands);
+                            const average = factions.length
+                              ? factions.reduce(
+                                  (sum, f) =>
+                                    sum +
+                                    (player.warbands?.[f]?.strength || 0),
+                                  0
+                                ) / factions.length
+                              : 0;
+                            const met = average >= gate.host;
+                            return (
+                              <li className={met ? "tx-rep" : "tx-error"}>
+                                ⚔️ United front: the host must average{" "}
+                                {gate.host} strength —{" "}
+                                {met
+                                  ? `ready (avg ${Math.floor(average)})`
+                                  : `now ${Math.floor(average)}. Every warband counts.`}
+                              </li>
+                            );
+                          })()}
                           <li>
                             Est. Success Chance:{" "}
-                            {previewSuccessChance(player, storyMissionData)}%
+                            {previewSuccessChance(
+                              player,
+                              storyMissionData,
+                              gameData.warbands,
+                              (gameData.storyWarbandGates || {})[
+                                storyMissionName
+                              ] || null
+                            )}
+                            %
                           </li>
                           <li>Required Equipment:</li>
                           <ul>
