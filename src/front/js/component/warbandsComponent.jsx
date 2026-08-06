@@ -9,7 +9,7 @@ import CreditsComponent from "./creditsComponent";
 const KIT_SIZE = 10;
 const KIT_COST_MULT = 5;
 const COST_GROWTH = 50;
-const MAX_STRENGTH = 100;
+const MAX_STRENGTH = 200;
 const READINESS_FLOOR = 40;
 const PROVISION_CAP_HOURS = 24;
 const DRAIN_PER_HOUR = (strength) => (strength / KIT_SIZE) * 1.0;
@@ -54,7 +54,7 @@ const WarbandsComponent = () => {
         : kind === "kit"
         ? actions.kitWarband(faction, amount)
         : kind === "assign"
-        ? actions.assignWarband(faction, amount)
+        ? actions.assignWarband(faction, amount.assignment, amount.deployed)
         : kind === "collect"
         ? actions.collectWarband(faction)
         : actions.provisionWarband(faction, amount);
@@ -123,7 +123,12 @@ const WarbandsComponent = () => {
           1,
           Math.ceil(Math.max(1, state.strength) / KIT_SIZE)
         );
-        const drain = DRAIN_PER_HOUR(state.strength);
+        const deployed = state.assignment
+          ? Math.min(state.deployed || state.strength, state.strength)
+          : 0;
+        // Deployed troops eat double; reserves eat normal rations.
+        const drain =
+          DRAIN_PER_HOUR(state.strength) + DRAIN_PER_HOUR(deployed);
         const hoursLeft = drain > 0 ? state.provisions / drain : 0;
         const provisionCap = Math.floor(drain * PROVISION_CAP_HOURS);
         const restock = Math.max(
@@ -251,7 +256,10 @@ const WarbandsComponent = () => {
                   value={state.assignment || ""}
                   disabled={isBusy || state.strength === 0}
                   onChange={(e) =>
-                    act("assign", faction, e.target.value || null)
+                    act("assign", faction, {
+                      assignment: e.target.value || null,
+                      deployed: deployed || state.strength,
+                    })
                   }
                 >
                   <option value="">Standing by</option>
@@ -261,6 +269,34 @@ const WarbandsComponent = () => {
                     </option>
                   ))}
                 </select>
+                {state.assignment && (
+                  <select
+                    className="ms-1"
+                    value={String(deployed)}
+                    disabled={isBusy}
+                    title="Detachment size: the detachment works the operation (and eats double); reserves stand ready. Gates and escorts always count your full strength."
+                    onChange={(e) =>
+                      act("assign", faction, {
+                        assignment: state.assignment,
+                        deployed: parseInt(e.target.value, 10),
+                      })
+                    }
+                  >
+                    {[
+                      Math.max(1, Math.round(state.strength / 4)),
+                      Math.max(1, Math.round(state.strength / 2)),
+                      state.strength,
+                    ]
+                      .filter((v, i, arr) => arr.indexOf(v) === i)
+                      .map((size) => (
+                        <option key={size} value={String(size)}>
+                          {size === state.strength
+                            ? `All ${size}`
+                            : `${size} of ${state.strength}`}
+                        </option>
+                      ))}
+                  </select>
+                )}
                 {(() => {
                   const stash = state.stash || {};
                   const credits = Math.floor(stash.credits || 0);

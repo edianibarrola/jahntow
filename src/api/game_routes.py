@@ -1130,19 +1130,32 @@ def warband_assign():
     state = economy.warband_state(player, faction)
     if assignment and state["strength"] <= 0:
         return jsonify({"message": "recruit some volunteers first"}), 400
-    if (assignment == "banners"
-            and state["strength"] < economy.WARBAND_BANNER_MIN_STRENGTH):
-        return jsonify({
-            "message": (
-                f"showing the banners takes at least "
-                f"{economy.WARBAND_BANNER_MIN_STRENGTH} strength"
-            )
-        }), 400
+
+    # Detachment size: how many march out. Yields scale with the
+    # detachment (which also eats double); the reserves keep normal
+    # rations, and gates/escorts always count TOTAL strength - when the
+    # horn sounds for a story battle, everyone comes home.
+    deployed = data.get("deployed", state["strength"])
+    if assignment:
+        if not isinstance(deployed, int) or deployed <= 0:
+            return jsonify({"message": "deployed must be a positive integer"}), 400
+        deployed = min(deployed, state["strength"])
+        if (assignment == "banners"
+                and deployed < economy.WARBAND_BANNER_MIN_STRENGTH):
+            return jsonify({
+                "message": (
+                    f"showing the banners takes a detachment of at least "
+                    f"{economy.WARBAND_BANNER_MIN_STRENGTH}"
+                )
+            }), 400
+    else:
+        deployed = 0
 
     warbands = dict(player.warbands or {})
     stored = dict(warbands.get(faction) or {})
     stored.update(state)
     stored["assignment"] = assignment
+    stored["deployed"] = deployed
     warbands[faction] = stored
     player.warbands = warbands
 
@@ -1151,8 +1164,13 @@ def warband_assign():
               "salvage": "running salvage sweeps (goods)",
               "banners": "showing the banners (reputation)",
               None: "standing down"}
+    detachment_note = (
+        f" - a detachment of {deployed} of {state['strength']}"
+        if assignment and deployed < state["strength"] else ""
+    )
     activity = economy.log_activity(
-        player, f"🎯 The {cfg['name']} are now {labels[assignment]}.",
+        player,
+        f"🎯 The {cfg['name']} are now {labels[assignment]}{detachment_note}.",
         "warband",
     )
     db.session.commit()

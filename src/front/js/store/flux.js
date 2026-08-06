@@ -456,10 +456,10 @@ const getState = ({ getStore, getActions, setStore }) => {
           .catch((error) => reportError(error, "Failed to provision warband"));
       },
 
-      assignWarband: (faction, assignment) => {
+      assignWarband: (faction, assignment, deployed) => {
         return apiRequest("/api/warband/assign", {
           method: "POST",
-          body: { faction, assignment },
+          body: { faction, assignment, deployed },
         })
           .then((data) => {
             applyPlayerResult(data);
