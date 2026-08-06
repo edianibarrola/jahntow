@@ -108,6 +108,11 @@ def get_game_data():
         # Region -> storyWins gate, so the client can group ops by land
         # and show what the story hasn't opened yet (server enforces).
         "regions": game_data.REGIONS,
+        # Warband catalog + story gates: names, captains, costs, unlock
+        # points - the client renders and cost-previews from this, the
+        # server owns every transaction and gate.
+        "warbands": game_data.WARBANDS,
+        "storyWarbandGates": game_data.STORY_WARBAND_GATES,
         "shipModuleMaxLevel": game_data.SHIP_MODULE_MAX_LEVEL,
     }), 200
 
@@ -872,6 +877,198 @@ def mission_outfit():
     return jsonify({
         "player": player.serialize(),
         "total_cost": grand_total,
+        "activity": activity.serialize(),
+    }), 200
+
+
+def _warband_or_400(player, data):
+    """Common validation for the warband endpoints."""
+    faction = (data or {}).get("faction")
+    if faction not in game_data.WARBANDS:
+        return None, (jsonify({"message": "unknown warband"}), 404)
+    if not economy.warband_unlocked(player, faction):
+        cfg = game_data.WARBANDS[faction]
+        return None, (jsonify({
+            "message": (
+                f"The {cfg['name']} haven't joined the war yet - their "
+                f"trust is won at {cfg['unlock_wins']} story wins."
+            )
+        }), 403)
+    return faction, None
+
+
+@game_api.route('/warband/fund', methods=['POST'])
+@jwt_required()
+def warband_fund():
+    """
+    Fund volunteers for an allied warband. Strength is PERMANENT - it
+    never decays and is never lost - which is what makes it safe to gate
+    content on. Per-volunteer cost escalates with company size.
+    """
+    player, err = _player_or_404()
+    if err:
+        return err
+    economy.apply_passive_tick(player)
+
+    data = request.get_json(silent=True) or {}
+    faction, err = _warband_or_400(player, data)
+    if err:
+        return err
+    volunteers = data.get("volunteers")
+    if not isinstance(volunteers, int) or volunteers <= 0:
+        return jsonify({"message": "volunteers must be a positive integer"}), 400
+
+    state = economy.warband_state(player, faction)
+    if state["strength"] + volunteers > economy.WARBAND_MAX_STRENGTH:
+        return jsonify({
+            "message": f"a warband caps at {economy.WARBAND_MAX_STRENGTH} strength"
+        }), 400
+
+    total_cost = sum(
+        economy.warband_volunteer_cost(faction, state["strength"] + i)
+        for i in range(volunteers)
+    )
+    if player.credits < total_cost:
+        return jsonify({
+            "message": f"funding {volunteers} volunteers costs {total_cost:,} credits"
+        }), 400
+
+    player.credits -= total_cost
+    warbands = dict(player.warbands or {})
+    state["strength"] += volunteers
+    warbands[faction] = state
+    player.warbands = warbands
+
+    cfg = game_data.WARBANDS[faction]
+    activity = economy.log_activity(
+        player,
+        f"⚔️ {volunteers} volunteers join the {cfg['name']} "
+        f"({total_cost:,} credits) - strength {state['strength']}.",
+        "warband",
+    )
+    db.session.commit()
+    return jsonify({
+        "player": player.serialize(),
+        "total_cost": total_cost,
+        "activity": activity.serialize(),
+    }), 200
+
+
+@game_api.route('/warband/kit', methods=['POST'])
+@jwt_required()
+def warband_kit():
+    """Buy gear kits (one outfits 10 volunteers). Kits are permanent too."""
+    player, err = _player_or_404()
+    if err:
+        return err
+    economy.apply_passive_tick(player)
+
+    data = request.get_json(silent=True) or {}
+    faction, err = _warband_or_400(player, data)
+    if err:
+        return err
+    kits = data.get("kits")
+    if not isinstance(kits, int) or kits <= 0:
+        return jsonify({"message": "kits must be a positive integer"}), 400
+
+    state = economy.warband_state(player, faction)
+    kits_needed = max(1, math.ceil(
+        max(1, state["strength"]) / economy.WARBAND_KIT_SIZE))
+    if state["kits"] + kits > kits_needed:
+        return jsonify({
+            "message": (
+                f"the {game_data.WARBANDS[faction]['name']} only need "
+                f"{kits_needed} kits at their current strength"
+            )
+        }), 400
+
+    total_cost = economy.warband_kit_cost(faction) * kits
+    if player.credits < total_cost:
+        return jsonify({
+            "message": f"{kits} gear kits cost {total_cost:,} credits"
+        }), 400
+
+    player.credits -= total_cost
+    warbands = dict(player.warbands or {})
+    state["kits"] += kits
+    warbands[faction] = state
+    player.warbands = warbands
+
+    activity = economy.log_activity(
+        player,
+        f"🛡 {kits} gear kits delivered to the "
+        f"{game_data.WARBANDS[faction]['name']} ({total_cost:,} credits).",
+        "warband",
+    )
+    db.session.commit()
+    return jsonify({
+        "player": player.serialize(),
+        "total_cost": total_cost,
+        "activity": activity.serialize(),
+    }), 200
+
+
+@game_api.route('/warband/provision', methods=['POST'])
+@jwt_required()
+def warband_provision():
+    """
+    Stock a warband's provisions: real market goods at the LIVE buy
+    price (the recurring market sink). Capped at 72 hours of supply so
+    provisioning stays upkeep, not a one-time vault fill.
+    """
+    player, err = _player_or_404()
+    if err:
+        return err
+    economy.apply_passive_tick(player)
+
+    data = request.get_json(silent=True) or {}
+    faction, err = _warband_or_400(player, data)
+    if err:
+        return err
+    units = data.get("units")
+    if not isinstance(units, int) or units <= 0:
+        return jsonify({"message": "units must be a positive integer"}), 400
+
+    state = economy.warband_state(player, faction)
+    if state["strength"] <= 0:
+        return jsonify({"message": "fund some volunteers first"}), 400
+    drain = economy.warband_provision_drain_per_hour(state["strength"])
+    cap = drain * economy.WARBAND_PROVISION_CAP_HOURS
+    if state["provisions"] + units > cap:
+        return jsonify({
+            "message": (
+                f"provision stores cap at {cap:.0f} units "
+                f"({economy.WARBAND_PROVISION_CAP_HOURS}h of supply)"
+            )
+        }), 400
+
+    item_name = game_data.WARBANDS[faction]["provision_item"]
+    price_row = economy.get_item_price(item_name)
+    if not price_row:
+        return jsonify({"message": f"{item_name} is not on the market"}), 400
+    total_cost = int(economy.get_buy_price(price_row) * units)
+    if player.credits < total_cost:
+        return jsonify({
+            "message": f"{units}x {item_name} costs {total_cost:,} credits"
+        }), 400
+
+    player.credits -= total_cost
+    warbands = dict(player.warbands or {})
+    state["provisions"] = round(state["provisions"] + units, 3)
+    warbands[faction] = state
+    player.warbands = warbands
+
+    activity = economy.log_activity(
+        player,
+        f"🍞 {units}x {item_name} provisioned to the "
+        f"{game_data.WARBANDS[faction]['name']} ({total_cost:,} credits) - "
+        f"{state['provisions'] / drain:.0f}h of supply.",
+        "warband",
+    )
+    db.session.commit()
+    return jsonify({
+        "player": player.serialize(),
+        "total_cost": total_cost,
         "activity": activity.serialize(),
     }), 200
 

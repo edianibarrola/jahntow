@@ -415,6 +415,45 @@ const getState = ({ getStore, getActions, setStore }) => {
           });
       },
 
+      fundWarband: (faction, volunteers) => {
+        return apiRequest("/api/warband/fund", {
+          method: "POST",
+          body: { faction, volunteers },
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            appendActivityEntry(data.activity);
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to fund warband"));
+      },
+
+      kitWarband: (faction, kits) => {
+        return apiRequest("/api/warband/kit", {
+          method: "POST",
+          body: { faction, kits },
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            appendActivityEntry(data.activity);
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to buy gear kits"));
+      },
+
+      provisionWarband: (faction, units) => {
+        return apiRequest("/api/warband/provision", {
+          method: "POST",
+          body: { faction, units },
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            appendActivityEntry(data.activity);
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to provision warband"));
+      },
+
       outfitMission: (missionName) => {
         return apiRequest("/api/mission/outfit", {
           method: "POST",

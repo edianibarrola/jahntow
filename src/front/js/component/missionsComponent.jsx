@@ -156,7 +156,11 @@ const MissionsComponent = () => {
               // even offer a mission that could drop the player to 0.
               const wouldSurvive =
                 player.health - missionData["Health Effect"] > 0;
-              const odds = successBreakdown(player, missionData);
+              const odds = successBreakdown(
+                player,
+                missionData,
+                gameData.warbands
+              );
               // Bailout missions are hidden above a credit ceiling - mirrors
               // the server's own check in player_meets_requirements.
               const bailoutLocked =
@@ -245,6 +249,22 @@ const MissionsComponent = () => {
                         <li style={{ color: wouldSurvive ? undefined : "#ff8a8a" }}>
                           Health Risk: -{missionData["Health Effect"]}
                         </li>
+                        {odds.escort &&
+                          (odds.escort.met ? (
+                            <li className="tx-rep">
+                              Escort: {odds.escort.name} —{" "}
+                              {odds.escort.strength} strong, readiness{" "}
+                              {odds.escort.readiness}% (+
+                              {(odds.escort.bonus * 100).toFixed(1)}% success
+                              {odds.escort.isHome ? "" : ", out of region"})
+                            </li>
+                          ) : (
+                            <li className="tx-error">
+                              Needs a warband escort of {odds.escort.need}{" "}
+                              (your best: {odds.escort.strength}) — fund your
+                              allies on the Warbands tab.
+                            </li>
+                          ))}
                         {missionData.Guaranteed ? (
                           <li className={bailoutLocked ? "tx-info" : "tx-sell"}>
                             Always succeeds — a guaranteed fallback when you're

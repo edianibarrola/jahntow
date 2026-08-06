@@ -20,6 +20,7 @@ import ActiveEventBanner from "../component/activeEventBanner";
 import ActivityToast from "../component/ActivityToast";
 
 import StoryMissions from "../component/storyMissions";
+import WarbandsComponent from "../component/warbandsComponent";
 
 import "../../styles/home.css";
 import { useNavigate } from "react-router-dom";
@@ -85,6 +86,7 @@ export const Home = () => {
       tabs: [
         { key: "missions", title: "Missions", bg: "ship", render: () => <MissionsComponent /> },
         { key: "storyMissions", title: "Story Missions", bg: "ship", render: () => <StoryMissions /> },
+        { key: "warbands", title: "Warbands", bg: "ship", render: () => <WarbandsComponent /> },
       ],
     },
     {

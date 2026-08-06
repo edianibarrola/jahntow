@@ -47,6 +47,58 @@ REGIONS = {'Xictlia': 0,
  'Namarupa': 150,
  'The Fortress Wastes': 180}
 
+# Allied tribal warbands - the forces of the six lands, each led by a
+# character from the story. CANON: Jahntow is alone on Zephyr (one man
+# and a drone); he never commands these troops. He funds volunteers,
+# buys gear kits, and keeps provisions flowing - the tribes do the
+# fighting. unlock_wins is the story point where that tribe's trust is
+# won; provision_item is bought at the LIVE market price (a recurring
+# market sink); volunteer_cost is the base credits per volunteer
+# (escalating with size - see economy.warband_volunteer_cost).
+WARBANDS = {
+    'Xictlians': {'name': 'Xictlian Outriders', 'captain': 'zuark',
+                  'region': 'Xictlia', 'unlock_wins': 5,
+                  'volunteer_cost': 100, 'provision_item': 'BioPatch',
+                  'doctrine': 'desert cavalry - fast, patient, thirsty'},
+    'Luxorians': {'name': 'Luxorian Free Company', 'captain': 'axenthon',
+                  'region': 'Luxor', 'unlock_wins': 35,
+                  'volunteer_cost': 200, 'provision_item': 'NanoMesh',
+                  'doctrine': 'defectors and lowland fighters'},
+    'Xiaojians': {'name': 'Canopy Rebels', 'captain': 'ava',
+                  'region': 'Xiaojia', 'unlock_wins': 65,
+                  'volunteer_cost': 400, 'provision_item': 'HyperWeave',
+                  'doctrine': "Ava's rebels - always hers"},
+    'Titans': {'name': 'Titan Clan-Mechs', 'captain': 'kazon',
+               'region': 'Titan Ranges', 'unlock_wins': 95,
+               'volunteer_cost': 800, 'provision_item': 'NeuroLink',
+               'doctrine': 'five clans and their re-forged machines'},
+    'Tuathans': {'name': 'Grove Wardens', 'captain': 'emeraldMage',
+                 'region': 'Tuatha', 'unlock_wins': 125,
+                 'volunteer_cost': 1600, 'provision_item': 'NanoSyringe',
+                 'doctrine': "the order, and the jungle's own"},
+    'Namarupians': {'name': 'The Woken Choir', 'captain': 'zhalia',
+                    'region': 'Namarupa', 'unlock_wins': 155,
+                    'volunteer_cost': 3200, 'provision_item': 'Data Shard',
+                    'doctrine': 'a million woken minds, some of them angry'},
+}
+
+# Story battles that need the tribes actually ready to fight. Act
+# finales want that land's own warband at strength; the fortress
+# endgame wants the whole host's average - the united front must be
+# more than a name. Strength never decays, so a gate passed stays
+# passed (readiness only modulates outcomes, never blocks).
+STORY_WARBAND_GATES = {
+    'Lead Sandstorm Offensives': {'faction': 'Xictlians', 'strength': 10},
+    'Defend Sacred Groves': {'faction': 'Luxorians', 'strength': 20},
+    'Final Stand in Ancient Tree City': {'faction': 'Xiaojians', 'strength': 30},
+    'Defend Mountain Fortresses': {'faction': 'Titans', 'strength': 40},
+    'Defend the Heart of the Forest': {'faction': 'Tuathans', 'strength': 50},
+    'Final Psychic Showdown': {'faction': 'Namarupians', 'strength': 60},
+    'Vortex Corp: Disabling the Defenses': {'host': 45},
+    'Vortex Corp: Confrontation with Xaezor': {'host': 55},
+}
+
+
 MISSIONS = {'Salvage Run': {'Required Credits': 0,
                  'Required Energy': 6,
                  'Reward': 260,

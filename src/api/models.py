@@ -140,6 +140,11 @@ class Player(db.Model):
     # replaced flat prices as the thing keeping purchasable energy from
     # being a money printer.
     recovery_uses = db.Column(db.JSON, default=dict)
+    # Allied tribal warbands the player supports (never commands - canon:
+    # Jahntow is alone; the tribes fight their own war). Per faction:
+    # {"strength": int, "kits": int, "provisions": float,
+    #  "last_provision_tick_at": iso}. See economy.WARBAND_* helpers.
+    warbands = db.Column(db.JSON, default=dict)
 
     # Goods produced by properties but not yet collected, {item_name: qty}.
     # Production accrues HERE rather than straight into inventory: writing
@@ -241,6 +246,7 @@ class Player(db.Model):
             # the server still charges its own computed figure.
             "recoveryUses": self.recovery_uses or {},
             "restedEnergy": int(self.rested_energy or 0),
+            "warbands": self.warbands or {},
             "upgradeSteps": self.upgrade_steps or {},
             "ship": self.ship or {},
             "pendingProduction": self.pending_production or {},
