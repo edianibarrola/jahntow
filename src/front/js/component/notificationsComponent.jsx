@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import { Context } from "../store/appContext";
 
 const FILTERS = {
@@ -9,15 +9,39 @@ const FILTERS = {
 
 const NotificationsComponent = () => {
   const { store } = useContext(Context);
-  const { notifications } = store;
+  const { notifications, player, gameData } = store;
   const [filter, setFilter] = useState("all");
 
+  // The feed is global (one shared market), but a line about an item the
+  // player hasn't unlocked yet is pure noise - and a mild spoiler. Match
+  // each line to the item it's about (longest name wins, so "Advanced
+  // Medicines" never gets claimed by "Medicines") and hide it unless the
+  // item is tradeable at this level or already held (properties generate
+  // above-level goods, and those stay sellable).
+  const itemIndex = useMemo(() => {
+    const rankByItem = {};
+    Object.values(gameData.items || {}).forEach((items) =>
+      Object.entries(items).forEach(([name, data]) => {
+        rankByItem[name] = data.Rank;
+      })
+    );
+    const names = Object.keys(rankByItem).sort((a, b) => b.length - a.length);
+    return { rankByItem, names };
+  }, [gameData.items]);
+
+  const concernsLockedItem = (message) => {
+    const name = itemIndex.names.find((n) => message.includes(n));
+    if (!name) return false;
+    const held = (player.inventory?.[name]?.quantity || 0) > 0;
+    return itemIndex.rankByItem[name] > player.level && !held;
+  };
+
   const allowedTypes = FILTERS[filter].types;
-  const visibleNotifications = allowedTypes
-    ? notifications.filter((notification) =>
-        allowedTypes.includes(notification.type || "info")
-      )
-    : notifications;
+  const visibleNotifications = notifications.filter(
+    (notification) =>
+      (!allowedTypes || allowedTypes.includes(notification.type || "info")) &&
+      !concernsLockedItem(notification.message)
+  );
 
   return (
     <div className="holo">

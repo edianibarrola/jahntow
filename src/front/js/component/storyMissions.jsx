@@ -5,7 +5,7 @@ import HealthComponent from "./healthComponent";
 import EnergyComponent from "./energyComponent";
 import CreditsComponent from "./creditsComponent";
 import StoryMissionDetailsComponent from "./storyMissionDetailsComponent";
-import { previewSuccessChance } from "../missionOdds";
+import { successBreakdown } from "../missionOdds";
 
 // Mirrors STORY_WINS_PER_UNLOCK in src/api/game_routes.py, which is what
 // actually enforces which story mission may be run.
@@ -265,6 +265,25 @@ const StoryMissions = () => {
                 // even offer a mission that could drop the player to 0.
                 const wouldSurvive =
                   player.health - storyMissionData["Health Effect"] > 0;
+                const gate =
+                  (gameData.storyWarbandGates || {})[storyMissionName] || null;
+                const odds = successBreakdown(
+                  player,
+                  storyMissionData,
+                  gameData.warbands,
+                  gate,
+                  {
+                    boonCatalog: gameData.warbandBoons,
+                    perkCatalog: gameData.storyChoicePerks,
+                  }
+                );
+                // gateBonusPct is the 0-5% readiness-scaled war-host bonus,
+                // so the readiness it reflects is bonus/max.
+                const gateReadiness = gate
+                  ? Math.round((odds.gateBonusPct / 5) * 100)
+                  : 0;
+                const gateMissingPct =
+                  Math.round((5 - odds.gateBonusPct) * 10) / 10;
                 return (
                   <Accordion.Item
                     className="holo"
@@ -315,23 +334,55 @@ const StoryMissions = () => {
                             <span className="tx-info">(you: {player.level})</span>
                           </li>
                           <li>Reward: {storyMissionData.Reward}</li>
-                          <li>
+                          {/* Same at-a-glance rule as regular missions:
+                              green when you meet it, red when you don't. */}
+                          <li
+                            style={{
+                              color:
+                                player.credits >=
+                                storyMissionData["Required Credits"]
+                                  ? "#8aff8a"
+                                  : "#ff8a8a",
+                            }}
+                          >
                             Required Credits:{" "}
-                            {storyMissionData["Required Credits"]}
+                            {storyMissionData["Required Credits"]}{" "}
+                            <span className="tx-info">
+                              (you: {Math.floor(player.credits).toLocaleString()})
+                            </span>
                           </li>
-                          <li>
+                          <li
+                            style={{
+                              color:
+                                player.energy >=
+                                storyMissionData["Required Energy"]
+                                  ? "#8aff8a"
+                                  : "#ff8a8a",
+                            }}
+                          >
                             Required Energy:{" "}
-                            {storyMissionData["Required Energy"]}
+                            {storyMissionData["Required Energy"]}{" "}
+                            <span className="tx-info">
+                              (you: {Math.floor(player.energy)})
+                            </span>
                           </li>
                           <li style={{ color: wouldSurvive ? undefined : "#ff8a8a" }}>
-                            Health Risk: -{storyMissionData["Health Effect"]}
+                            Health Risk: -{storyMissionData["Health Effect"]}{" "}
+                            <span className="tx-info">
+                              (you: {Math.floor(player.health)})
+                            </span>
                           </li>
                           {(() => {
-                            const gate = (gameData.storyWarbandGates || {})[
-                              storyMissionName
-                            ];
                             if (!gate) return null;
                             const bands = gameData.warbands || {};
+                            // Gates only count bodies (permanent strength);
+                            // readiness never blocks - so when the gate is
+                            // met but the band is ragged, say what that
+                            // leniency is costing in odds.
+                            const raggedNote =
+                              gateReadiness < 100
+                                ? ` They'll fight at ${gateReadiness}% readiness — full kits & provisions would add +${gateMissingPct}% success.`
+                                : "";
                             if (gate.faction) {
                               const need = gateNeed(gate.strength);
                               const band = bands[gate.faction] || {};
@@ -343,7 +394,7 @@ const StoryMissions = () => {
                                   ⚔️ War host: the {band.name || gate.faction}{" "}
                                   must number {need} —{" "}
                                   {met
-                                    ? `ready (${strength} strong; their readiness boosts your odds below)`
+                                    ? `ready (${strength} strong).${raggedNote}`
                                     : `now ${strength}. Recruit on the Warbands tab.`}
                                 </li>
                               );
@@ -364,27 +415,46 @@ const StoryMissions = () => {
                                 ⚔️ United front: the host must average{" "}
                                 {need} strength —{" "}
                                 {met
-                                  ? `ready (avg ${Math.floor(average)})`
+                                  ? `ready (avg ${Math.floor(average)}).${raggedNote}`
                                   : `now ${Math.floor(average)}. Every warband counts.`}
                               </li>
                             );
                           })()}
+                          {/* Same plain-language breakdown as regular
+                              missions - the spare-gear bonus in particular
+                              was invisible here. */}
                           <li>
-                            Est. Success Chance:{" "}
-                            {previewSuccessChance(
-                              player,
-                              storyMissionData,
-                              gameData.warbands,
-                              (gameData.storyWarbandGates || {})[
-                                storyMissionName
-                              ] || null,
-                              {
-                                boonCatalog: gameData.warbandBoons,
-                                perkCatalog: gameData.storyChoicePerks,
-                              }
-                            )}
-                            %
+                            Est. Success Chance: {odds.chance}%{" "}
+                            <span className="tx-info">
+                              (base {odds.basePct}%
+                              {odds.levelPct !== 0 &&
+                                ` · your level ${odds.levelPct > 0 ? "+" : ""}${odds.levelPct}%`}
+                              {` · spare equipment +${odds.gearPct}% (max ${odds.gearMaxPct}%)`}
+                              {gate &&
+                                ` · war host +${odds.gateBonusPct}%`}
+                              )
+                            </span>
                           </li>
+                          {odds.gearCapped ? (
+                            <li className="tx-info">
+                              Spare-equipment bonus maxed at +
+                              {odds.gearMaxPct}% —{" "}
+                              <strong>owning {odds.usefulTotal}</strong> is
+                              all that counts, extras add nothing.
+                            </li>
+                          ) : (
+                            odds.sparesToMax > 0 &&
+                            Object.keys(
+                              storyMissionData.requiredEquipment || {}
+                            ).length > 0 && (
+                              <li className="tx-info">
+                                <strong>Own {odds.usefulTotal}</strong> to max
+                                the spare-equipment bonus at +
+                                {odds.gearMaxPct}% — {odds.sparesToMax} more
+                                to go.
+                              </li>
+                            )
+                          )}
                           <li>Required Equipment:</li>
                           <ul>
                             {Object.entries(

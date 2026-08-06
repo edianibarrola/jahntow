@@ -1098,6 +1098,26 @@ def apply_event_ticks():
     now = utcnow()
     active = get_active_events()
 
+    # Announce price events whose window just closed. The multiplier stops
+    # applying the instant ends_at passes (nothing to undo), but with no
+    # feed line the revert was invisible and playtesters read the
+    # countdown as decorative. Older unannounced expiries (backlog from
+    # before this existed, or a long-idle server) are marked silently.
+    ended = GameEvent.query.filter(
+        GameEvent.ends_at <= now,
+        GameEvent.ended_notified.is_(False),
+    ).all()
+    announce_cutoff = now - timedelta(hours=1)
+    for event in ended:
+        event.ended_notified = True
+        if event.ends_at >= announce_cutoff and event.kind in PRICE_EVENT_KINDS:
+            word = "spike" if event.kind == "price_spike" else "crash"
+            log_notification(
+                f"⚡ The price {word} on {event.category} has passed - "
+                "prices settle back.",
+                "price-down" if event.kind == "price_spike" else "price-up",
+            )
+
     spawned = [
         event for event in (
             _maybe_spawn_price_event(active, now),
@@ -1105,7 +1125,7 @@ def apply_event_ticks():
             _maybe_spawn_merchant(active, now),
         ) if event is not None
     ]
-    if spawned:
+    if spawned or ended:
         db.session.add_all(spawned)
         db.session.commit()
     return active + spawned
