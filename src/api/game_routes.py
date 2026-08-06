@@ -59,6 +59,11 @@ MISSION_REPEAT_CAP = 5
 # also changing how the arc is authored means beats get skipped or the
 # text stops matching the mission being played.
 STORY_WINS_PER_UNLOCK = 5
+# storyWins value at which the war is won and the story is fully told.
+# Past it, only the Remnant Hunts (the warband-gated battles) stay open,
+# and prestiging closes an E.C.H.O. chronicle cycle (storyWins resets, the
+# war retells itself with escalated gates - see economy.CHRONICLE_*).
+STORY_TOTAL_WINS = STORY_WINS_PER_UNLOCK * len(game_data.STORY_MISSIONS)
 
 
 def _current_player():
@@ -678,9 +683,18 @@ def _resolve_mission_request(player, mission_catalog, mission_name, is_story):
 
     if is_story:
         story_names = list(mission_catalog.keys())
-        unlocked_index = player.storyWins // STORY_WINS_PER_UNLOCK
-        if unlocked_index >= len(story_names) or story_names[unlocked_index] != mission_name:
-            return None, (jsonify({"message": "this story mission is not unlocked yet"}), 403)
+        if player.storyWins >= STORY_TOTAL_WINS:
+            # The Long Peace: the war is won, the sequence is over. Only
+            # the great warband battles reopen - repeatable Remnant Hunts.
+            if mission_name not in game_data.STORY_WARBAND_GATES:
+                return None, (jsonify({
+                    "message": "the war is won - only the remnant hunts "
+                               "remain open"
+                }), 403)
+        else:
+            unlocked_index = player.storyWins // STORY_WINS_PER_UNLOCK
+            if story_names[unlocked_index] != mission_name:
+                return None, (jsonify({"message": "this story mission is not unlocked yet"}), 403)
     else:
         if mission["Rank"] > player.level:
             return None, (jsonify({"message": "your level is too low for this mission"}), 403)
@@ -1279,18 +1293,44 @@ def story_mission_start():
     if err:
         return err
 
+    # Decided BEFORE the win lands: a remnant hunt is a re-run of an
+    # already-finished war, so it never advances storyWins (which must
+    # stay pinned at the final beat) - it pays a bonus instead.
+    is_remnant = player.storyWins >= STORY_TOTAL_WINS
+
     success, message, goal_entries = economy.resolve_mission(
         player, mission, is_story=True
     )
 
     if success:
-        player.storyWins += 1
-        # Every story win earns +1 reputation with the mission's faction
-        # (all six tribes for the United Front finale arc).
-        goal_entries.extend(economy.grant_story_reputation(player, mission))
-        # storyWins moved after resolve_mission's own bump_stats ran, so
-        # re-check achievements for story-win thresholds crossed just now.
-        goal_entries.extend(economy.check_achievements(player))
+        if is_remnant:
+            bonus = max(1, round(
+                economy.mission_reward_award(player, mission, is_story=True)
+                * economy.REMNANT_REWARD_BONUS))
+            player.credits += bonus
+            message += (f"\n🏴 Remnant hunt: +{bonus:,} bonus credits for "
+                        "scouring the old battlefield.")
+            goal_entries.extend(economy.check_achievements(player))
+        else:
+            player.storyWins += 1
+            # Every story win earns +1 reputation with the mission's faction
+            # (all six tribes for the United Front finale arc).
+            goal_entries.extend(economy.grant_story_reputation(player, mission))
+            # storyWins moved after resolve_mission's own bump_stats ran, so
+            # re-check achievements for story-win thresholds crossed just now.
+            goal_entries.extend(economy.check_achievements(player))
+            if player.storyWins == STORY_TOTAL_WINS:
+                goal_entries.append(economy.log_activity(
+                    player,
+                    "🤖 E.C.H.O.: \"Final chronicle entry logged. Zephyr is "
+                    "free, Jahntow. The remnant cells dug into the old "
+                    "battlefields are yours to hunt whenever you wish - the "
+                    "eight great battles stay open on the Story tab. And "
+                    "when you want to hear the whole war again, prestige: "
+                    "I will open a new chronicle, and the tribes' legends "
+                    "will have grown with the telling.\"",
+                    "choice",
+                ))
 
     activity = economy.log_activity(
         player, message, "mission-success" if success else "mission-fail"
@@ -1639,7 +1679,29 @@ def prestige():
     economy.apply_passive_tick(player)
     if player.level < economy.MAX_LEVEL:
         return jsonify({"message": f"Reach level {economy.MAX_LEVEL} to prestige"}), 400
+    # A prestige taken with the story fully told also closes an E.C.H.O.
+    # chronicle cycle: the war retells itself from the first landing
+    # (storyWins resets), and every warband story gate escalates. Decided
+    # before _prestige_player so nothing it touches can confuse the check.
+    closes_chronicle = player.storyWins >= STORY_TOTAL_WINS
     _prestige_player(player)
+    extra_activities = []
+    if closes_chronicle:
+        player.storyWins = 0
+        stats = dict(player.stats or {})
+        stats["chronicle_cycles"] = int(stats.get("chronicle_cycles", 0) or 0) + 1
+        player.stats = stats
+        escalation = round(
+            economy.CHRONICLE_GATE_ESCALATION
+            * stats["chronicle_cycles"] * 100)
+        extra_activities.append(economy.log_activity(
+            player,
+            f"📜 E.C.H.O.: \"Chronicle {stats['chronicle_cycles']} archived. "
+            "I will tell the war again from the first landing - but the "
+            "tribes' legends have grown in the telling: every warband "
+            f"battle now demands +{escalation}% strength.\"",
+            "choice",
+        ))
     activity = economy.log_activity(
         player,
         f"Prestiged to level {player.prestige_level}! Stats reset, but your "
@@ -1648,4 +1710,8 @@ def prestige():
         "prestige",
     )
     db.session.commit()
-    return jsonify({"player": player.serialize(), "activity": activity.serialize()}), 200
+    return jsonify({
+        "player": player.serialize(),
+        "activity": activity.serialize(),
+        "extra_activities": [e.serialize() for e in extra_activities],
+    }), 200

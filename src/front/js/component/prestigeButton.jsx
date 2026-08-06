@@ -11,15 +11,28 @@ const bonusAt = (prestigeLevel) =>
 
 const PrestigeButton = () => {
   const { store, actions } = useContext(Context);
-  const { player } = store;
+  const { player, gameData } = store;
+
+  // Mirrors STORY_TOTAL_WINS on the backend: with the story fully told,
+  // prestiging also closes an E.C.H.O. chronicle cycle (story restarts,
+  // warband gates escalate).
+  const totalWins =
+    Object.keys(gameData?.storyMissions || {}).length * 5 || 210;
+  const closesChronicle = player.storyWins >= totalWins;
 
   const handlePrestige = () => {
+    const chronicleNote = closesChronicle
+      ? ` Your story is complete, so this also closes E.C.H.O.'s chronicle: ` +
+        `the war retells itself from the first landing, and every warband ` +
+        `battle demands +50% more strength per retelling.`
+      : ` You keep your story progress.`;
     if (
       window.confirm(
         `Prestige now? Level, credits, equipment, inventory, and properties reset - ` +
-          `but you keep your ship and story progress, your stat floors rise permanently, ` +
+          `but you keep your ship, your stat floors rise permanently, ` +
           `and every mission pays +${bonusAt(player.prestigeLevel + 1)}% credits and XP ` +
-          `forever (this will be Prestige ${player.prestigeLevel + 1}).`
+          `forever (this will be Prestige ${player.prestigeLevel + 1}).` +
+          chronicleNote
       )
     ) {
       actions.prestige();
