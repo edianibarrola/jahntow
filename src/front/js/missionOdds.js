@@ -4,11 +4,11 @@
 // how their level/gear affects their odds before committing - the server
 // recomputes and enforces the real chance at attempt time regardless of
 // what this shows.
-const BASE_SUCCESS_CHANCE = 0.48;
+const BASE_SUCCESS_CHANCE = 0.44;
 const SUCCESS_PER_LEVEL_ADVANTAGE = 0.035;
 const SUCCESS_PER_EXTRA_EQUIPMENT = 0.02;
 const MAX_EQUIPMENT_BONUS = 0.2;
-const MAX_LEVEL_ADVANTAGE_BONUS = 0.22;
+const MAX_LEVEL_ADVANTAGE_BONUS = 0.18;
 const MIN_SUCCESS_CHANCE = 0.1;
 const MAX_SUCCESS_CHANCE = 0.92;
 // Mirrors economy.REP_* / BOSS_MAX_SUCCESS_CHANCE.

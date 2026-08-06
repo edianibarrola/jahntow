@@ -564,7 +564,7 @@ def story_warband_bonus(player, mission):
 #     dropping a few ranks is the safe-but-slower one - which is the
 #     decision the loop previously didn't have, since every mission used to
 #     be safely +EV and higher ranks were paradoxically *safer* bets.
-BASE_SUCCESS_CHANCE = 0.48
+BASE_SUCCESS_CHANCE = 0.44
 SUCCESS_PER_LEVEL_ADVANTAGE = 0.035
 SUCCESS_PER_EXTRA_EQUIPMENT = 0.02
 # Spare gear is worth stockpiling further than it used to be: the old
@@ -577,7 +577,7 @@ MAX_EQUIPMENT_BONUS = 0.20
 # irreducible risk. Uncapped, a level-50 player farming rank-36 content sat
 # at a 0.91 success rate, which made trivial content the best credits per
 # energy in the game and the capstone mission pointless.
-MAX_LEVEL_ADVANTAGE_BONUS = 0.22
+MAX_LEVEL_ADVANTAGE_BONUS = 0.18
 MIN_SUCCESS_CHANCE = 0.10
 MAX_SUCCESS_CHANCE = 0.92
 
@@ -585,8 +585,15 @@ MAX_SUCCESS_CHANCE = 0.92
 # normal per-item random walk. Rolled lazily whenever prices are checked
 # (same request-driven pattern as everything else - no scheduler), gated
 # by a cooldown so events don't chain back to back.
-EVENT_CHECK_COOLDOWN = timedelta(minutes=4)
-EVENT_SPAWN_CHANCE = 0.15
+# TUNED (balance pass, playtest round 3): spawn rolls fire on every
+# request once a cooldown expires, so uptime is ~duration/(duration +
+# cooldown) for an active player. At the old numbers that meant bounties
+# live 56% of the time, merchants 36%, and a price event on ~half the
+# categories at once - three-plus banners was the resting state. The
+# longer cooldowns below take a single event from wallpaper to news:
+# bounties ~20% uptime, merchants ~13%, usually zero or one price event.
+EVENT_CHECK_COOLDOWN = timedelta(minutes=25)
+EVENT_SPAWN_CHANCE = 0.08
 # Several events can run at once, but only one per category.
 MAX_CONCURRENT_EVENTS = 3
 # Short and violent rather than long and mild. A 15-minute +25% move was
@@ -625,14 +632,14 @@ NARROW_ESCAPE_CHANCE = 0.25
 # charged (0.45 = 55% off). At most one of each is live at a time, and
 # each has its own spawn cooldown so they stay occasional and noticeable.
 PRICE_EVENT_KINDS = ("price_spike", "price_crash")
-BOUNTY_SPAWN_CHANCE = 0.13
-BOUNTY_CHECK_COOLDOWN = timedelta(minutes=6)
+BOUNTY_SPAWN_CHANCE = 0.07
+BOUNTY_CHECK_COOLDOWN = timedelta(minutes=25)
 BOUNTY_MULTIPLIER_MIN = 1.5
 BOUNTY_MULTIPLIER_MAX = 2.5
 BOUNTY_DURATION_MIN = timedelta(minutes=5)
 BOUNTY_DURATION_MAX = timedelta(minutes=10)
-MERCHANT_SPAWN_CHANCE = 0.10
-MERCHANT_CHECK_COOLDOWN = timedelta(minutes=8)
+MERCHANT_SPAWN_CHANCE = 0.06
+MERCHANT_CHECK_COOLDOWN = timedelta(minutes=30)
 MERCHANT_PRICE_FACTOR_MIN = 0.40  # 60% off
 MERCHANT_PRICE_FACTOR_MAX = 0.60  # 40% off
 MERCHANT_DURATION_MIN = timedelta(minutes=3)
