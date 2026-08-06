@@ -23,13 +23,17 @@ const fundCost = (base, current, count) => {
   return total;
 };
 
-const readinessOf = (state) => {
+const readinessOf = (state, boon = 0) => {
   const strength = state.strength || 0;
   if (strength <= 0) return 0;
-  if ((state.provisions || 0) <= 0) return READINESS_FLOOR;
+  if ((state.provisions || 0) <= 0)
+    return Math.min(100, READINESS_FLOOR + boon);
   const kitsNeeded = Math.max(1, Math.ceil(strength / KIT_SIZE));
   const coverage = Math.min(1, (state.kits || 0) / kitsNeeded);
-  return Math.round(READINESS_FLOOR + (100 - READINESS_FLOOR) * coverage);
+  return Math.min(
+    100,
+    Math.round(READINESS_FLOOR + (100 - READINESS_FLOOR) * coverage) + boon
+  );
 };
 
 const WarbandsComponent = () => {
@@ -105,7 +109,16 @@ const WarbandsComponent = () => {
           provisions: 0,
           ...(player.warbands?.[faction] || {}),
         };
-        const readiness = readinessOf(state);
+        // A story-earned boon permanently raises this band's readiness.
+        const boonEntry = Object.entries(player.storyChoices || {})
+          .map(([choiceId, optionId]) =>
+            (gameData.warbandBoons || {})[`${choiceId}:${optionId}`]
+          )
+          .find((boon) => boon && boon.faction === faction);
+        const boonPoints = boonEntry
+          ? gameData.warbandBoonReadiness || 10
+          : 0;
+        const readiness = readinessOf(state, boonPoints);
         const kitsNeeded = Math.max(
           1,
           Math.ceil(Math.max(1, state.strength) / KIT_SIZE)
@@ -153,6 +166,12 @@ const WarbandsComponent = () => {
                 </span>
               </div>
 
+              {boonEntry && (
+                <div className="tx-choice small mt-1">
+                  ✦ Boon: {boonEntry.label} — +{boonPoints} readiness,
+                  permanent
+                </div>
+              )}
               <ul className="warband-stats mt-2">
                 <li>
                   Strength: <strong>{state.strength}</strong>/{MAX_STRENGTH}{" "}

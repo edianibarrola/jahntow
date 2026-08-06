@@ -159,7 +159,12 @@ const MissionsComponent = () => {
               const odds = successBreakdown(
                 player,
                 missionData,
-                gameData.warbands
+                gameData.warbands,
+                null,
+                {
+                  boonCatalog: gameData.warbandBoons,
+                  perkCatalog: gameData.storyChoicePerks,
+                }
               );
               // Bailout missions are hidden above a credit ceiling - mirrors
               // the server's own check in player_meets_requirements.

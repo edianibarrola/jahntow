@@ -1701,6 +1701,78 @@ const CHOICE_CALLBACKS = {
         "Zerrok's seized accounts rebuilt three villages and stocked a winter's worth of clinics. The tribes still argue quietly about the verdict, and Jahntow lets them. Ava's name is not an argument. It is the reason.",
     },
   },
+  21: {
+    choice: "xictlian-wells",
+    lines: {
+      sell:
+        "Veran's water-money is in these walls - corporate steel bought back with desert water, plate by plate.",
+      open:
+        "Masons who walked in thirsty from the open wells stay to raise the walls. The water Jahntow freed is building his defenses now.",
+    },
+  },
+  47: {
+    choice: "luxorian-paymaster",
+    lines: {
+      ransom:
+        "The ransom bought the data-spike in Jahntow's hand tonight - Vortex, financing its own undoing with its own payroll.",
+      trade:
+        "The freed engineer walks point through the storm drain. She built these trunk lines, and she knows exactly where they bleed.",
+    },
+  },
+  87: {
+    choice: "pandaling-bond",
+    lines: {
+      keep:
+        "Twice in the branch-road madness the pandaling's warning chirp pulls Jahntow flat before the shots arrive. Ava was right about the little ones.",
+      return:
+        "Out of the deep canopy, on the worst night, come shapes the rebels half-remember - grown pandalings and older things, the forest repaying a debt on Jahntow's account.",
+    },
+  },
+  191: {
+    choice: "zerrok-codes",
+    lines: {
+      strike:
+        "Understanding arrives like ice water: the conditioning has been listening through every door his codes opened. The strike bought credits. It also drew the map.",
+      quarantine:
+        "The quarantine held, every day of it - and it never mattered. The leak was never in the codes. It was in the man, twenty years deep, waiting.",
+    },
+  },
+  201: {
+    choice: "ice-wreck",
+    lines: {
+      salvage:
+        "The salvage credits are years spent. Only now, as Xaezor names the Meridian, does Jahntow understand what else was in that ice - and what he sold for scrap.",
+      archive:
+        "E.C.H.O. speaks very quietly. 'The survey routines I recovered from the ice. The methodology. It was your mother's.' The file was never partial. It was inherited.",
+    },
+  },
+  148: {
+    choice: "chimera",
+    lines: {
+      mercy:
+        "Where the line breaks the second time, the jungle itself refuses the gap - the wardens say the roots remember mercy shown to a thing Vortex made.",
+      heal:
+        "At the third ring's breaking point something stitched and impossible comes howling in on the Vortex flank - the chimera, paying its debt where everyone can see.",
+    },
+  },
+  178: {
+    choice: "psychic-academy",
+    lines: {
+      extract:
+        "The thirty-one are here - the first free generation, standing in the link with Zhalia - and the amplifier's pressure breaks around them like water around stones.",
+      wait:
+        "The academy children feel the amplifier die from inside their dormitories - free at last, and no one will ever tell them what their freedom waited on.",
+    },
+  },
+  209: {
+    choice: "project-archive",
+    lines: {
+      burn:
+        "Under the museum's foundation stone lies a sealed layer of ash - the archive, and the tribes' agreement that some knowledge costs more than it teaches.",
+      rebuild:
+        "The museum's lower floors hum day and night - the workshop where PROJECT's stolen genius reroutes rivers home, one valley at a time.",
+    },
+  },
 };
 
 export { storyMissionArc, CHARACTER_LORE, CHOICE_CALLBACKS };

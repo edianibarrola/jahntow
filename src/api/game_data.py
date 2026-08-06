@@ -2528,106 +2528,288 @@ FACTIONS = ['Xictlians', 'Luxorians', 'Xiaojians', 'Titans', 'Tuathans',
 # reputation, credits, and gear so the decision is a real trade-off.
 # reward forms: {"credits": n} | {"rep": {faction: n}} | {"rep_all": n}
 # | {"equipment": {item: qty}}.
-STORY_CHOICES = [
-    {'id': 'xictlian-tribute', 'after_wins': 30,
-     'prompt': ("The Xictlian elders lay a war-tribute of credits at Jahntow's "
-                "feet for freeing their oases. Zu'ark quietly suggests the tribe "
-                "needs it more than we do."),
-     'options': [
-         {'id': 'accept', 'label': 'Accept the tribute',
-          'outcome_text': ("The caravans deliver the tribute by nightfall. War "
-                           "runs on credits, and the elders understand."),
-          'reward': {'credits': 4000}},
-         {'id': 'refuse', 'label': 'Refuse - the water belongs to the tribe',
-          'outcome_text': ("The elders pour the first freed water over Jahntow's "
-                           "hands. Xictlians do not forget."),
-          'reward': {'rep': {'Xictlians': 3}}},
-     ]},
-    {'id': 'luxorian-mercenaries', 'after_wins': 60,
-     'prompt': ("The mercenaries Ava pulled out of the Vortex camps are asking "
-                "who they fight for now. They'll follow Jahntow's word."),
-     'options': [
-         {'id': 'raiders', 'label': 'Send them raiding Vortex convoys',
-          'outcome_text': ("The free company's first raid pays out within days - "
-                           "and Vortex supply officers start sleeping badly."),
-          'reward': {'credits': 8000}},
-         {'id': 'guards', 'label': "Post them as guards over Luxor's temples",
-          'outcome_text': ("Temple guards in mercenary armor become a symbol of "
-                           "the defection. The Luxorians take note of who sent them."),
-          'reward': {'rep': {'Luxorians': 3}}},
-     ]},
-    {'id': 'xiaojian-heartseed', 'after_wins': 90,
-     'prompt': ("Master Zhenwu offers Jahntow the Heartseed of the ancient tree "
-                "city - it can be grown into living armor, or returned to the "
-                "grove it was cut from."),
-     'options': [
-         {'id': 'armor', 'label': 'Grow it into living armor',
-          'outcome_text': ("The Heartseed weaves itself into three suits of "
-                           "bark-and-sinew armor - Xiaojian craft, alive to the touch."),
-          'reward': {'equipment': {'Alien Skin Armor': 3}}},
-         {'id': 'grove', 'label': 'Return it to the grove',
-          'outcome_text': ("The grove closes around the Heartseed like a healed "
-                           "wound. Zhenwu bows lower than a master ever should."),
-          'reward': {'rep': {'Xiaojians': 3}}},
-     ]},
-    {'id': 'titan-forge', 'after_wins': 120,
-     'prompt': ("With the mountain fortresses held, the Titan forges stand idle "
-                "for the first time in years. Kazon asks what they should make."),
-     'options': [
-         {'id': 'blades', 'label': 'Commission plasma blades for the strike team',
-          'outcome_text': ("Two Titan-forged plasma blades, balanced for Jahntow's "
-                           "hand. You will want these at the fortress gates."),
-          'reward': {'equipment': {'Plasma Blade': 2}}},
-         {'id': 'refugees', 'label': 'Arm the refugee columns instead',
-          'outcome_text': ("Every refugee column now walks behind Titan steel. "
-                           "Kazon's clans call Jahntow kin from this day."),
-          'reward': {'rep': {'Titans': 3}}},
-     ]},
-    {'id': 'tuathan-rites', 'after_wins': 150,
-     'prompt': ("The Emerald Mage offers to teach the forest regrowth rite - or "
-                "to hand over the order's stockpile of healing salves for the "
-                "war effort."),
-     'options': [
-         {'id': 'stockpile', 'label': 'Take the salve stockpile',
-          'outcome_text': ("Crates of Tuathan salves reach the front lines - and "
-                           "the surplus sells for a small fortune."),
-          'reward': {'credits': 20000}},
-         {'id': 'rite', 'label': 'Learn the rite yourself',
-          'outcome_text': ("Jahntow spends three nights under the canopy learning "
-                           "the rite. The order counts him as one of their own now."),
-          'reward': {'rep': {'Tuathans': 3}}},
-     ]},
-    {'id': 'namarupian-broadcast', 'after_wins': 180,
-     'prompt': ("Zhalia can broadcast the amplifier's destruction into every "
-                "mind on Zephyr - or the strike can stay silent, and the standing "
-                "Vortex bounties on 'unknown saboteurs' can quietly be claimed."),
-     'options': [
-         {'id': 'broadcast', 'label': 'Broadcast the victory to all tribes',
-          'outcome_text': ("For one shared heartbeat, every tribe on Zephyr feels "
-                           "the amplifier die. The united front is no longer a plan - "
-                           "it is a fact."),
-          'reward': {'rep_all': 1}},
-         {'id': 'silent', 'label': 'Keep the strike silent',
-          'outcome_text': ("Vortex never learns who broke the amplifier. Their own "
-                           "bounty offices pay out to a stranger in a dust cloak."),
-          'reward': {'credits': 30000}},
-     ]},
-    {'id': 'zerrok-verdict', 'after_wins': 195,
-     'prompt': ("Zerrok kneels in chains, the daughter who died stopping him not "
-                "yet buried. The tribes ask Jahntow for a verdict: spare the "
-                "traitor, or condemn him."),
-     'options': [
-         {'id': 'spare', 'label': 'Spare him - Ava died believing he could be more',
-          'outcome_text': ("Zerrok is led away alive, sentenced to rebuild what he "
-                           "burned. Across Zephyr, the tribes speak of the mercy "
-                           "shown at the fortress."),
-          'reward': {'rep_all': 1}},
-         {'id': 'condemn', 'label': "Condemn him for Ava's death",
-          'outcome_text': ("The verdict is carried out at dawn. Zerrok's hidden "
-                           "accounts are seized and turned over to the war chest."),
-          'reward': {'credits': 25000}},
-     ]},
-]
+STORY_CHOICES = [{'id': 'xictlian-wells',
+  'after_wins': 15,
+  'prompt': 'The freed oases run over their stone lips for the first time '
+            'in years. Veran counts the surplus in caravan-loads and '
+            'proposes selling water down the salt roads to fund the war. '
+            "Zu'ark says the wells should stand open to every caravan, "
+            "free, as they did in her grandmother's time.",
+  'options': [{'id': 'sell',
+               'label': 'Sell the surplus water',
+               'outcome_text': "Veran's water caravans return heavy with "
+                               'coin. War runs on credits, and the desert '
+                               'knows a fair trade.',
+               'reward': {'credits_ref': 0.8}},
+              {'id': 'open',
+               'label': 'Open the wells to all',
+               'outcome_text': 'Word moves down the salt roads faster than '
+                               'any caravan: the wells stand open. '
+                               'Strangers who owe Jahntow nothing begin to '
+                               'owe him everything.',
+               'reward': {'rep': {'Xictlians': 2}}}]},
+ {'id': 'xictlian-tribute',
+  'after_wins': 30,
+  'prompt': "The Xictlian elders lay a war-tribute of credits at Jahntow's "
+            "feet for freeing their oases. Zu'ark quietly suggests the "
+            'tribe needs it more than we do.',
+  'options': [{'id': 'accept',
+               'label': 'Accept the tribute',
+               'outcome_text': 'The caravans deliver the tribute by '
+                               'nightfall. War runs on credits, and the '
+                               'elders understand.',
+               'reward': {'credits_ref': 0.6}},
+              {'id': 'refuse',
+               'label': 'Refuse - the water belongs to the tribe',
+               'outcome_text': 'The elders pour the first freed water over '
+                               "Jahntow's hands. Xictlians do not forget.",
+               'reward': {'rep': {'Xictlians': 3}, 'boon': 'Xictlians'}}]},
+ {'id': 'luxorian-paymaster',
+  'after_wins': 45,
+  'prompt': 'The defected mercenaries drag their former Vortex paymaster '
+            'before Jahntow - ledgers, codes, and a corporate ransom '
+            'policy worth a small fortune. Axenthon shrugs: ransom him '
+            'back, or trade him to the camps for the prisoners he bought.',
+  'options': [{'id': 'ransom',
+               'label': 'Ransom him back to Vortex',
+               'outcome_text': 'Vortex pays without haggling - efficient '
+                               'to the last. The paymaster is marched to '
+                               'the border lighter by one career.',
+               'reward': {'credits_ref': 1.0}},
+              {'id': 'trade',
+               'label': 'Trade him for the camp prisoners',
+               'outcome_text': 'Forty prisoners walk free for one '
+                               'paymaster - and among them, an engineer '
+                               "who built half of Vortex's lowland grid. "
+                               'She asks for a rifle and a bench. The Free '
+                               'Company will never march unprepared again.',
+               'reward': {'boon': 'Luxorians'}}]},
+ {'id': 'luxorian-mercenaries',
+  'after_wins': 60,
+  'prompt': 'The mercenaries Ava pulled out of the Vortex camps are asking '
+            "who they fight for now. They'll follow Jahntow's word.",
+  'options': [{'id': 'raiders',
+               'label': 'Send them raiding Vortex convoys',
+               'outcome_text': "The free company's first raid pays out "
+                               'within days - and Vortex supply officers '
+                               'start sleeping badly.',
+               'reward': {'credits_ref': 0.8}},
+              {'id': 'guards',
+               'label': "Post them as guards over Luxor's temples",
+               'outcome_text': 'Temple guards in mercenary armor become a '
+                               'symbol of the defection. The Luxorians '
+                               'take note of who sent them.',
+               'reward': {'rep': {'Luxorians': 3}}}]},
+ {'id': 'pandaling-bond',
+  'after_wins': 75,
+  'prompt': 'One rescued pandaling refuses to vanish into the canopy with '
+            'the others. It has decided, with total conviction, that '
+            'Jahntow is its mother. Ava says keep it - the little ones '
+            'sense danger before any sensor. Zhenwu says the deep forest '
+            'raises its own.',
+  'options': [{'id': 'keep',
+               'label': 'Let it ride along',
+               'outcome_text': "The pandaling installs itself in Jahntow's "
+                               'pack like it holds the deed. E.C.H.O. logs '
+                               'a new crew member, species: stubborn.',
+               'reward': {'perk': 'pandaling-bond:keep'}},
+              {'id': 'return',
+               'label': 'Carry it to the deep canopy',
+               'outcome_text': 'The deep forest opens for the little one '
+                               'and closes behind it like water. Somewhere '
+                               'above, the canopy watches Jahntow leave - '
+                               'and remembers.',
+               'reward': {'rep': {'Xiaojians': 2}}}]},
+ {'id': 'zerrok-codes',
+  'after_wins': 85,
+  'prompt': 'Zerrok offers his Vortex command codes - every door, every '
+            'convoy schedule, every payroll depot in the forest sector. '
+            "Ava won't touch them: her father's gifts were never free. Use "
+            'them now, or seal them in quarantine until they can be proven '
+            'clean.',
+  'options': [{'id': 'strike',
+               'label': 'Use the codes - strike now',
+               'outcome_text': 'The codes open a payroll depot like a tin '
+                               'of rations. Not one alarm sounds. '
+                               'Somewhere, Ava does not celebrate.',
+               'reward': {'credits_ref': 1.2}},
+              {'id': 'quarantine',
+               'label': 'Quarantine the codes',
+               'outcome_text': 'The codes go into a sealed core E.C.H.O. '
+                               'cannot even read. Ava nods once - the '
+                               'first entirely unguarded expression anyone '
+                               'has seen her wear.',
+               'reward': {'rep': {'Xiaojians': 2}}}]},
+ {'id': 'xiaojian-heartseed',
+  'after_wins': 90,
+  'prompt': 'Master Zhenwu offers Jahntow the Heartseed of the ancient '
+            'tree city - it can be grown into living armor, or returned to '
+            'the grove it was cut from.',
+  'options': [{'id': 'armor',
+               'label': 'Grow it into living armor',
+               'outcome_text': 'The Heartseed weaves itself into three '
+                               'suits of bark-and-sinew armor - Xiaojian '
+                               'craft, alive to the touch.',
+               'reward': {'equipment': {'Alien Skin Armor': 3}}},
+              {'id': 'grove',
+               'label': 'Return it to the grove',
+               'outcome_text': 'The grove closes around the Heartseed like '
+                               'a healed wound. Zhenwu bows lower than a '
+                               'master ever should.',
+               'reward': {'rep': {'Xiaojians': 3}, 'boon': 'Xiaojians'}}]},
+ {'id': 'ice-wreck',
+  'after_wins': 105,
+  'prompt': "The yetis lead Kazon's scouts to something under the blue "
+            'ice: a survey ship, decades dead, hull markings scoured. '
+            'Salvage crews could strip it for a fortune by nightfall - or '
+            'E.C.H.O. can spend one night alone in its dead computers '
+            'first.',
+  'options': [{'id': 'salvage',
+               'label': 'Strip it for salvage',
+               'outcome_text': 'The wreck yields alloys the forges sing '
+                               'over. By morning there is nothing left in '
+                               'the ice but its outline.',
+               'reward': {'credits_ref': 1.2}},
+              {'id': 'archive',
+               'label': 'Give E.C.H.O. the night',
+               'outcome_text': 'E.C.H.O. is silent the whole flight home. '
+                               "'Recovered partial survey routines,' it "
+                               "finally says. 'Excellent methodology. "
+                               "Familiar, somehow.' It does not elaborate.",
+               'reward': {'perk': 'ice-wreck:archive'}}]},
+ {'id': 'titan-forge',
+  'after_wins': 120,
+  'prompt': 'With the mountain fortresses held, the Titan forges stand '
+            'idle for the first time in years. Kazon asks what they should '
+            'make.',
+  'options': [{'id': 'blades',
+               'label': 'Commission plasma blades for the strike team',
+               'outcome_text': 'Two Titan-forged plasma blades, balanced '
+                               "for Jahntow's hand. You will want these at "
+                               'the fortress gates.',
+               'reward': {'equipment': {'Plasma Blade': 2}}},
+              {'id': 'refugees',
+               'label': 'Arm the refugee columns instead',
+               'outcome_text': 'Every refugee column now walks behind '
+                               "Titan steel. Kazon's clans call Jahntow "
+                               'kin from this day.',
+               'reward': {'rep': {'Titans': 3}, 'boon': 'Titans'}}]},
+ {'id': 'chimera',
+  'after_wins': 135,
+  'prompt': 'In the last trap line the wardens find something Vortex made '
+            'rather than caught: a stitched-together creature, half '
+            'predator and half laboratory, dying slowly in a cage it has '
+            "bent. The Mage's mercy would be quick. The Mage's craft might "
+            '- might - heal it.',
+  'options': [{'id': 'mercy',
+               'label': 'Grant it mercy',
+               'outcome_text': 'The Mage sings it down into the roots as '
+                               'gently as anything has ever been done to '
+                               'it. The jungle takes it back as its own, '
+                               'which - at the end - it was.',
+               'reward': {'rep': {'Tuathans': 2}}},
+              {'id': 'heal',
+               'label': 'Try to heal it',
+               'outcome_text': 'It takes the order nine days and the '
+                               'creature nearly takes two wardens. But '
+                               'what walks out of the grove owes its life '
+                               'to Jahntow - and things that hunt like '
+                               'that pay their debts in kind.',
+               'reward': {'perk': 'chimera:heal'}}]},
+ {'id': 'tuathan-rites',
+  'after_wins': 150,
+  'prompt': 'The Emerald Mage offers to teach the forest regrowth rite - '
+            "or to hand over the order's stockpile of healing salves for "
+            'the war effort.',
+  'options': [{'id': 'stockpile',
+               'label': 'Take the salve stockpile',
+               'outcome_text': 'Crates of Tuathan salves reach the front '
+                               'lines - and the surplus sells for a small '
+                               'fortune.',
+               'reward': {'credits_ref': 1.2}},
+              {'id': 'rite',
+               'label': 'Learn the rite yourself',
+               'outcome_text': 'Jahntow spends three nights under the '
+                               'canopy learning the rite. The order counts '
+                               'him as one of their own now.',
+               'reward': {'rep': {'Tuathans': 3}, 'boon': 'Tuathans'}}]},
+ {'id': 'psychic-academy',
+  'after_wins': 165,
+  'prompt': 'Zhalia has found the academy where Vortex raises its next '
+            'generation of enforcers - children, learning suppression as a '
+            'first language. Extract them now and the network will know '
+            'the woken are inside the city. Wait for the amplifier to '
+            'fall, and they graduate first.',
+  'options': [{'id': 'extract',
+               'label': 'Extract the children now',
+               'outcome_text': 'The extraction costs the network three '
+                               'safehouses and every remaining shred of '
+                               'anonymity. Zhalia pays it without '
+                               'blinking. Thirty-one children sleep free '
+                               'tonight.',
+               'reward': {'boon': 'Namarupians'}},
+              {'id': 'wait',
+               'label': 'Wait for the amplifier',
+               'outcome_text': 'The network stays dark, the bounty routes '
+                               'stay open, and the war chest grows heavy. '
+                               "The academy's lights burn on schedule. "
+                               'Zhalia does not talk about it.',
+               'reward': {'credits_ref': 1.5}}]},
+ {'id': 'namarupian-broadcast',
+  'after_wins': 180,
+  'prompt': "Zhalia can broadcast the amplifier's destruction into every "
+            'mind on Zephyr - or the strike can stay silent, and the '
+            "standing Vortex bounties on 'unknown saboteurs' can quietly "
+            'be claimed.',
+  'options': [{'id': 'broadcast',
+               'label': 'Broadcast the victory to all tribes',
+               'outcome_text': 'For one shared heartbeat, every tribe on '
+                               'Zephyr feels the amplifier die. The united '
+                               'front is no longer a plan - it is a fact.',
+               'reward': {'rep_all': 1}},
+              {'id': 'silent',
+               'label': 'Keep the strike silent',
+               'outcome_text': 'Vortex never learns who broke the '
+                               'amplifier. Their own bounty offices pay '
+                               'out to a stranger in a dust cloak.',
+               'reward': {'credits_ref': 1.5}}]},
+ {'id': 'zerrok-verdict',
+  'after_wins': 195,
+  'prompt': 'Zerrok kneels in chains, the daughter who died stopping him '
+            'not yet buried. The tribes ask Jahntow for a verdict: spare '
+            'the traitor, or condemn him.',
+  'options': [{'id': 'spare',
+               'label': 'Spare him - Ava died believing he could be more',
+               'outcome_text': 'Zerrok is led away alive, sentenced to '
+                               'rebuild what he burned. Across Zephyr, the '
+                               'tribes speak of the mercy shown at the '
+                               'fortress.',
+               'reward': {'rep_all': 1}},
+              {'id': 'condemn',
+               'label': "Condemn him for Ava's death",
+               'outcome_text': 'The verdict is carried out at dawn. '
+                               "Zerrok's hidden accounts are seized and "
+                               'turned over to the war chest.',
+               'reward': {'credits_ref': 1.2}}]},
+ {'id': 'project-archive',
+  'after_wins': 205,
+  'prompt': 'Beneath the fortress: the PROJECT archive. Terraforming, '
+            "suppression, the amplifier's blueprints - a civilization's "
+            'worth of stolen genius, aimed like a weapon. The tribes ask '
+            'Jahntow one last question: burn it, or turn it.',
+  'options': [{'id': 'burn',
+               'label': 'Burn it all',
+               'outcome_text': 'The archive burns for three days. Every '
+                               'tribe sends someone to watch, and nobody '
+                               'says much, and everybody sleeps better.',
+               'reward': {'rep_all': 1}},
+              {'id': 'rebuild',
+               'label': 'Turn it to healing the lands',
+               'outcome_text': "The fortress's lower floors become a "
+                               'workshop where stolen genius reroutes '
+                               'rivers home. It will take years. The lands '
+                               'have them now.',
+               'reward': {'perk': 'project-archive:rebuild'}}]}]
 
 # The player's ship: the one system that sells THROUGHPUT rather than
 # bigger numbers. Simulation of 60 hours of play found the real ceiling
