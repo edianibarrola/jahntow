@@ -48,20 +48,60 @@ const WARBAND_READINESS_FLOOR = 40;
 const ESCORT_SUCCESS_MAX = 0.05;
 const ESCORT_SOLO_RANK = 8;
 
-const warbandReadiness = (state) => {
+const warbandReadiness = (state, boon = 0) => {
   const strength = state.strength || 0;
   if (strength <= 0) return 0;
-  if ((state.provisions || 0) <= 0) return WARBAND_READINESS_FLOOR;
+  if ((state.provisions || 0) <= 0)
+    return Math.min(100, WARBAND_READINESS_FLOOR + boon);
   const kitsNeeded = Math.max(1, Math.ceil(strength / WARBAND_KIT_SIZE));
   const coverage = Math.min(1, (state.kits || 0) / kitsNeeded);
-  return Math.round(
-    WARBAND_READINESS_FLOOR + (100 - WARBAND_READINESS_FLOOR) * coverage
+  return Math.min(
+    100,
+    Math.round(
+      WARBAND_READINESS_FLOOR + (100 - WARBAND_READINESS_FLOOR) * coverage
+    ) + boon
   );
+};
+
+// Mirrors economy.warband_boon_points: +10 readiness if a recorded story
+// choice granted this tribe its boon (boonCatalog = gameData.warbandBoons).
+export const warbandBoonPoints = (player, boonCatalog, faction) => {
+  if (!boonCatalog) return 0;
+  const resolved = player.storyChoices || {};
+  return Object.entries(resolved).some(([choiceId, optionId]) => {
+    const boon = boonCatalog[`${choiceId}:${optionId}`];
+    return boon && boon.faction === faction;
+  })
+    ? 10
+    : 0;
+};
+
+// Mirrors economy.story_perks: permanent effects from recorded choices
+// (perkCatalog = gameData.storyChoicePerks).
+export const storyChoicePerks = (player, perkCatalog) => {
+  const out = {
+    successBonus: 0,
+    rewardBonus: 0,
+    failureHealthMult: 1,
+    propertyBonus: 0,
+    labels: [],
+  };
+  if (!perkCatalog) return out;
+  Object.entries(player.storyChoices || {}).forEach(([choiceId, optionId]) => {
+    const perk = perkCatalog[`${choiceId}:${optionId}`];
+    if (!perk) return;
+    out.successBonus += perk.success_bonus || 0;
+    out.rewardBonus += perk.reward_bonus || 0;
+    out.failureHealthMult *= perk.failure_health_mult ?? 1;
+    out.propertyBonus += perk.property_bonus || 0;
+    out.labels.push(perk.label);
+  });
+  return out;
 };
 
 // Mirrors economy.pick_escort/escort_bonus: which warband escorts this op,
 // whether the strength gate is met, and the success bonus it contributes.
-export const escortInfo = (player, mission, warbandCatalog) => {
+export const escortInfo = (player, mission, warbandCatalog, boonCatalog) => {
   if (!warbandCatalog || !mission.Region || mission.Guaranteed) return null;
   const need =
     mission.Rank <= ESCORT_SOLO_RANK
@@ -85,7 +125,12 @@ export const escortInfo = (player, mission, warbandCatalog) => {
   const state = pick
     ? { strength: 0, kits: 0, provisions: 0, ...(player.warbands?.[pick[0]] || {}) }
     : { strength: 0 };
-  const readiness = pick ? warbandReadiness(state) : 0;
+  const readiness = pick
+    ? warbandReadiness(
+        state,
+        warbandBoonPoints(player, boonCatalog, pick[0])
+      )
+    : 0;
   const isHome = !!pick && pick[1].region === mission.Region;
   return {
     need,
@@ -109,8 +154,10 @@ export const successBreakdown = (
   player,
   mission,
   warbandCatalog = null,
-  storyGate = null
+  storyGate = null,
+  extras = {}
 ) => {
+  const { boonCatalog = null, perkCatalog = null } = extras;
   const levelAdvantage = player.level - mission.Rank;
   // Only the upside is capped, matching the server: being under-levelled
   // still hurts without limit.
@@ -135,18 +182,22 @@ export const successBreakdown = (
   const equipmentBonus = Math.min(rawEquipmentBonus, MAX_EQUIPMENT_BONUS);
 
   const repBonus = factionBonus(player, mission);
-  const escort = escortInfo(player, mission, warbandCatalog);
+  const escort = escortInfo(player, mission, warbandCatalog, boonCatalog);
   const escortBonus = escort ? escort.bonus : 0;
+  const perks = storyChoicePerks(player, perkCatalog);
   // Mirrors economy.story_warband_bonus: warband-gated story battles
   // collect a readiness-scaled bonus (faction gate -> that warband;
   // host gate -> the six-warband average).
   const readinessFor = (faction) =>
-    warbandReadiness({
-      strength: 0,
-      kits: 0,
-      provisions: 0,
-      ...(player.warbands?.[faction] || {}),
-    });
+    warbandReadiness(
+      {
+        strength: 0,
+        kits: 0,
+        provisions: 0,
+        ...(player.warbands?.[faction] || {}),
+      },
+      warbandBoonPoints(player, boonCatalog, faction)
+    );
   let gateBonus = 0;
   if (storyGate) {
     const readiness = storyGate.faction
@@ -170,7 +221,7 @@ export const successBreakdown = (
     Math.min(
       ceiling,
       BASE_SUCCESS_CHANCE + advantageBonus + equipmentBonus + repBonus +
-        escortBonus + gateBonus
+        escortBonus + gateBonus + perks.successBonus
     )
   );
 
@@ -212,5 +263,7 @@ export const previewSuccessChance = (
   player,
   mission,
   warbandCatalog = null,
-  storyGate = null
-) => successBreakdown(player, mission, warbandCatalog, storyGate).chance;
+  storyGate = null,
+  extras = {}
+) =>
+  successBreakdown(player, mission, warbandCatalog, storyGate, extras).chance;

@@ -262,6 +262,79 @@ WARBAND_BANNER_MIN_STRENGTH = 10
 # effect at 100% readiness; host-gated battles use the host's average.
 STORY_WARBAND_READINESS_BONUS = 0.05
 
+# --- The story remembers: permanent effects earned by choices -------------
+# Derived ENTIRELY from player.story_choices - no extra storage, and a
+# choice recorded before these existed grants its perk retroactively.
+# Keys are "choice_id:option_id" (see game_data.STORY_CHOICES).
+STORY_CHOICE_PERKS = {
+    "pandaling-bond:keep": {
+        "failure_health_mult": 0.90,
+        "label": "the pandaling's warning chirp — 10% less health lost on failures",
+    },
+    "ice-wreck:archive": {
+        "success_bonus": 0.02,
+        "label": "the dead ship's survey routines — +2% mission success",
+    },
+    "chimera:heal": {
+        "reward_bonus": 0.03,
+        "label": "the grateful chimera hunts ahead — +3% mission credits",
+    },
+    "project-archive:rebuild": {
+        "property_bonus": 0.05,
+        "label": "PROJECT, turned — +5% property output",
+    },
+}
+
+# Warband boons: choose to invest in a tribe and its warband stands
+# permanently readier (+10 readiness, capped at 100). One earnable per
+# tribe, always on the generous side of a choice - mercy pays in
+# loyalty, pragmatism pays in credits.
+WARBAND_BOON_READINESS = 10
+WARBAND_BOONS = {
+    "xictlian-tribute:refuse": {
+        "faction": "Xictlians", "label": "the elders' water-debt"},
+    "luxorian-paymaster:trade": {
+        "faction": "Luxorians", "label": "the freed engineer"},
+    "xiaojian-heartseed:grove": {
+        "faction": "Xiaojians", "label": "the healed grove"},
+    "titan-forge:refugees": {
+        "faction": "Titans", "label": "columns armed with Titan steel"},
+    "tuathan-rites:rite": {
+        "faction": "Tuathans", "label": "the rite, learned"},
+    "psychic-academy:extract": {
+        "faction": "Namarupians", "label": "the first free generation"},
+}
+
+
+def story_perks(player):
+    """
+    Aggregate permanent perks from recorded story choices. Safe on any
+    player-shaped object (test doubles included).
+    """
+    resolved = getattr(player, "story_choices", None) or {}
+    out = {"success_bonus": 0.0, "reward_bonus": 0.0,
+           "failure_health_mult": 1.0, "property_bonus": 0.0, "labels": []}
+    for choice_id, option_id in resolved.items():
+        perk = STORY_CHOICE_PERKS.get(f"{choice_id}:{option_id}")
+        if not perk:
+            continue
+        out["success_bonus"] += perk.get("success_bonus", 0.0)
+        out["reward_bonus"] += perk.get("reward_bonus", 0.0)
+        out["failure_health_mult"] *= perk.get("failure_health_mult", 1.0)
+        out["property_bonus"] += perk.get("property_bonus", 0.0)
+        out["labels"].append(perk["label"])
+    return out
+
+
+def warband_boon_points(player, faction):
+    """+10 readiness if a recorded choice granted this tribe its boon."""
+    resolved = getattr(player, "story_choices", None) or {}
+    for choice_id, option_id in resolved.items():
+        boon = WARBAND_BOONS.get(f"{choice_id}:{option_id}")
+        if boon and boon["faction"] == faction:
+            return WARBAND_BOON_READINESS
+    return 0
+
 
 def warband_state(player, faction):
     """A faction's warband record with defaults filled in (never None)."""
@@ -292,11 +365,13 @@ def warband_provision_drain_per_hour(strength):
     return (strength / WARBAND_KIT_SIZE) * WARBAND_PROVISION_DRAIN
 
 
-def warband_readiness(state):
+def warband_readiness(state, boon=0):
     """
     40 (dry floor) .. 100 (full kits, provisioned). Computed live from
     the raw state - nothing stored, nothing to drift. Kits cover 10
     volunteers each; provisions are binary here (any stock = fed).
+    `boon` adds a story-earned permanent bonus (WARBAND_BOONS), capped
+    at 100.
     """
     strength = state["strength"]
     if strength <= 0:
@@ -305,9 +380,10 @@ def warband_readiness(state):
     gear_coverage = min(1.0, state["kits"] / kits_needed)
     provisioned = state["provisions"] > 0
     if not provisioned:
-        return WARBAND_READINESS_FLOOR
-    return round(WARBAND_READINESS_FLOOR
-                 + (100 - WARBAND_READINESS_FLOOR) * gear_coverage)
+        return min(100, WARBAND_READINESS_FLOOR + boon)
+    return min(100, round(WARBAND_READINESS_FLOOR
+                          + (100 - WARBAND_READINESS_FLOOR) * gear_coverage)
+               + boon)
 
 
 def escort_strength_required(mission):
@@ -356,7 +432,7 @@ def escort_bonus(player, mission):
     if not escort:
         return 0.0
     faction, state = escort
-    readiness = warband_readiness(state)
+    readiness = warband_readiness(state, warband_boon_points(player, faction))
     if readiness <= 0:
         return 0.0
     home = game_data.WARBANDS[faction]["region"] == mission.get("Region")
@@ -417,7 +493,10 @@ def apply_warband_ticks(player, now):
             if assignment and worked > 0:
                 # Readiness during the worked stretch (it was provisioned
                 # then by definition, whatever the state looks like now).
-                readiness = warband_readiness(dict(state, provisions=1.0))
+                readiness = warband_readiness(
+                    dict(state, provisions=1.0),
+                    warband_boon_points(player, faction),
+                )
                 effect = (strength / 100) * (readiness / 100)
                 tier = game_data.WARBANDS[faction]["volunteer_cost"]
                 stash = dict(state.get("stash") or
@@ -459,9 +538,13 @@ def story_warband_bonus(player, mission):
     if not gate:
         return 0.0
     if "faction" in gate:
-        readiness = warband_readiness(warband_state(player, gate["faction"]))
+        readiness = warband_readiness(
+            warband_state(player, gate["faction"]),
+            warband_boon_points(player, gate["faction"]),
+        )
     else:
-        values = [warband_readiness(warband_state(player, faction))
+        values = [warband_readiness(warband_state(player, faction),
+                                    warband_boon_points(player, faction))
                   for faction in game_data.WARBANDS]
         readiness = sum(values) / len(values)
     return STORY_WARBAND_READINESS_BONUS * (readiness / 100)
@@ -1463,7 +1546,10 @@ def apply_passive_tick(player):
             # low-rate property (0.0213/tick) therefore delivers 1 item
             # every ~47 ticks instead of dribbling unsellable slivers into
             # the inventory that floor to "Owned: 0" but still get valued.
-            produced = owned_qty * rate * production_ticks + remainders.get(property_name, 0)
+            # PROJECT, turned (story perk): permanent property output bonus.
+            produced = (owned_qty * rate * production_ticks
+                        * (1 + story_perks(player)["property_bonus"])
+                        + remainders.get(property_name, 0))
             gained = math.floor(produced)
             carry = round(produced - gained, 6)
             if gained <= 0:
@@ -2002,6 +2088,9 @@ def mission_success_chance(player, mission):
     chance += escort_bonus(player, mission)
     chance += story_warband_bonus(player, mission)
 
+    # The story remembers: permanent success perks from recorded choices.
+    chance += story_perks(player)["success_bonus"]
+
     ceiling = MAX_SUCCESS_CHANCE
     # The boss fight keeps an irreducible one-in-four risk no matter how
     # over-prepared the player is.
@@ -2081,9 +2170,13 @@ def resolve_mission(player, mission, mission_name=None, is_story=False):
         reward = mission_reward_award(player, mission, is_story)
         reward_reduced = reward < mission["Reward"]
         # Vehicles perk: a flat, non-random boost from investment - applied to
-        # the base before the luck-based multipliers stack on top.
+        # the base before the luck-based multipliers stack on top. Story
+        # perks (the chimera's debt) stack the same way.
         if perks["Vehicles"] > 0:
             reward = round(reward * (1 + perks["Vehicles"]))
+        choice_perks = story_perks(player)
+        if choice_perks["reward_bonus"] > 0:
+            reward = round(reward * (1 + choice_perks["reward_bonus"]))
         extras = []
 
         # A far-out-levelled win is treated like a Guaranteed one for
@@ -2156,6 +2249,10 @@ def resolve_mission(player, mission, mission_name=None, is_story=False):
             health_loss = max(1, round(
                 health_loss * (1 - ESCORT_HEALTH_REDUCTION_MAX * escort_factor)
             ))
+        # The pandaling's warning chirp (story perk) shaves failures too.
+        health_mult = story_perks(player)["failure_health_mult"]
+        if health_loss > 0 and health_mult < 1.0:
+            health_loss = max(1, round(health_loss * health_mult))
         narrow_escape = health_loss > 0 and random.random() < NARROW_ESCAPE_CHANCE
         if narrow_escape:
             health_loss -= health_loss // 2

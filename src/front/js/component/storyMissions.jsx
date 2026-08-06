@@ -17,23 +17,59 @@ const repTierLabel = (points) =>
   points >= 25 ? "Trusted Ally" : points >= 10 ? "Friend" : "Known";
 
 // A pending chapter-end choice, presented as the chapter's epilogue. The
-// catalog and validation are server-side; this just renders
-// player.pendingChoice and posts the picked option id.
-const StoryChoiceCard = ({ choice, onChoose, busy }) => (
+// catalog and validation are server-side; this renders player.pendingChoice
+// with an honest effect hint per option (choices have permanent
+// consequences now - the player deserves to know their shape, not their
+// story outcome) and posts the picked option id.
+const effectHint = (choice, option, gameData) => {
+  const reward = option.reward || {};
+  if (reward.credits_ref)
+    return "pays credits, scaled to your level";
+  if (reward.credits) return `+${reward.credits.toLocaleString()} credits`;
+  if (reward.perk) {
+    const perk = (gameData.storyChoicePerks || {})[reward.perk];
+    return perk ? `permanent: ${perk.label}` : "a permanent perk";
+  }
+  if (reward.boon) {
+    const band = (gameData.warbands || {})[reward.boon];
+    return `permanent: +${gameData.warbandBoonReadiness || 10} readiness for the ${
+      band?.name || reward.boon
+    }`;
+  }
+  if (reward.rep) {
+    const [faction, points] = Object.entries(reward.rep)[0];
+    return `+${points} ${faction} reputation`;
+  }
+  if (reward.rep_all) return `+${reward.rep_all} reputation with all tribes`;
+  if (reward.equipment) {
+    const [name, qty] = Object.entries(reward.equipment)[0];
+    return `+${qty}x ${name}`;
+  }
+  return null;
+};
+
+const StoryChoiceCard = ({ choice, onChoose, busy, gameData }) => (
   <div className="holo p-3 mb-3 choice-card">
     <h4 className="text-center">📖 A Decision Awaits</h4>
     <p>{choice.prompt}</p>
     <div className="d-flex flex-column gap-2">
-      {choice.options.map((option) => (
-        <button
-          key={option.id}
-          disabled={busy}
-          onClick={() => onChoose(choice.id, option.id)}
-        >
-          {option.label}
-        </button>
-      ))}
+      {choice.options.map((option) => {
+        const hint = effectHint(choice, option, gameData);
+        return (
+          <button
+            key={option.id}
+            disabled={busy}
+            onClick={() => onChoose(choice.id, option.id)}
+          >
+            {option.label}
+            {hint && <span className="choice-hint">{hint}</span>}
+          </button>
+        );
+      })}
     </div>
+    <p className="tx-info text-center small mb-0 mt-2">
+      The story will remember this — some choices echo chapters later.
+    </p>
   </div>
 );
 
@@ -124,12 +160,43 @@ const StoryMissions = () => {
             </p>
           </div>
         )}
+        {(() => {
+          // War legacy: the permanent marks your choices left - perk
+          // labels plus warband boons, derived from storyChoices.
+          const perkLabels = Object.entries(player.storyChoices || {})
+            .map(([choiceId, optionId]) =>
+              (gameData.storyChoicePerks || {})[`${choiceId}:${optionId}`]
+            )
+            .filter(Boolean)
+            .map((perk) => perk.label);
+          const boonLabels = Object.entries(player.storyChoices || {})
+            .map(([choiceId, optionId]) =>
+              (gameData.warbandBoons || {})[`${choiceId}:${optionId}`]
+            )
+            .filter(Boolean)
+            .map(
+              (boon) =>
+                `${boon.label} (+${gameData.warbandBoonReadiness || 10} ${
+                  (gameData.warbands || {})[boon.faction]?.name || boon.faction
+                } readiness)`
+            );
+          const legacy = [...perkLabels, ...boonLabels];
+          if (legacy.length === 0) return null;
+          return (
+            <div className="col-12 text-center pb-1">
+              <p className="tx-choice m-0 small">
+                ✦ War legacy: {legacy.join(" · ")}
+              </p>
+            </div>
+          );
+        })()}
       </div>
       {player.pendingChoice && (
         <StoryChoiceCard
           choice={player.pendingChoice}
           onChoose={handleChoice}
           busy={isChoosing}
+          gameData={gameData}
         />
       )}
       <div className="row mb-5">
@@ -248,7 +315,11 @@ const StoryMissions = () => {
                               gameData.warbands,
                               (gameData.storyWarbandGates || {})[
                                 storyMissionName
-                              ] || null
+                              ] || null,
+                              {
+                                boonCatalog: gameData.warbandBoons,
+                                perkCatalog: gameData.storyChoicePerks,
+                              }
                             )}
                             %
                           </li>

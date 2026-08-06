@@ -113,6 +113,12 @@ def get_game_data():
         # server owns every transaction and gate.
         "warbands": game_data.WARBANDS,
         "storyWarbandGates": game_data.STORY_WARBAND_GATES,
+        # Permanent choice effects, for the client's mirrors and labels:
+        # perks aggregate into mission math, boons raise a warband's
+        # readiness - both derived from player.storyChoices.
+        "storyChoicePerks": economy.STORY_CHOICE_PERKS,
+        "warbandBoons": economy.WARBAND_BOONS,
+        "warbandBoonReadiness": economy.WARBAND_BOON_READINESS,
         "shipModuleMaxLevel": game_data.SHIP_MODULE_MAX_LEVEL,
     }), 200
 
@@ -1293,6 +1299,26 @@ def story_choice():
     if reward.get("credits"):
         player.credits += reward["credits"]
         reward_notes.append(f"+{reward['credits']} credits")
+    if reward.get("credits_ref"):
+        # Scaled to the biggest at-level mission reward at CHOICE time -
+        # the same yardstick daily contracts use, so a chapter-30 choice
+        # made at level 40 pays level-40 money, never a token amount.
+        amount = max(1, round(
+            economy._reference_mission_reward(player.level)
+            * reward["credits_ref"]))
+        player.credits += amount
+        reward_notes.append(f"+{amount:,} credits")
+    if reward.get("perk"):
+        perk = economy.STORY_CHOICE_PERKS.get(reward["perk"])
+        if perk:
+            reward_notes.append(f"permanent: {perk['label']}")
+    if reward.get("boon"):
+        boon_faction = reward["boon"]
+        band = game_data.WARBANDS.get(boon_faction, {})
+        reward_notes.append(
+            f"warband boon: +{economy.WARBAND_BOON_READINESS} readiness "
+            f"for the {band.get('name', boon_faction)}, permanently"
+        )
     if reward.get("rep"):
         reputation = dict(player.reputation or {})
         for faction, points in reward["rep"].items():
