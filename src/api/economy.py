@@ -264,6 +264,33 @@ WARBAND_BANNER_MIN_STRENGTH = 10
 # effect at 100% readiness; host-gated battles use the host's average.
 STORY_WARBAND_READINESS_BONUS = 0.05
 
+# --- The Long Peace: the game after the final story beat ------------------
+# Prestiging with the story finished closes a "chronicle cycle": E.C.H.O.
+# archives the war and retells it from the first landing (storyWins resets
+# to 0). Each retelling is harder - every warband story gate scales up by
+# this fraction per closed cycle, clamped at WARBAND_MAX_STRENGTH so a
+# gate always stays physically reachable. Keyed off closed cycles (stored
+# in player.stats), NOT prestige_level: a mid-story prestige for the
+# economy bonus must never spike gates the player hasn't beaten yet.
+CHRONICLE_GATE_ESCALATION = 0.5
+# With the story complete, the eight warband-gated battles stay open as
+# repeatable Remnant Hunts paying this much extra credits on top of the
+# normal story reward.
+REMNANT_REWARD_BONUS = 0.5
+
+
+def chronicle_cycles(player):
+    return int((player.stats or {}).get("chronicle_cycles", 0) or 0)
+
+
+def story_gate_requirement(player, base):
+    """
+    A story warband gate's strength requirement for THIS player, after
+    chronicle-cycle escalation.
+    """
+    scale = 1 + CHRONICLE_GATE_ESCALATION * chronicle_cycles(player)
+    return min(WARBAND_MAX_STRENGTH, math.ceil(base * scale))
+
 # --- The story remembers: permanent effects earned by choices -------------
 # Derived ENTIRELY from player.story_choices - no extra storage, and a
 # choice recorded before these existed grants its perk retroactively.
@@ -2028,20 +2055,22 @@ def player_meets_requirements(player, mission):
             None,
         )
         if gate and "faction" in gate:
+            need = story_gate_requirement(player, gate["strength"])
             state = warband_state(player, gate["faction"])
-            if state["strength"] < gate["strength"]:
+            if state["strength"] < need:
                 band = game_data.WARBANDS[gate["faction"]]["name"]
                 problems.append(
-                    f"The {band} must number {gate['strength']} for this "
+                    f"The {band} must number {need} for this "
                     f"battle (now: {state['strength']}). Fund them on the "
                     "Warbands tab."
                 )
         elif gate:
+            need = story_gate_requirement(player, gate["host"])
             average = host_average_strength(player)
-            if average < gate["host"]:
+            if average < need:
                 problems.append(
                     "The united front is not ready - the host must "
-                    f"average {gate['host']} strength across all six "
+                    f"average {need} strength across all six "
                     f"warbands (now: {average:.0f})."
                 )
 

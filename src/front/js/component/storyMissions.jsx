@@ -11,6 +11,13 @@ import { previewSuccessChance } from "../missionOdds";
 // actually enforces which story mission may be run.
 const STORY_WINS_PER_UNLOCK = 5;
 
+// Mirrors economy.CHRONICLE_GATE_ESCALATION / WARBAND_MAX_STRENGTH -
+// display only, the server enforces the escalated gates.
+const CHRONICLE_GATE_ESCALATION = 0.5;
+const WARBAND_MAX_STRENGTH = 200;
+// Mirrors economy.REMNANT_REWARD_BONUS.
+const REMNANT_REWARD_BONUS = 0.5;
+
 // Mirrors economy.REP_TIER_1/2 - display only, the server applies the perks.
 const REP_TIERS = [10, 25];
 const repTierLabel = (points) =>
@@ -126,6 +133,20 @@ const StoryMissions = () => {
   const availableMissionName =
     Object.keys(storyMissionsData)[availableMissionIndex];
 
+  // The Long Peace: past the final beat only the warband-gated battles
+  // stay open, as repeatable Remnant Hunts.
+  const totalWins =
+    Object.keys(storyMissionsData).length * STORY_WINS_PER_UNLOCK;
+  const storyComplete = player.storyWins >= totalWins;
+  // Chronicle cycles escalate every warband story gate; mirror of
+  // economy.story_gate_requirement.
+  const chronicleCycles = player.stats?.chronicle_cycles || 0;
+  const gateNeed = (base) =>
+    Math.min(
+      WARBAND_MAX_STRENGTH,
+      Math.ceil(base * (1 + CHRONICLE_GATE_ESCALATION * chronicleCycles))
+    );
+
   const runStoryMission = (missionName) => {
     setStoryMissionRunning(true);
     actions
@@ -150,6 +171,16 @@ const StoryMissions = () => {
         <div className="col-12 text-center">
           <p>Story Missions:</p>
         </div>
+        {chronicleCycles > 0 && (
+          <div className="col-12 text-center pb-1">
+            <p className="tx-choice m-0 small">
+              📜 Chronicle {chronicleCycles + 1} — the war retold; warband
+              battle gates +
+              {Math.round(chronicleCycles * CHRONICLE_GATE_ESCALATION * 100)}
+              %.
+            </p>
+          </div>
+        )}
         {repEntries.length > 0 && (
           <div className="col-12 text-center pb-1">
             <p className="tx-rep m-0">
@@ -199,17 +230,36 @@ const StoryMissions = () => {
           gameData={gameData}
         />
       )}
+      {storyComplete && (
+        <div className="col-12 holo p-3 mb-3 text-center">
+          <p className="m-0">
+            🕊️ <strong>The Long Peace.</strong> The war is won — the great
+            warband battles below stay open as repeatable Remnant Hunts (+
+            {Math.round(REMNANT_REWARD_BONUS * 100)}% bonus credits). When
+            you want to hear the whole story again, prestige at max level:
+            E.C.H.O. opens a new chronicle and the war retells itself with
+            harder warband gates.
+          </p>
+        </div>
+      )}
       <div className="row mb-5">
         <Accordion defaultActiveKey={availableMissionName}>
           {Object.entries(storyMissionsData).map(
             ([storyMissionName, storyMissionData], index) => {
               const startWin = index * STORY_WINS_PER_UNLOCK;
-
-              if (
+              // Past the final beat, the warband-gated battles reopen as
+              // repeatable Remnant Hunts (mirrors the server's remnant
+              // branch in _resolve_mission_request).
+              const isRemnant =
+                storyComplete &&
+                !!(gameData.storyWarbandGates || {})[storyMissionName];
+              const inWindow =
                 player.storyWins >= startWin &&
-                player.storyWins < startWin + STORY_WINS_PER_UNLOCK
-              ) {
-                const isUnlocked = storyMissionName === availableMissionName;
+                player.storyWins < startWin + STORY_WINS_PER_UNLOCK;
+
+              if (inWindow || isRemnant) {
+                const isUnlocked =
+                  isRemnant || storyMissionName === availableMissionName;
                 // Mirrors the backend's own gate in player_meets_requirements:
                 // a failed attempt costs "Health Effect" health, so refuse to
                 // even offer a mission that could drop the player to 0.
@@ -225,6 +275,16 @@ const StoryMissions = () => {
                     <Accordion.Body>
                       <div className="col-12 pl-5 pr-5 text-center">
                         <ul className="holo">
+                          {isRemnant && (
+                            <li className="tx-choice">
+                              🏴 Remnant hunt — repeatable. The war is won,
+                              but holdout cells still haunt this
+                              battlefield: pays the story reward +
+                              {Math.round(REMNANT_REWARD_BONUS * 100)}%
+                              bonus credits, and your story progress stays
+                              complete.
+                            </li>
+                          )}
                           {storyMissionData.Boss && (
                             <li className="tx-error">
                               ⚔️ BOSS FIGHT — success is capped at 75% no
@@ -273,20 +333,22 @@ const StoryMissions = () => {
                             if (!gate) return null;
                             const bands = gameData.warbands || {};
                             if (gate.faction) {
+                              const need = gateNeed(gate.strength);
                               const band = bands[gate.faction] || {};
                               const strength =
                                 player.warbands?.[gate.faction]?.strength || 0;
-                              const met = strength >= gate.strength;
+                              const met = strength >= need;
                               return (
                                 <li className={met ? "tx-rep" : "tx-error"}>
                                   ⚔️ War host: the {band.name || gate.faction}{" "}
-                                  must number {gate.strength} —{" "}
+                                  must number {need} —{" "}
                                   {met
                                     ? `ready (${strength} strong; their readiness boosts your odds below)`
                                     : `now ${strength}. Recruit on the Warbands tab.`}
                                 </li>
                               );
                             }
+                            const need = gateNeed(gate.host);
                             const factions = Object.keys(bands);
                             const average = factions.length
                               ? factions.reduce(
@@ -296,11 +358,11 @@ const StoryMissions = () => {
                                   0
                                 ) / factions.length
                               : 0;
-                            const met = average >= gate.host;
+                            const met = average >= need;
                             return (
                               <li className={met ? "tx-rep" : "tx-error"}>
                                 ⚔️ United front: the host must average{" "}
-                                {gate.host} strength —{" "}
+                                {need} strength —{" "}
                                 {met
                                   ? `ready (avg ${Math.floor(average)})`
                                   : `now ${Math.floor(average)}. Every warband counts.`}
