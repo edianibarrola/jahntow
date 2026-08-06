@@ -180,6 +180,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       marketPrices: [],
       priceHistory: {},
       leaderboard: [],
+      leaderboardSort: "score",
       // Several category price events can be live at once now - the old
       // singular key could only ever show the newest.
       activeEvents: [],
@@ -227,10 +228,11 @@ const getState = ({ getStore, getActions, setStore }) => {
           });
       },
 
-      fetchLeaderboard: () => {
-        return apiRequest("/api/leaderboard", { auth: false })
+      fetchLeaderboard: (sort) => {
+        const chosen = sort || getStore().leaderboardSort || "score";
+        return apiRequest(`/api/leaderboard?sort=${chosen}`, { auth: false })
           .then((data) => {
-            setStore({ leaderboard: data.players });
+            setStore({ leaderboard: data.players, leaderboardSort: chosen });
             return data.players;
           })
           .catch((error) => {

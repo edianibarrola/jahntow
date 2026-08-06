@@ -1,9 +1,33 @@
 import React, { useContext } from "react";
 import { Context } from "../store/appContext";
 
+const CATEGORIES = {
+  score: { label: "Renown (overall)", blurb:
+    "prestige, level, story, achievements, reputation and streaks, plus credits on a log scale" },
+  credits: { label: "Credits", blurb: "current bank balance" },
+  level: { label: "Level", blurb: "level, ties broken by experience" },
+  story: { label: "Story progress", blurb: "story mission wins" },
+  prestige: { label: "Prestige", blurb: "rebirths, ties broken by level" },
+  trading: { label: "Trading P/L", blurb:
+    "lifetime net market profit - losses count" },
+};
+
+const categoryValue = (entry, sort) =>
+  ({
+    score: `${entry.score?.toLocaleString()} renown`,
+    credits: `${entry.credits?.toLocaleString()} credits`,
+    level: `Lvl ${entry.level}`,
+    story: `${entry.storyWins} story wins`,
+    prestige: `Prestige ${entry.prestigeLevel || 0}`,
+    trading: `${(entry.tradingProfit || 0) >= 0 ? "+" : ""}${(
+      entry.tradingProfit || 0
+    ).toLocaleString()} P/L`,
+  }[sort]);
+
 const LeaderboardComponent = () => {
-  const { store } = useContext(Context);
+  const { store, actions } = useContext(Context);
   const { leaderboard, player } = store;
+  const sort = store.leaderboardSort || "score";
 
   // Matching on name is imperfect (names aren't unique) but the leaderboard
   // is deliberately anonymous otherwise - it never sends player ids. Good
@@ -18,13 +42,25 @@ const LeaderboardComponent = () => {
     <div className="row mb-3">
       <div className="row sticky-top holo text-center">
         <div className="col-12 text-center">
-          <p className="tx-info m-0">
-            Ranked by renown — prestige, level, story progress, achievements,
-            reputation and win streaks, plus credits on a log scale so a bank
-            balance can't outrank real progress.
+          <p className="m-0">
+            Leaderboard{" "}
+            <select
+              className="market-sort"
+              value={sort}
+              onChange={(e) => actions.fetchLeaderboard(e.target.value)}
+              title="Rank players by a different measure"
+            >
+              {Object.entries(CATEGORIES).map(([key, c]) => (
+                <option key={key} value={key}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </p>
+          <p className="tx-info m-0 small">
+            Ranked by {CATEGORIES[sort].blurb}.
           </p>
           <p>
-            Leaderboard:{" "}
             {myRank >= 0 ? (
               <span className="tx-sell">you are #{myRank + 1}</span>
             ) : (
@@ -57,11 +93,10 @@ const LeaderboardComponent = () => {
                 </span>
                 <span>
                   <span className="tx-achievement">
-                    {entry.score?.toLocaleString()} renown
+                    {categoryValue(entry, sort)}
                   </span>{" "}
                   · Lvl {entry.level} · {entry.storyWins} story wins ·{" "}
-                  {entry.achievements ?? 0} 🏆 · {entry.credits.toFixed(0)}{" "}
-                  credits
+                  {entry.achievements ?? 0} 🏆
                 </span>
               </li>
             ))}

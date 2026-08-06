@@ -23,6 +23,17 @@ def utcnow():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
+def iso_utc(dt):
+    """
+    Serialize a naive-UTC datetime for the client WITH its timezone
+    marker. Emitting bare isoformat() made browsers parse the string as
+    LOCAL time, so a 4-minute price event showed a countdown of "~244
+    more minutes" to anyone west of Greenwich - off by exactly their
+    UTC offset (found in playtesting; every test machine runs UTC).
+    """
+    return dt.isoformat() + "Z" if dt else None
+
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -303,6 +314,7 @@ class Player(db.Model):
             "score": self.renown_score(),
             "achievements": len(self.achievements or []),
             "bestWinStreak": (self.stats or {}).get("best_win_streak", 0),
+            "tradingProfit": (self.stats or {}).get("trading_profit", 0),
         }
 
 
@@ -349,7 +361,7 @@ class MarketPrice(db.Model):
             "category": self.category,
             "base_cost": self.base_cost,
             "current_cost": self.current_cost,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "updated_at": iso_utc(self.updated_at),
         }
 
 
@@ -390,8 +402,8 @@ class GameEvent(db.Model):
             "kind": self.kind,
             "category": self.category,
             "multiplier": self.multiplier,
-            "starts_at": self.starts_at.isoformat() if self.starts_at else None,
-            "ends_at": self.ends_at.isoformat(),
+            "starts_at": iso_utc(self.starts_at),
+            "ends_at": iso_utc(self.ends_at),
         }
 
 

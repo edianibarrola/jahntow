@@ -182,10 +182,23 @@ def leaderboard():
     The player table is small and this endpoint is cheap; if it ever isn't,
     the score wants to become a persisted, incrementally-updated column.
     """
+    sort = request.args.get("sort", "score")
+    keys = {
+        "score": lambda p: p.renown_score(),
+        "credits": lambda p: p.credits or 0,
+        "level": lambda p: ((p.level or 0), (p.experience or 0)),
+        "story": lambda p: p.storyWins or 0,
+        "prestige": lambda p: ((p.prestige_level or 0), (p.level or 0)),
+        "trading": lambda p: (p.stats or {}).get("trading_profit", 0),
+    }
+    key = keys.get(sort, keys["score"])
     players = sorted(
-        Player.query.all(), key=lambda p: p.renown_score(), reverse=True
+        Player.query.all(), key=key, reverse=True
     )[:LEADERBOARD_SIZE]
-    return jsonify({"players": [p.serialize_public() for p in players]}), 200
+    return jsonify({
+        "players": [p.serialize_public() for p in players],
+        "sort": sort if sort in keys else "score",
+    }), 200
 
 
 @game_api.route('/market/buy', methods=['POST'])
@@ -305,7 +318,9 @@ def market_sell():
         "sell",
     )
     goal_entries = economy.bump_stats(
-        player, items_sold=quantity, credits_earned=total_value
+        player, items_sold=quantity, credits_earned=total_value,
+        # Lifetime NET trading P/L (losses count) - the trader's number.
+        trading_profit=round(realized_profit),
     )
 
     db.session.commit()
@@ -941,8 +956,13 @@ def warband_fund():
 
     player.credits -= total_cost
     warbands = dict(player.warbands or {})
-    state["strength"] += volunteers
-    warbands[faction] = state
+    # Merge into the STORED record - replacing it with the four-field
+    # state dict silently dropped the assignment and any uncollected
+    # stash (found in playtesting: recruiting reset standing orders).
+    stored = dict(warbands.get(faction) or {})
+    stored.update(state)
+    stored["strength"] += volunteers
+    warbands[faction] = stored
     player.warbands = warbands
 
     cfg = game_data.WARBANDS[faction]
@@ -996,8 +1016,10 @@ def warband_kit():
 
     player.credits -= total_cost
     warbands = dict(player.warbands or {})
-    state["kits"] += kits
-    warbands[faction] = state
+    stored = dict(warbands.get(faction) or {})
+    stored.update(state)
+    stored["kits"] += kits
+    warbands[faction] = stored
     player.warbands = warbands
 
     activity = economy.log_activity(
@@ -1060,8 +1082,10 @@ def warband_provision():
 
     player.credits -= total_cost
     warbands = dict(player.warbands or {})
-    state["provisions"] = round(state["provisions"] + units, 3)
-    warbands[faction] = state
+    stored = dict(warbands.get(faction) or {})
+    stored.update(state)
+    stored["provisions"] = round(stored["provisions"] + units, 3)
+    warbands[faction] = stored
     player.warbands = warbands
 
     activity = economy.log_activity(

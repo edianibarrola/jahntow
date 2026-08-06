@@ -149,7 +149,7 @@ const MissionsComponent = () => {
             return (
               <div className="col-12" key={region}>
                 <h5 className="region-header">{region}</h5>
-                <Accordion>
+                <Accordion defaultActiveKey="0">
                   {regionMissions.map(([missionName, missionData], index) => {
               // Mirrors the backend's own gate in player_meets_requirements:
               // a failed attempt costs "Health Effect" health, so refuse to
@@ -238,10 +238,31 @@ const MissionsComponent = () => {
                             </li>
                           );
                         })()}
-                        <li>
-                          Required Credits: {missionData["Required Credits"]}
+                        {/* Green when you can afford it, red when you
+                            can't - same at-a-glance rule as the item
+                            requirement lists below. */}
+                        <li
+                          style={{
+                            color:
+                              player.credits >= missionData["Required Credits"]
+                                ? "#8aff8a"
+                                : "#ff8a8a",
+                          }}
+                        >
+                          Required Credits: {missionData["Required Credits"]}{" "}
+                          <span className="tx-info">
+                            (you: {Math.floor(player.credits).toLocaleString()})
+                          </span>
                         </li>
-                        <li>
+                        <li
+                          style={{
+                            color:
+                              player.energy >=
+                              effectiveEnergy(missionData["Required Energy"])
+                                ? "#8aff8a"
+                                : "#ff8a8a",
+                          }}
+                        >
                           Required Energy: {missionData["Required Energy"]}
                           {transportsPct > 0 && (
                             <span className="tx-info">
@@ -249,10 +270,12 @@ const MissionsComponent = () => {
                               → {effectiveEnergy(missionData["Required Energy"])}{" "}
                               with your Transports perk
                             </span>
-                          )}
+                          )}{" "}
+                          <span className="tx-info">(you: {player.energy})</span>
                         </li>
-                        <li style={{ color: wouldSurvive ? undefined : "#ff8a8a" }}>
-                          Health Risk: -{missionData["Health Effect"]}
+                        <li style={{ color: wouldSurvive ? "#8aff8a" : "#ff8a8a" }}>
+                          Health Risk: -{missionData["Health Effect"]}{" "}
+                          <span className="tx-info">(you: {player.health})</span>
                         </li>
                         {odds.escort &&
                           (odds.escort.met ? (
@@ -283,10 +306,20 @@ const MissionsComponent = () => {
                             <span className="tx-info">
                               (base {odds.basePct}%
                               {odds.levelPct !== 0 &&
-                                `, level ${odds.levelPct > 0 ? "+" : ""}${odds.levelPct}%`}
-                              , gear +{odds.gearPct}% of {odds.gearMaxPct}% max)
+                                ` · your level ${odds.levelPct > 0 ? "+" : ""}${odds.levelPct}%`}
+                              {` · spare equipment +${odds.gearPct}% (max ${odds.gearMaxPct}%)`}
+                              {odds.escort && odds.escort.bonus > 0 &&
+                                ` · warband escort +${(odds.escort.bonus * 100).toFixed(1)}%`}
+                              )
                             </span>
                           </li>
+                          {Object.keys(missionData.requiredSupplies || {})
+                            .length > 0 && (
+                            <li className="tx-info">
+                              Supplies are fuel — they're consumed every
+                              attempt but never change the odds.
+                            </li>
+                          )}
                         )}
                         {/* One number, in the same units as the "Owned: N"
                             line below: the total holding that maxes the
@@ -296,7 +329,7 @@ const MissionsComponent = () => {
                             out when to stop buying. */}
                         {odds.gearCapped ? (
                           <li className="tx-info">
-                            Gear bonus maxed at +{odds.gearMaxPct}% —{" "}
+                            Spare-equipment bonus maxed at +{odds.gearMaxPct}% —{" "}
                             <strong>owning {odds.usefulTotal}</strong> is all
                             that counts, extras add nothing.
                           </li>
@@ -306,7 +339,7 @@ const MissionsComponent = () => {
                             0 && (
                             <li className="tx-info">
                               <strong>Own {odds.usefulTotal}</strong> to max the
-                              gear bonus at +{odds.gearMaxPct}% —{" "}
+                              spare-equipment bonus at +{odds.gearMaxPct}% —{" "}
                               {odds.sparesToMax} more to go.
                             </li>
                           )

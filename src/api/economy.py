@@ -704,7 +704,8 @@ ECHO_CHATTER = {
 # Only these keys are persisted into Player.stats; other delta keys passed
 # to bump_stats (e.g. missions_won_at_level) still tick matching contracts
 # but aren't stored - they're contextual, not lifetime counters.
-TRACKED_STATS = ("missions_won", "missions_failed", "items_sold", "credits_earned")
+TRACKED_STATS = ("missions_won", "missions_failed", "items_sold",
+                 "credits_earned", "trading_profit")
 DAILY_CONTRACT_COUNT = 3
 
 # Server-side activity log / notification feed. Player history is capped
