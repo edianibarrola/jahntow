@@ -47,23 +47,31 @@ export const Home = () => {
     // in localStorage and left it stale for a full poll cycle - so stats,
     // credits and story progress could all be visibly wrong for 20s after
     // any reload.
+    // Events BEFORE prices, chained: the events request is what lazily
+    // spawns a new price event server-side, so fetching prices first
+    // meant a spike could appear in the notifications feed a full poll
+    // cycle before the board reflected it. Prices fetched after the
+    // event tick always show what the notification announces.
+    const refreshMarket = () =>
+      actions
+        .fetchActiveEvents()
+        .then(() => actions.fetchMarketPrices())
+        .then(() => {
+          actions.fetchActivityLog();
+          actions.fetchNotifications();
+        });
+
     actions.fetchPlayerData();
     actions.fetchGameData();
-    actions.fetchMarketPrices();
     actions.fetchLeaderboard();
-    actions.fetchActiveEvents();
     actions.fetchPriceHistory();
-    actions.fetchActivityLog();
-    actions.fetchNotifications();
+    refreshMarket();
 
     const intervalId = setInterval(() => {
-      actions.fetchMarketPrices();
       actions.fetchPlayerData();
       actions.fetchLeaderboard();
-      actions.fetchActiveEvents();
       actions.fetchPriceHistory();
-      actions.fetchActivityLog();
-      actions.fetchNotifications();
+      refreshMarket();
     }, POLL_INTERVAL_MS);
 
     return () => clearInterval(intervalId);

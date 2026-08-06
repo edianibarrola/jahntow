@@ -105,7 +105,12 @@ export const escortInfo = (player, mission, warbandCatalog) => {
 // in particular show that the gear bonus is capped, which was previously
 // invisible: stockpiling spares past the cap changed nothing on screen and
 // nothing told you why.
-export const successBreakdown = (player, mission, warbandCatalog = null) => {
+export const successBreakdown = (
+  player,
+  mission,
+  warbandCatalog = null,
+  storyGate = null
+) => {
   const levelAdvantage = player.level - mission.Rank;
   // Only the upside is capped, matching the server: being under-levelled
   // still hurts without limit.
@@ -132,6 +137,29 @@ export const successBreakdown = (player, mission, warbandCatalog = null) => {
   const repBonus = factionBonus(player, mission);
   const escort = escortInfo(player, mission, warbandCatalog);
   const escortBonus = escort ? escort.bonus : 0;
+  // Mirrors economy.story_warband_bonus: warband-gated story battles
+  // collect a readiness-scaled bonus (faction gate -> that warband;
+  // host gate -> the six-warband average).
+  const readinessFor = (faction) =>
+    warbandReadiness({
+      strength: 0,
+      kits: 0,
+      provisions: 0,
+      ...(player.warbands?.[faction] || {}),
+    });
+  let gateBonus = 0;
+  if (storyGate) {
+    const readiness = storyGate.faction
+      ? readinessFor(storyGate.faction)
+      : (() => {
+          const factions = Object.keys(warbandCatalog || {});
+          return factions.length
+            ? factions.reduce((sum, f) => sum + readinessFor(f), 0) /
+                factions.length
+            : 0;
+        })();
+    gateBonus = ESCORT_SUCCESS_MAX * (readiness / 100);
+  }
   // The boss fight's odds are hard-capped server-side; mirror it so the
   // preview never overstates.
   const ceiling = mission.Boss
@@ -142,12 +170,13 @@ export const successBreakdown = (player, mission, warbandCatalog = null) => {
     Math.min(
       ceiling,
       BASE_SUCCESS_CHANCE + advantageBonus + equipmentBonus + repBonus +
-        escortBonus
+        escortBonus + gateBonus
     )
   );
 
   return {
     escort,
+    gateBonusPct: Math.round(gateBonus * 1000) / 10,
     chance: Math.round(chance * 100),
     basePct: Math.round(BASE_SUCCESS_CHANCE * 100),
     levelPct: Math.round(advantageBonus * 100),
@@ -179,5 +208,9 @@ export const successBreakdown = (player, mission, warbandCatalog = null) => {
   };
 };
 
-export const previewSuccessChance = (player, mission) =>
-  successBreakdown(player, mission).chance;
+export const previewSuccessChance = (
+  player,
+  mission,
+  warbandCatalog = null,
+  storyGate = null
+) => successBreakdown(player, mission, warbandCatalog, storyGate).chance;

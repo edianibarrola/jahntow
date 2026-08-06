@@ -11,7 +11,7 @@ const KIT_COST_MULT = 5;
 const COST_GROWTH = 50;
 const MAX_STRENGTH = 100;
 const READINESS_FLOOR = 40;
-const PROVISION_CAP_HOURS = 72;
+const PROVISION_CAP_HOURS = 24;
 const DRAIN_PER_HOUR = (strength) => (strength / KIT_SIZE) * 1.0;
 
 const volunteerCost = (base, current) =>
@@ -49,8 +49,18 @@ const WarbandsComponent = () => {
         ? actions.fundWarband(faction, amount)
         : kind === "kit"
         ? actions.kitWarband(faction, amount)
+        : kind === "assign"
+        ? actions.assignWarband(faction, amount)
+        : kind === "collect"
+        ? actions.collectWarband(faction)
         : actions.provisionWarband(faction, amount);
     call.catch(() => {}).finally(() => setBusy(null));
+  };
+
+  const OP_LABELS = {
+    patrol: "Patrol — earn credits",
+    salvage: "Salvage sweep — bank goods",
+    banners: "Show the banners — build reputation",
   };
 
   const unlocked = Object.entries(catalog).filter(
@@ -171,31 +181,108 @@ const WarbandsComponent = () => {
               </ul>
 
               <div className="warband-actions">
-                <button
-                  className="btn-buy"
-                  disabled={isBusy || state.strength + 5 > MAX_STRENGTH}
-                  onClick={() => act("fund", faction, 5)}
-                  title="Volunteer cost rises as the company grows"
+                <div className="warband-action-row">
+                  <button
+                    className="btn-buy"
+                    disabled={isBusy || state.strength + 5 > MAX_STRENGTH}
+                    onClick={() => act("fund", faction, 5)}
+                  >
+                    ⚔️ Recruit +5 ({nextFive.toLocaleString()} cr)
+                  </button>
+                  <span className="warband-caption">
+                    Permanent muscle — gates and escorts count bodies. Cost
+                    rises as the company grows.
+                  </span>
+                </div>
+                <div className="warband-action-row">
+                  <button
+                    className="btn-buy"
+                    disabled={isBusy || state.kits >= kitsNeeded}
+                    onClick={() => act("kit", faction, 1)}
+                  >
+                    🛡 Gear kit ({kitCost.toLocaleString()} cr)
+                  </button>
+                  <span className="warband-caption">
+                    Arms 10 warriors — fills the readiness bar, which boosts
+                    escorted ops and the big story battles.
+                  </span>
+                </div>
+                <div className="warband-action-row">
+                  <button
+                    className="btn-buy"
+                    disabled={isBusy || state.strength === 0 || restock === 0}
+                    onClick={() => act("provision", faction, restock)}
+                  >
+                    🍞 Provision ({restock}x{" "}
+                    <span className="tx-item">{cfg.provision_item}</span> ≈
+                    {Math.round(restock * provisionPrice).toLocaleString()} cr)
+                  </button>
+                  <span className="warband-caption">
+                    Food for ~{PROVISION_CAP_HOURS}h, bought at the live
+                    market price. Drains hourly — twice as fast while
+                    deployed. Dry means readiness floor and stalled
+                    operations, never losses.
+                  </span>
+                </div>
+              </div>
+
+              <div className="warband-orders mt-2">
+                <label className="tx-info small me-2">🎯 Orders:</label>
+                <select
+                  value={state.assignment || ""}
+                  disabled={isBusy || state.strength === 0}
+                  onChange={(e) =>
+                    act("assign", faction, e.target.value || null)
+                  }
                 >
-                  ⚔️ Fund +5 ({nextFive.toLocaleString()} cr)
-                </button>
-                <button
-                  className="btn-buy"
-                  disabled={isBusy || state.kits >= kitsNeeded}
-                  onClick={() => act("kit", faction, 1)}
-                >
-                  🛡 Gear kit ({kitCost.toLocaleString()} cr)
-                </button>
-                <button
-                  className="btn-buy"
-                  disabled={isBusy || state.strength === 0 || restock === 0}
-                  onClick={() => act("provision", faction, restock)}
-                  title={`Provisions are ${cfg.provision_item} bought at the live market price`}
-                >
-                  🍞 Provision 24h ({restock}x{" "}
-                  <span className="tx-item">{cfg.provision_item}</span> ≈
-                  {Math.round(restock * provisionPrice).toLocaleString()} cr)
-                </button>
+                  <option value="">Standing by</option>
+                  {Object.entries(OP_LABELS).map(([kind, label]) => (
+                    <option key={kind} value={kind}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                {(() => {
+                  const stash = state.stash || {};
+                  const credits = Math.floor(stash.credits || 0);
+                  const items = Math.floor(stash.items || 0);
+                  const rep = Math.floor(stash.rep || 0);
+                  const anything = credits > 0 || items > 0 || rep > 0;
+                  return (
+                    <div className="mt-1">
+                      <span className="tx-info small">
+                        Stash:{" "}
+                        {anything ? (
+                          <>
+                            {credits > 0 && `${credits.toLocaleString()} cr `}
+                            {items > 0 && (
+                              <>
+                                {items}x{" "}
+                                <span className="tx-item">
+                                  {cfg.salvage_item}
+                                </span>{" "}
+                              </>
+                            )}
+                            {rep > 0 && `+${rep} rep `}
+                          </>
+                        ) : state.assignment ? (
+                          "accruing…"
+                        ) : (
+                          "— assign an operation"
+                        )}
+                      </span>
+                      {anything && (
+                        <button
+                          className="btn-buy ms-2"
+                          disabled={isBusy}
+                          onClick={() => act("collect", faction)}
+                        >
+                          📦 Collect report
+                        </button>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>

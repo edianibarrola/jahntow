@@ -1026,3 +1026,40 @@ input.form-control {
 .tx-warband {
   color: #ffd580;
 }
+
+/* Warband action rows: each button gets a plain-language caption so the
+   three levers (recruit / kit / provision) explain themselves. */
+.warband-action-row {
+  display: flex;
+  align-items: center;
+  gap: 4px 8px;
+  /* On narrow cards the caption wraps to its own line under the button
+     instead of escaping the card (caught by the mobile audit). */
+  flex-wrap: wrap;
+}
+.warband-action-row button {
+  flex: 0 0 auto;
+  max-width: 100%;
+  text-align: left;
+}
+.warband-caption {
+  flex: 1 1 180px;
+  min-width: 0;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: left;
+  line-height: 1.25;
+}
+.warband-orders {
+  min-width: 0;
+}
+.warband-orders select {
+  background: rgba(0, 0, 0, 0.5);
+  color: #cfe9ff;
+  border: 1px solid rgba(126, 200, 255, 0.4);
+  border-radius: 8px;
+  padding: 2px 8px;
+  /* The longest option label sets the intrinsic width - clamp it to the
+     card so it truncates instead of escaping (mobile audit). */
+  max-width: 100%;
+}

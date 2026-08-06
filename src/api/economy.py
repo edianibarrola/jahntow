@@ -223,10 +223,12 @@ WARBAND_COST_GROWTH = 50
 # One gear kit outfits 10 volunteers; kits cost 5x the volunteer base.
 WARBAND_KIT_SIZE = 10
 WARBAND_KIT_COST_MULT = 5
-# Provisions drain per hour per 10 strength (in provision-item units),
-# capped at 72 hours of stock so provisioning is upkeep, not a vault.
+# Provisions drain per hour per 10 strength (in provision-item units).
+# The cap is a single DAY of stock - deliberately short, so a warband
+# that's working needs the player back roughly daily. (72h in the first
+# release; playtesting found nobody ever needed to return.)
 WARBAND_PROVISION_DRAIN = 1.0
-WARBAND_PROVISION_CAP_HOURS = 72
+WARBAND_PROVISION_CAP_HOURS = 24
 # Readiness: 40% floor (dry), up to 100% with full kits + provisions.
 WARBAND_READINESS_FLOOR = 40
 # Escorted missions: success bonus up to +5% at 100% readiness (halved
@@ -236,6 +238,29 @@ ESCORT_HEALTH_REDUCTION_MAX = 0.20
 # Regular ops start needing an escort above the solo ranks (canon: one
 # man and a drone handles the early war personally).
 ESCORT_SOLO_RANK = 8
+
+# Standing operations - the idle layer. A deployed warband works its own
+# land while the player is away: patrol pays credits, a salvage sweep
+# banks market goods, showing the banners builds that tribe's rep.
+# Yields scale with strength x readiness x the tribe's cost tier, are
+# tuned WELL below active play, only accrue while provisions last, and
+# burn provisions at double rate - a working army eats. With the 24h
+# provision cap, that's the come-back loop.
+WARBAND_OP_KINDS = ("patrol", "salvage", "banners")
+WARBAND_OP_DRAIN_MULT = 2.0
+# Patrol: credits/hour at full strength(100) and readiness = tier cost x
+# this factor. Outriders (tier 100): 30 strength, 100% ready ~ 300/h.
+WARBAND_PATROL_RATE = 0.10
+# Salvage: items/hour per 100 strength at full readiness.
+WARBAND_SALVAGE_RATE = 0.8
+# Banners: rep points per full day deployed (at any strength >= 10).
+WARBAND_BANNER_REP_PER_DAY = 2.0
+WARBAND_BANNER_MIN_STRENGTH = 10
+
+# Warband-gated story battles also collect a readiness bonus - the whole
+# reason kits and provisions exist is standing ready for these. Full
+# effect at 100% readiness; host-gated battles use the host's average.
+STORY_WARBAND_READINESS_BONUS = 0.05
 
 
 def warband_state(player, faction):
@@ -347,23 +372,29 @@ def host_average_strength(player):
 
 def apply_warband_ticks(player, now):
     """
-    Lazy provision drain, wall-clock based like every other resource.
-    Called from apply_passive_tick. Copy-reassign (JSON column).
+    Lazy provision drain + standing-operation yields, wall-clock based
+    like every other resource. Called from apply_passive_tick.
+
+    A deployed warband burns provisions at double rate and accrues its
+    operation's yield into a per-warband STASH (fractional floats) - but
+    only for the hours its provisions actually covered. The stash is
+    claimed on the Warbands tab (one quartermaster report per claim),
+    which is deliberate: the idle layer pays out where the upkeep
+    decisions live, not silently in the background.
     """
     warbands = dict(player.warbands or {})
     changed = False
     for faction, raw in warbands.items():
+        if faction not in game_data.WARBANDS:
+            continue
         state = dict(raw or {})
         strength = state.get("strength", 0)
-        provisions = state.get("provisions", 0.0)
+        provisions = float(state.get("provisions", 0.0))
+        assignment = state.get("assignment")
+        if assignment not in WARBAND_OP_KINDS:
+            assignment = None
         last = state.get("last_provision_tick_at")
-        if strength <= 0 or provisions <= 0:
-            # Nothing to drain; keep the clock current so a restock
-            # doesn't get billed for the dry spell.
-            state["last_provision_tick_at"] = now.isoformat()
-            warbands[faction] = state
-            changed = True
-            continue
+        hours = 0.0
         if last:
             try:
                 hours = max(
@@ -372,15 +403,68 @@ def apply_warband_ticks(player, now):
                 )
             except ValueError:
                 hours = 0.0
-        else:
-            hours = 0.0
-        drain = hours * warband_provision_drain_per_hour(strength)
-        state["provisions"] = round(max(0.0, provisions - drain), 3)
         state["last_provision_tick_at"] = now.isoformat()
+
+        if strength > 0 and hours > 0 and provisions > 0:
+            drain_rate = warband_provision_drain_per_hour(strength)
+            if assignment:
+                drain_rate *= WARBAND_OP_DRAIN_MULT
+            # Yields only accrue while there was food on the wagons.
+            worked = min(hours, provisions / drain_rate) if drain_rate else 0.0
+            state["provisions"] = round(
+                max(0.0, provisions - hours * drain_rate), 3)
+
+            if assignment and worked > 0:
+                # Readiness during the worked stretch (it was provisioned
+                # then by definition, whatever the state looks like now).
+                readiness = warband_readiness(dict(state, provisions=1.0))
+                effect = (strength / 100) * (readiness / 100)
+                tier = game_data.WARBANDS[faction]["volunteer_cost"]
+                stash = dict(state.get("stash") or
+                             {"credits": 0.0, "items": 0.0, "rep": 0.0})
+                if assignment == "patrol":
+                    stash["credits"] = round(
+                        stash["credits"]
+                        + worked * WARBAND_PATROL_RATE * tier * effect, 3)
+                elif assignment == "salvage":
+                    stash["items"] = round(
+                        stash["items"]
+                        + worked * WARBAND_SALVAGE_RATE * effect, 3)
+                elif (assignment == "banners"
+                      and strength >= WARBAND_BANNER_MIN_STRENGTH):
+                    stash["rep"] = round(
+                        stash["rep"]
+                        + worked * WARBAND_BANNER_REP_PER_DAY / 24
+                        * (readiness / 100), 3)
+                state["stash"] = stash
+
         warbands[faction] = state
         changed = True
     if changed:
         player.warbands = warbands
+
+
+def story_warband_bonus(player, mission):
+    """
+    Readiness-scaled success bonus on warband-gated story battles - the
+    payoff for kits and provisions when it matters most. Faction gates
+    use that warband's readiness; host gates use the host's average.
+    """
+    gate = next(
+        (game_data.STORY_WARBAND_GATES[name]
+         for name, m in game_data.STORY_MISSIONS.items()
+         if m is mission and name in game_data.STORY_WARBAND_GATES),
+        None,
+    )
+    if not gate:
+        return 0.0
+    if "faction" in gate:
+        readiness = warband_readiness(warband_state(player, gate["faction"]))
+    else:
+        values = [warband_readiness(warband_state(player, faction))
+                  for faction in game_data.WARBANDS]
+        readiness = sum(values) / len(values)
+    return STORY_WARBAND_READINESS_BONUS * (readiness / 100)
 
 # Mission success chance scales with how prepared the player actually is,
 # instead of being a flat coin flip regardless of level or gear:
@@ -1913,8 +1997,10 @@ def mission_success_chance(player, mission):
     chance += story_faction_bonus(player, mission)
 
     # A ready warband escort helps on regular ops (scaled by readiness,
-    # halved out of region). Applied before the ceiling clamps.
+    # halved out of region), and warband-gated story battles collect a
+    # readiness bonus of their own. Applied before the ceiling clamps.
     chance += escort_bonus(player, mission)
+    chance += story_warband_bonus(player, mission)
 
     ceiling = MAX_SUCCESS_CHANCE
     # The boss fight keeps an irreducible one-in-four risk no matter how
