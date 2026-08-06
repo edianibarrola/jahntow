@@ -526,6 +526,17 @@ def apply_warband_ticks(player, now):
             worked = min(hours, provisions / drain_rate) if drain_rate else 0.0
             state["provisions"] = round(
                 max(0.0, provisions - hours * drain_rate), 3)
+            # The >0 guard on this whole block means the dry line logs
+            # exactly once per dry spell - a band already at zero never
+            # re-enters here until it's provisioned again.
+            if assignment and state["provisions"] <= 0:
+                log_activity(
+                    player,
+                    f"🍞 The {game_data.WARBANDS[faction]['name']}'s wagons "
+                    "have run dry - their operation is stalled until you "
+                    "provision them.",
+                    "warband",
+                )
 
             if assignment and worked > 0:
                 # Readiness during the worked stretch (it was provisioned

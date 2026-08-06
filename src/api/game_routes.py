@@ -12,7 +12,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from api import economy, game_data
-from api.models import db, Player, ActivityLogEntry, utcnow
+from api.models import db, Player, ActivityLogEntry, utcnow, iso_utc
 
 game_api = Blueprint('game_api', __name__)
 
@@ -1170,6 +1170,9 @@ def warband_assign():
     stored.update(state)
     stored["assignment"] = assignment
     stored["deployed"] = deployed
+    # When the order began - the UI's "running for Nh" clock. Z-suffixed
+    # like every other timestamp we hand the browser (see iso_utc).
+    stored["assigned_at"] = iso_utc(utcnow()) if assignment else None
     warbands[faction] = stored
     player.warbands = warbands
 

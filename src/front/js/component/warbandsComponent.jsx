@@ -14,6 +14,13 @@ const READINESS_FLOOR = 40;
 const PROVISION_CAP_HOURS = 24;
 const DRAIN_PER_HOUR = (strength) => (strength / KIT_SIZE) * 1.0;
 
+// Yield-rate mirrors of economy.WARBAND_PATROL_RATE / SALVAGE_RATE /
+// BANNER_REP_PER_DAY - display only, the server accrues the real stash.
+const PATROL_RATE = 0.1;
+const SALVAGE_RATE = 0.8;
+const BANNER_REP_PER_DAY = 2.0;
+const BANNER_MIN = 10;
+
 const volunteerCost = (base, current) =>
   Math.max(1, Math.round(base * (1 + current / COST_GROWTH)));
 
@@ -42,6 +49,9 @@ const WarbandsComponent = () => {
     store;
   const catalog = gameData.warbands || {};
   const [busy, setBusy] = useState(null);
+  // Orders are STAGED locally and committed with the Begin button -
+  // playtesting showed a dropdown that fires on selection is a footgun.
+  const [staged, setStaged] = useState({});
 
   const priceOf = (itemName) =>
     (marketPrices || []).find((r) => r.item_name === itemName)?.buy_price || 0;
@@ -251,51 +261,143 @@ const WarbandsComponent = () => {
               </div>
 
               <div className="warband-orders mt-2">
-                <label className="tx-info small me-2">🎯 Orders:</label>
-                <select
-                  value={state.assignment || ""}
-                  disabled={isBusy || state.strength === 0}
-                  onChange={(e) =>
-                    act("assign", faction, {
-                      assignment: e.target.value || null,
-                      deployed: deployed || state.strength,
-                    })
-                  }
-                >
-                  <option value="">Standing by</option>
-                  {Object.entries(OP_LABELS).map(([kind, label]) => (
-                    <option key={kind} value={kind}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-                {state.assignment && (
-                  <select
-                    className="ms-1"
-                    value={String(deployed)}
-                    disabled={isBusy}
-                    title="Detachment size: the detachment works the operation (and eats double); reserves stand ready. Gates and escorts always count your full strength."
-                    onChange={(e) =>
-                      act("assign", faction, {
-                        assignment: state.assignment,
-                        deployed: parseInt(e.target.value, 10),
-                      })
-                    }
-                  >
-                    {[
-                      Math.max(1, Math.round(state.strength / 4)),
-                      Math.max(1, Math.round(state.strength / 2)),
-                      state.strength,
-                    ]
-                      .filter((v, i, arr) => arr.indexOf(v) === i)
-                      .map((size) => (
-                        <option key={size} value={String(size)}>
-                          {size === state.strength
-                            ? `All ${size}`
-                            : `${size} of ${state.strength}`}
-                        </option>
-                      ))}
-                  </select>
+                {!state.assignment ? (
+                  (() => {
+                    // No active order: stage one, then commit with Begin.
+                    const stagedOrder = staged[faction] || {};
+                    const stagedDeployed = Math.min(
+                      stagedOrder.deployed || state.strength,
+                      state.strength
+                    );
+                    const setStagedFor = (patch) =>
+                      setStaged((prev) => ({
+                        ...prev,
+                        [faction]: { ...stagedOrder, ...patch },
+                      }));
+                    return (
+                      <>
+                        <label className="tx-info small me-2">🎯 Orders:</label>
+                        <select
+                          value={stagedOrder.assignment || ""}
+                          disabled={isBusy || state.strength === 0}
+                          onChange={(e) =>
+                            setStagedFor({ assignment: e.target.value })
+                          }
+                        >
+                          <option value="">— pick an operation —</option>
+                          {Object.entries(OP_LABELS).map(([kind, label]) => (
+                            <option key={kind} value={kind}>
+                              {label}
+                            </option>
+                          ))}
+                        </select>
+                        {stagedOrder.assignment && (
+                          <select
+                            className="ms-1"
+                            value={String(stagedDeployed)}
+                            disabled={isBusy}
+                            title="Detachment size: the detachment works the operation (and eats double); reserves stand ready. Gates and escorts always count your full strength. Size locks when the order begins - recall to change it."
+                            onChange={(e) =>
+                              setStagedFor({
+                                deployed: parseInt(e.target.value, 10),
+                              })
+                            }
+                          >
+                            {[
+                              Math.max(1, Math.round(state.strength / 4)),
+                              Math.max(1, Math.round(state.strength / 2)),
+                              state.strength,
+                            ]
+                              .filter((v, i, arr) => arr.indexOf(v) === i)
+                              .map((size) => (
+                                <option key={size} value={String(size)}>
+                                  {size === state.strength
+                                    ? `All ${size}`
+                                    : `${size} of ${state.strength}`}
+                                </option>
+                              ))}
+                          </select>
+                        )}
+                        <button
+                          className="btn-buy ms-1"
+                          disabled={
+                            isBusy ||
+                            !stagedOrder.assignment ||
+                            state.strength === 0
+                          }
+                          onClick={() =>
+                            act("assign", faction, {
+                              assignment: stagedOrder.assignment,
+                              deployed: stagedDeployed,
+                            })
+                          }
+                        >
+                          🚩 Begin orders
+                        </button>
+                      </>
+                    );
+                  })()
+                ) : (
+                  (() => {
+                    // Active order card: what they're doing, since when,
+                    // at what rate, and how long the food lasts.
+                    const assignedAt = state.assigned_at
+                      ? new Date(state.assigned_at).getTime()
+                      : null;
+                    const elapsedH =
+                      assignedAt != null
+                        ? Math.max(0, (Date.now() - assignedAt) / 3600000)
+                        : null;
+                    const elapsedText =
+                      elapsedH == null
+                        ? null
+                        : elapsedH < 1
+                        ? `${Math.max(1, Math.round(elapsedH * 60))}m`
+                        : `${elapsedH.toFixed(1)}h`;
+                    const effect = (deployed / 100) * (readiness / 100);
+                    const perDay =
+                      state.assignment === "patrol"
+                        ? `~${Math.round(
+                            cfg.volunteer_cost * PATROL_RATE * effect * 24
+                          ).toLocaleString()} cr/day`
+                        : state.assignment === "salvage"
+                        ? `~${(SALVAGE_RATE * effect * 24).toFixed(1)} goods/day`
+                        : deployed >= BANNER_MIN
+                        ? `~${(BANNER_REP_PER_DAY * (readiness / 100)).toFixed(
+                            1
+                          )} rep/day`
+                        : `stalled — banners need a detachment of ${BANNER_MIN}+`;
+                    return (
+                      <div className="warband-order-card">
+                        <div className="tx-info small">
+                          ⚔️ {OP_LABELS[state.assignment] || state.assignment}{" "}
+                          — detachment of {deployed} of {state.strength}
+                          {elapsedText && ` · marching ${elapsedText}`}
+                          {` · ${perDay}`}
+                          {" · "}
+                          {hoursLeft > 0 ? (
+                            <span className={hoursLeft < 12 ? "tx-error" : ""}>
+                              supplies ~{Math.floor(hoursLeft)}h
+                            </span>
+                          ) : (
+                            <span className="tx-error">
+                              dry — stalled until provisioned
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          className="btn-sell mt-1"
+                          disabled={isBusy}
+                          title="Stand the warband down. The stash stays claimable; recruit/kit/provision anytime - recalling is only needed to change orders or detachment size."
+                          onClick={() =>
+                            act("assign", faction, { assignment: null })
+                          }
+                        >
+                          ↩ Recall
+                        </button>
+                      </div>
+                    );
+                  })()
                 )}
                 {(() => {
                   const stash = state.stash || {};
