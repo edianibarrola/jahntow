@@ -772,7 +772,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                           'Experience': 40,
                           'Rank': 1,
                           'Faction': 'Xictlians',
-                          'requiredEquipment': {'Alien Ally': 1},
+                          'requiredEquipment': {'Tribal Guide': 1},
                           'Health Effect': 4,
                           'startMessage': 'E.C.H.O.: Corporate-signature '
                                           'drones over the water lines, '
@@ -798,7 +798,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                           'Experience': 80,
                           'Rank': 2,
                           'Faction': 'Xictlians',
-                          'requiredEquipment': {'Alien Ally': 1},
+                          'requiredEquipment': {'Tribal Guide': 1},
                           'Health Effect': 4,
                           'startMessage': 'E.C.H.O.: Veran found twelve '
                                           'wagons burned to their axles - '
@@ -824,7 +824,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                 'Experience': 160,
                 'Rank': 4,
                 'Faction': 'Xictlians',
-                'requiredEquipment': {'Alien Ally': 1},
+                'requiredEquipment': {'Tribal Guide': 1},
                 'Health Effect': 4,
                 'startMessage': 'E.C.H.O.: Vortex has fenced the oases - '
                                 'meters on the wells, guards on the water, '
@@ -846,7 +846,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                      'Experience': 200,
                      'Rank': 5,
                      'Faction': 'Xictlians',
-                     'requiredEquipment': {'Alien Ally': 1},
+                     'requiredEquipment': {'Tribal Guide': 1},
                      'Health Effect': 4,
                      'startMessage': 'E.C.H.O.: Ground columns crossing '
                                      'the wastes - Vortex has stopped '
@@ -867,7 +867,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                      'Experience': 240,
                      'Rank': 6,
                      'Faction': 'Xictlians',
-                     'requiredEquipment': {'Alien Ally': 1},
+                     'requiredEquipment': {'Tribal Guide': 1},
                      'Health Effect': 4,
                      'startMessage': 'E.C.H.O.: The elders have opened the '
                                      'temples - walls that outlasted every '
@@ -889,7 +889,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                'Experience': 280,
                                'Rank': 7,
                                'Faction': 'Xictlians',
-                               'requiredEquipment': {'Alien Ally': 1},
+                               'requiredEquipment': {'Tribal Guide': 1},
                                'Health Effect': 4,
                                'startMessage': 'E.C.H.O.: The '
                                                'stormwatchers read three '
@@ -920,7 +920,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                              'Experience': 320,
                              'Rank': 8,
                              'Faction': 'Luxorians',
-                             'requiredEquipment': {'Alien Ally': 1},
+                             'requiredEquipment': {'Tribal Guide': 1},
                              'Health Effect': 4,
                              'startMessage': 'E.C.H.O.: Axenthon has '
                                              'mapped the labor camps of '
@@ -1136,7 +1136,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                           'Experience': 680,
                           'Rank': 17,
                           'Faction': 'Xiaojians',
-                          'requiredEquipment': {'Alien Squad': 2,
+                          'requiredEquipment': {'War-Council Seal': 2,
                                                 'Bio Collector': 1},
                           'Health Effect': 8,
                           'startMessage': 'E.C.H.O.: There is a rebel camp '
@@ -1227,7 +1227,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                            'Experience': 800,
                            'Rank': 20,
                            'Faction': 'Xiaojians',
-                           'requiredEquipment': {'Alien Army': 2,
+                           'requiredEquipment': {'United-Front Banner': 2,
                                                  'Bio Collector': 3},
                            'Health Effect': 10,
                            'startMessage': 'E.C.H.O.: A high Vortex '
@@ -1331,7 +1331,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                              'Experience': 960,
                              'Rank': 24,
                              'Faction': 'Titans',
-                             'requiredEquipment': {'Alien Squad': 2,
+                             'requiredEquipment': {'War-Council Seal': 2,
                                                    'Jet Pack': 3},
                              'Health Effect': 12,
                              'startMessage': 'E.C.H.O.: The seams under '
@@ -1421,7 +1421,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                    'Experience': 1080,
                                    'Rank': 27,
                                    'Faction': 'Titans',
-                                   'requiredEquipment': {'Alien Ally': 2,
+                                   'requiredEquipment': {'Tribal Guide': 2,
                                                          'Holo Clone': 3},
                                    'Health Effect': 14,
                                    'startMessage': 'E.C.H.O.: Five clans, '
@@ -1589,7 +1589,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                   'Rank': 33,
                                   'Faction': 'Tuathans',
                                   'requiredEquipment': {'Bio Collector': 2,
-                                                        'Alien Army': 1},
+                                                        'United-Front Banner': 1},
                                   'Health Effect': 16,
                                   'startMessage': 'E.C.H.O.: I have found '
                                                   'where the bioweapon '
@@ -1701,7 +1701,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                              'Rank': 37,
                              'Faction': 'Namarupians',
                              'requiredEquipment': {'Jet Pack': 1,
-                                                   'Alien Squad': 4},
+                                                   'War-Council Seal': 4},
                              'Health Effect': 18,
                              'startMessage': 'E.C.H.O.: Namarupa - the one '
                                              'city Vortex never invaded, '
@@ -1811,7 +1811,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                         'Rank': 40,
                                         'Faction': 'Namarupians',
                                         'requiredEquipment': {'Holo Clone': 1,
-                                                              'Alien Ally': 5},
+                                                              'Tribal Guide': 5},
                                         'Health Effect': 20,
                                         'startMessage': 'E.C.H.O.: The '
                                                         'woken psychics '
@@ -2007,7 +2007,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                            'Experience': 1840,
                            'Rank': 46,
                            'Faction': 'United Front',
-                           'requiredEquipment': {'Alien Army': 1,
+                           'requiredEquipment': {'United-Front Banner': 1,
                                                  'Bio Collector': 5},
                            'Health Effect': 23,
                            'startMessage': 'E.C.H.O.: Something is wrong. '
@@ -2160,7 +2160,7 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                            'Experience': 2000,
                            'Rank': 50,
                            'Faction': 'United Front',
-                           'requiredEquipment': {'Alien Squad': 2,
+                           'requiredEquipment': {'War-Council Seal': 2,
                                                  'Jet Pack': 1},
                            'Health Effect': 25,
                            'startMessage': 'E.C.H.O.: The war is over; the '
@@ -2292,9 +2292,9 @@ EQUIPMENT = {'Research': {'Spectral Analyzer': {'Base Cost': 50, 'Required Level
  'Vehicles': {'Dune Skimmer': {'Base Cost': 50, 'Required Level': 1},
               'Storm Chaser': {'Base Cost': 150, 'Required Level': 10},
               'Titan Crawler': {'Base Cost': 500, 'Required Level': 20}},
- 'Story': {'Alien Ally': {'Base Cost': 50, 'Required Level': 1},
-           'Alien Squad': {'Base Cost': 150, 'Required Level': 10},
-           'Alien Army': {'Base Cost': 500, 'Required Level': 20}}}
+ 'Story': {'Tribal Guide': {'Base Cost': 50, 'Required Level': 1},
+           'War-Council Seal': {'Base Cost': 150, 'Required Level': 10},
+           'United-Front Banner': {'Base Cost': 500, 'Required Level': 20}}}
 
 
 HEALTH_RECOVERY_ITEMS = {'Health': {'HealPulse Emitter': {'Cost': 900,

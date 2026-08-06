@@ -200,7 +200,7 @@ const StoryMissions = () => {
         />
       )}
       <div className="row mb-5">
-        <Accordion>
+        <Accordion defaultActiveKey={availableMissionName}>
           {Object.entries(storyMissionsData).map(
             ([storyMissionName, storyMissionData], index) => {
               const startWin = index * STORY_WINS_PER_UNLOCK;
