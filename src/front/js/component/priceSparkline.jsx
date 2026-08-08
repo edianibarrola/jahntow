@@ -13,14 +13,32 @@ const PriceSparkline = ({ series, baseCost }) => {
     return <span className="sparkline-empty">—</span>;
   }
 
-  const min = Math.min(...series);
-  const max = Math.max(...series);
+  // Robust scale (playtest: a +95% event spike zoomed the chart out and
+  // flattened all the ordinary detail). Scale to the 10th-90th percentile
+  // band and CLAMP the outliers to the edges - a spike reads as a run
+  // pinned to the ceiling, a crash as a run along the floor, and the
+  // everyday trading range keeps its resolution.
+  const sorted = [...series].sort((a, b) => a - b);
+  const q = (p) =>
+    sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))];
+  let lo = q(0.1);
+  let hi = q(0.9);
+  if (baseCost != null) {
+    lo = Math.min(lo, baseCost);
+    hi = Math.max(hi, baseCost);
+  }
   // Flat series would divide by zero; give them a nominal band so the line
   // renders through the middle instead of collapsing.
-  const span = max - min || Math.max(1, max * 0.01);
+  if (hi - lo < Math.max(1, hi * 0.01)) {
+    const mid = (hi + lo) / 2 || 1;
+    lo = mid * 0.99;
+    hi = mid * 1.01;
+  }
+  const clamp = (v) => Math.min(hi, Math.max(lo, v));
 
   const x = (i) => PAD + (i / (series.length - 1)) * (WIDTH - PAD * 2);
-  const y = (v) => HEIGHT - PAD - ((v - min) / span) * (HEIGHT - PAD * 2);
+  const y = (v) =>
+    HEIGHT - PAD - ((clamp(v) - lo) / (hi - lo)) * (HEIGHT - PAD * 2);
 
   const path = series.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
 
@@ -31,7 +49,7 @@ const PriceSparkline = ({ series, baseCost }) => {
 
   // A dashed reference line at base cost turns the shape into information:
   // above it the item is expensive right now, below it it's cheap.
-  const showBase = baseCost != null && baseCost >= min && baseCost <= max;
+  const showBase = baseCost != null && baseCost >= lo && baseCost <= hi;
 
   const pctMove = first > 0 ? ((last - first) / first) * 100 : 0;
 

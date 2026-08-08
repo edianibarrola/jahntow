@@ -941,7 +941,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                'cleared the wire. The '
                                                'camps keep their secrets '
                                                'one more night. Axenthon '
-                                               'is already re-planning.'},
+                                               'is already re-planning.',
+                             'requiredSupplies': {'Data Shard': 1,
+                                                  'BioPatch': 1}},
  'Sabotage Supply Lines': {'Required Credits': 15000,
                            'Required Energy': 24,
                            'Reward': 30000,
@@ -968,7 +970,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                              'than the manifest promised. '
                                              'Freight that arrives is '
                                              'leverage they keep. Next '
-                                             'road, next night.'},
+                                             'road, next night.',
+                           'requiredSupplies': {'HyperWeave': 2,
+                                                'NeuroLink': 2}},
  'Persuade Mercenaries to Defect': {'Required Credits': 16440,
                                     'Required Energy': 26,
                                     'Reward': 32880,
@@ -1005,7 +1009,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                       "They're not enemies "
                                                       "yet. They're not "
                                                       'friends tonight '
-                                                      'either.'},
+                                                      'either.',
+                                    'requiredSupplies': {'BioPatch': 1,
+                                                         'Cryptex': 1}},
  'Hack Vortex Terraforming Tech': {'Required Credits': 17880,
                                    'Required Energy': 27,
                                    'Reward': 35760,
@@ -1042,7 +1048,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                      'countermeasures are '
                                                      'learning. The rigs '
                                                      'keep turning. So do '
-                                                     'we.'},
+                                                     'we.',
+                                   'requiredSupplies': {'NeuroLink': 3,
+                                                        'Fusion Core': 3}},
  'Lead Stampede Assaults': {'Required Credits': 19320,
                             'Required Energy': 29,
                             'Reward': 38640,
@@ -1069,7 +1077,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                               'spooked by their sonic '
                                               'fences. The herd-callers '
                                               'are adjusting. The plains '
-                                              'are patient.'},
+                                              'are patient.',
+                            'requiredSupplies': {'Data Shard': 2,
+                                                 'BioPatch': 1}},
  'Defend Sacred Groves': {'Required Credits': 20760,
                           'Required Energy': 30,
                           'Reward': 41520,
@@ -1094,7 +1104,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                             'outer grove before we turned '
                                             'them - old trees burned '
                                             'tonight. Axenthon said '
-                                            'nothing. That was worse.'},
+                                            'nothing. That was worse.',
+                          'requiredSupplies': {'SynthArm': 1,
+                                               'Cryptex': 1}},
  'Infiltrate Lumber Facility': {'Required Credits': 22200,
                                 'Required Energy': 32,
                                 'Reward': 44400,
@@ -1129,7 +1141,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                   'counsels patience. The '
                                                   "facility isn't going "
                                                   'anywhere. '
-                                                  'Unfortunately.'},
+                                                  'Unfortunately.',
+                                'requiredSupplies': {'SynthArm': 1,
+                                                     'BioPatch': 2}},
  'Join Xiaojian Rebels': {'Required Credits': 25080,
                           'Required Energy': 35,
                           'Reward': 50160,
@@ -1157,7 +1171,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                             'and with it ground we had '
                                             'gained with the rebels. Trust '
                                             'built slow breaks fast up '
-                                            'here. Rebuild it.'},
+                                            'here. Rebuild it.',
+                          'requiredSupplies': {'Cryptex': 2,
+                                               'BioPatch': 2}},
  'Rescue Caged Pandalings': {'Required Credits': 26520,
                              'Required Energy': 37,
                              'Reward': 53040,
@@ -1188,7 +1204,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                'risk in a crossfire. The '
                                                'pens stay shut one more '
                                                'night. This one costs, '
-                                               'Jahntow. I know.'},
+                                               'Jahntow. I know.',
+                             'requiredSupplies': {'Fusion Core': 3,
+                                                  'Data Shard': 3}},
  'Dragonbone Bombing Run': {'Required Credits': 27960,
                             'Required Energy': 38,
                             'Reward': 55920,
@@ -1220,7 +1238,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                               'run - brown streaks in '
                                               'green canopy this morning. '
                                               'Zhenwu says the sky keeps '
-                                              'score. So do I.'},
+                                              'score. So do I.',
+                            'requiredSupplies': {'Data Shard': 3,
+                                                 'HyperWeave': 3}},
  'Defection and Tragedy': {'Required Credits': 29400,
                            'Required Energy': 40,
                            'Reward': 58800,
@@ -1250,7 +1270,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                              'is hunting its own halls for '
                                              'the leak. Every hour costs. '
                                              'We go again the moment I '
-                                             'find a seam.'},
+                                             'find a seam.',
+                           'requiredSupplies': {'Cryptex': 2,
+                                                'Data Shard': 3}},
  'Final Stand in Ancient Tree City': {'Required Credits': 30840,
                                       'Required Energy': 42,
                                       'Reward': 61680,
@@ -1294,7 +1316,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                         'the margin was '
                                                         'too thin. '
                                                         'Reinforce and go '
-                                                        'again.'},
+                                                        'again.',
+                                      'requiredSupplies': {'BioPatch': 2,
+                                                           'Cryptex': 2}},
  'Scout Vortex Mines': {'Required Credits': 33720,
                         'Required Energy': 45,
                         'Reward': 67440,
@@ -1324,7 +1348,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                           'finished, and half a map helps '
                                           'no one on these cliffs. Kazon '
                                           'knows another approach. Colder. '
-                                          'Naturally.'},
+                                          'Naturally.',
+                        'requiredSupplies': {'Cryptex': 2,
+                                             'HyperWeave': 3}},
  'Collapse Mining Tunnels': {'Required Credits': 35160,
                              'Required Energy': 46,
                              'Reward': 70320,
@@ -1354,7 +1380,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                'tunnels stand and the deep '
                                                'patrols have doubled. The '
                                                'mountain is still willing. '
-                                               'So am I.'},
+                                               'So am I.',
+                             'requiredSupplies': {'Data Shard': 3,
+                                                  'Fusion Core': 3}},
  'Use Yeti Allies for Spying': {'Required Credits': 36600,
                                 'Required Energy': 48,
                                 'Reward': 73200,
@@ -1388,7 +1416,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                   'new allies melted back '
                                                   'into the white. Kazon '
                                                   'will re-broker. Bring '
-                                                  'fish.'},
+                                                  'fish.',
+                                'requiredSupplies': {'BioPatch': 3,
+                                                     'SynthArm': 1}},
  'Lead Mech Assaults': {'Required Credits': 38040,
                         'Required Energy': 50,
                         'Reward': 76080,
@@ -1414,7 +1444,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                           'anti-armor fire - crews '
                                           'extracted, machines lost. The '
                                           'clans are already rebuilding. '
-                                          'Titans do not stay down.'},
+                                          'Titans do not stay down.',
+                        'requiredSupplies': {'Cryptex': 2,
+                                             'Data Shard': 3}},
  'Persuade Titan Clans to Unite': {'Required Credits': 39480,
                                    'Required Energy': 51,
                                    'Reward': 78960,
@@ -1451,7 +1483,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                      'Kazon is unbothered. '
                                                      "'Mountains move "
                                                      "slow,' he says. We "
-                                                     'sit the fire again.'},
+                                                     'sit the fire again.',
+                                   'requiredSupplies': {'Fusion Core': 3,
+                                                        'Cryptex': 2}},
  'Defend Mountain Fortresses': {'Required Credits': 42360,
                                 'Required Energy': 54,
                                 'Reward': 84720,
@@ -1485,7 +1519,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                   'it. The fortress holds '
                                                   'tonight, but winter is '
                                                   'coming - and so are '
-                                                  'they. Again.'},
+                                                  'they. Again.',
+                                'requiredSupplies': {'SynthArm': 1,
+                                                     'Data Shard': 3}},
  'Infiltrate Logging Facilities': {'Required Credits': 43800,
                                    'Required Energy': 56,
                                    'Reward': 87600,
@@ -1524,7 +1560,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                      'it cannot fight '
                                                      'harvesters with '
                                                      'vines alone. Yet. '
-                                                     'Regroup.'},
+                                                     'Regroup.',
+                                   'requiredSupplies': {'Cryptex': 3,
+                                                        'SynthArm': 1}},
  'Ambush Vortex Forces': {'Required Credits': 45240,
                           'Required Energy': 58,
                           'Reward': 90480,
@@ -1552,7 +1590,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                             'drones ahead this time and '
                                             'the ambush sprang on empty '
                                             'trail. They are learning. We '
-                                            'learn faster.'},
+                                            'learn faster.',
+                          'requiredSupplies': {'BioPatch': 3,
+                                               'Fusion Core': 3}},
  'Foil Vortex Trapping': {'Required Credits': 46680,
                           'Required Energy': 59,
                           'Reward': 93360,
@@ -1581,7 +1621,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                             'converged - creatures still '
                                             'caged in the eastern sectors. '
                                             'The Mage is not calm about '
-                                            'this. Neither am I. Back in.'},
+                                            'this. Neither am I. Back in.',
+                          'requiredSupplies': {'HyperWeave': 3,
+                                               'Fusion Core': 3}},
  'Destroy Bioweapon Stockpiles': {'Required Credits': 48120,
                                   'Required Energy': 61,
                                   'Reward': 96240,
@@ -1617,7 +1659,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                     'the stockpile intact. '
                                                     'That inventory cannot '
                                                     'be allowed to exist. '
-                                                    'Rearm. Return.'},
+                                                    'Rearm. Return.',
+                                  'requiredSupplies': {'Data Shard': 3,
+                                                       'HyperWeave': 3}},
  'Learn Forest Regrowth Rituals': {'Required Credits': 51000,
                                    'Required Energy': 64,
                                    'Reward': 102000,
@@ -1654,7 +1698,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                      'it teaches. Rest. '
                                                      'Return. The canopy '
                                                      'is patient with '
-                                                     'honest students.'},
+                                                     'honest students.',
+                                   'requiredSupplies': {'SynthArm': 1,
+                                                        'Fusion Core': 3}},
  'Defend the Heart of the Forest': {'Required Credits': 52440,
                                     'Required Energy': 66,
                                     'Reward': 104880,
@@ -1693,7 +1739,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                       'stood very still '
                                                       'for a long time. We '
                                                       'do not let them '
-                                                      'that close again.'},
+                                                      'that close again.',
+                                    'requiredSupplies': {'HyperWeave': 3,
+                                                         'BioPatch': 3}},
  'Scout Vortex Facilities': {'Required Credits': 53880,
                              'Required Energy': 67,
                              'Reward': 107760,
@@ -1726,8 +1774,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                'clean but incomplete. '
                                                'Zhalia knows another route '
                                                'through the tower '
-                                               'district. Quieter. '
-                                               'Slower.'},
+                                               'district. Quieter. Slower.',
+                             'requiredSupplies': {'Data Shard': 3,
+                                                  'SynthArm': 1}},
  'Disrupt Executive Speeches': {'Required Credits': 55320,
                                 'Required Energy': 69,
                                 'Reward': 110640,
@@ -1763,7 +1812,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                   'heard thirty seconds of '
                                                   'truth, at least. Seeds. '
                                                   "Next week's speech is "
-                                                  'ours.'},
+                                                  'ours.',
+                                'requiredSupplies': {'Data Shard': 3,
+                                                     'Cryptex': 3}},
  'Make Vortex Mechs Malfunction': {'Required Credits': 56760,
                                    'Required Energy': 70,
                                    'Reward': 113520,
@@ -1803,7 +1854,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                      'Zhalia is composing '
                                                      'a workaround. '
                                                      'Machines only get so '
-                                                     'smart.'},
+                                                     'smart.',
+                                   'requiredSupplies': {'HyperWeave': 3,
+                                                        'Cryptex': 3}},
  'Create Illusions to Confuse Vortex': {'Required Credits': 58200,
                                         'Required Energy': 72,
                                         'Reward': 116400,
@@ -1850,7 +1903,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                           'Zhalia says the '
                                                           'next lie will '
                                                           'be smaller and '
-                                                          'better placed.'},
+                                                          'better placed.',
+                                        'requiredSupplies': {'Data Shard': 3,
+                                                             'HyperWeave': 3}},
  'Lead Astral Projection Assaults': {'Required Credits': 61080,
                                      'Required Energy': 75,
                                      'Reward': 122160,
@@ -1895,7 +1950,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                        'not spend minds, '
                                                        'Jahntow. We go '
                                                        'again, anchored '
-                                                       'deeper.'},
+                                                       'deeper.',
+                                     'requiredSupplies': {'NanoSyringe': 1,
+                                                          'HyperWeave': 3}},
  'Final Psychic Showdown': {'Required Credits': 62520,
                             'Required Energy': 77,
                             'Reward': 125040,
@@ -1926,7 +1983,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                               'breathing. The machine '
                                               'still hums; her city still '
                                               'sleeps. Not for long. '
-                                              'Again.'},
+                                              'Again.',
+                            'requiredSupplies': {'SynthArm': 2,
+                                                 'NanoSyringe': 1}},
  'Vortex Corp: Infiltration': {'Required Credits': 63960,
                                'Required Energy': 78,
                                'Reward': 127920,
@@ -1959,7 +2018,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                  'the fortress knows '
                                                  'something moved in the '
                                                  'dark. Re-route. There is '
-                                                 'always another seam.'},
+                                                 'always another seam.',
+                               'requiredSupplies': {'Cryptex': 3,
+                                                    'BioPatch': 3}},
  'Vortex Corp: Inside the Fortress': {'Required Credits': 65400,
                                       'Required Energy': 80,
                                       'Reward': 130800,
@@ -2000,7 +2061,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                         'Survivable. The '
                                                         'map stays '
                                                         'half-drawn one '
-                                                        'more shift.'},
+                                                        'more shift.',
+                                      'requiredSupplies': {'SynthArm': 2,
+                                                           'HyperWeave': 3}},
  'Vortex Corp: Betrayal': {'Required Credits': 66840,
                            'Required Energy': 82,
                            'Reward': 133680,
@@ -2029,7 +2092,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                              'walls. Something in this '
                                              'fortress is still turned '
                                              'against us - and we go back '
-                                             'in knowing it.'},
+                                             'in knowing it.',
+                           'requiredSupplies': {'BioPatch': 3,
+                                                'Cryptex': 3}},
  'Vortex Corp: Disabling the Defenses': {'Required Credits': 69720,
                                          'Required Energy': 85,
                                          'Reward': 139440,
@@ -2079,8 +2144,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                            'is an hour she '
                                                            'bought us. '
                                                            'Spend it '
-                                                           'better. '
-                                                           'Again.'},
+                                                           'better. Again.',
+                                         'requiredSupplies': {'SynthArm': 2,
+                                                              'BioPatch': 3}},
  'Vortex Corp: Confrontation with Xaezor': {'Required Credits': 71160,
                                             'Required Energy': 86,
                                             'Reward': 355800,
@@ -2153,7 +2219,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                                               'we climb '
                                                               'the spire '
                                                               'again.',
-                                            'Boss': True},
+                                            'Boss': True,
+                                            'requiredSupplies': {'BioPatch': 3,
+                                                                 'HyperWeave': 3}},
  'Victory and Aftermath': {'Required Credits': 72600,
                            'Required Energy': 88,
                            'Reward': 145200,
@@ -2181,7 +2249,9 @@ STORY_MISSIONS = {'Rogue Drone Takedown': {'Required Credits': 2040,
                                              'Nothing today that tomorrow '
                                              'cannot mend. The peace '
                                              'holds, Jahntow. We keep '
-                                             'working.'}}
+                                             'working.',
+                           'requiredSupplies': {'Quantum Node': 1,
+                                                'SynthArm': 2}}}
 
 PROPERTIES = {'Energy Labs': {'Salvage Smelter': {'Base Cost': 3900,
                                      'Item Generated': 'Alpha Core',
@@ -2190,76 +2260,76 @@ PROPERTIES = {'Energy Labs': {'Salvage Smelter': {'Base Cost': 3900,
                  'Fusion Facility': {'Base Cost': 4800,
                                      'Item Generated': 'Fusion Core',
                                      'Generation Rate': 0.021097,
-                                     'Rank': 7},
+                                     'Rank': 10},
                  'Quantum Lab': {'Base Cost': 24648,
                                  'Item Generated': 'Fusion Core',
                                  'Generation Rate': 0.054167,
-                                 'Rank': 16},
+                                 'Rank': 28},
                  'Omega Factory': {'Base Cost': 1440000,
                                    'Item Generated': 'Omega Core',
                                    'Generation Rate': 0.005,
-                                   'Rank': 27}},
+                                   'Rank': 40}},
  'Nano Production Sites': {'NanoMesh Plant': {'Base Cost': 4800,
                                               'Item Generated': 'NanoMesh',
                                               'Generation Rate': 0.033333,
-                                              'Rank': 3},
+                                              'Rank': 4},
                            'HyperWeave Workshop': {'Base Cost': 40404,
                                                    'Item Generated': 'HyperWeave',
                                                    'Generation Rate': 0.054167,
-                                                   'Rank': 11},
+                                                   'Rank': 19},
                            'Quantum Fabric Loom': {'Base Cost': 1440000,
                                                    'Item Generated': 'Quantum '
                                                                      'Fabric',
                                                    'Generation Rate': 0.0025,
-                                                   'Rank': 32}},
+                                                   'Rank': 42}},
  'Cybernetic Clinics': {'NeuroLink Clinic': {'Base Cost': 4800,
                                              'Item Generated': 'NeuroLink',
                                              'Generation Rate': 0.016667,
-                                             'Rank': 5},
+                                             'Rank': 7},
                         'SynthArm Surgery': {'Base Cost': 96000,
                                              'Item Generated': 'SynthArm',
                                              'Generation Rate': 0.026774,
-                                             'Rank': 14},
+                                             'Rank': 25},
                         'OmegaBrain Center': {'Base Cost': 1440000,
                                               'Item Generated': 'OmegaBrain',
                                               'Generation Rate': 0.00125,
-                                              'Rank': 37}},
+                                              'Rank': 44}},
  'Data Cube Manufactures': {'Data Shard Factory': {'Base Cost': 4800,
                                                    'Item Generated': 'Data '
                                                                      'Shard',
                                                    'Generation Rate': 0.011111,
-                                                   'Rank': 8},
+                                                   'Rank': 13},
                             'Quantum Node Works': {'Base Cost': 96000,
                                                    'Item Generated': 'Quantum '
                                                                      'Node',
                                                    'Generation Rate': 0.009308,
-                                                   'Rank': 18},
+                                                   'Rank': 31},
                             'Infinity Matrix Hub': {'Base Cost': 1440000,
                                                     'Item Generated': 'Infinity '
                                                                       'Matrix',
                                                     'Generation Rate': 0.000833,
-                                                    'Rank': 42}},
+                                                    'Rank': 46}},
  'Medical Facilities': {'BioPatch Pharmacy': {'Base Cost': 4800,
                                               'Item Generated': 'BioPatch',
                                               'Generation Rate': 0.008333,
-                                              'Rank': 10},
+                                              'Rank': 16},
                         'NanoSyringe Clinic': {'Base Cost': 96000,
                                                'Item Generated': 'NanoSyringe',
                                                'Generation Rate': 0.009252,
-                                               'Rank': 20},
+                                               'Rank': 34},
                         'RegenGen Hospital': {'Base Cost': 1440000,
                                               'Item Generated': 'RegenGen',
                                               'Generation Rate': 0.000625,
-                                              'Rank': 46}},
+                                              'Rank': 48}},
  'Encryption Enterprises': {'Cryptex Workshop': {'Base Cost': 4800,
                                                  'Item Generated': 'Cryptex',
                                                  'Generation Rate': 0.006667,
-                                                 'Rank': 12},
+                                                 'Rank': 22},
                             'Quantum Lock Forge': {'Base Cost': 96000,
                                                    'Item Generated': 'Quantum '
                                                                      'Lock',
                                                    'Generation Rate': 0.004577,
-                                                   'Rank': 24},
+                                                   'Rank': 37},
                             'Omega Seal Center': {'Base Cost': 1440000,
                                                   'Item Generated': 'Omega '
                                                                     'Seal',

@@ -101,7 +101,9 @@ export const Home = () => {
       ],
     },
     {
-      name: "Ship",
+      // "Base", not "Ship": a group named Ship holding a page named Ship
+      // made the first-time tester click in circles.
+      name: "Base",
       tabs: [
         {
           key: "ship", title: "Ship", bg: "shipinside",
