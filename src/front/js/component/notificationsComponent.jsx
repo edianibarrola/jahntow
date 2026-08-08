@@ -26,8 +26,16 @@ const NotificationsComponent = () => {
       })
     );
     const names = Object.keys(rankByItem).sort((a, b) => b.length - a.length);
-    return { rankByItem, names };
-  }, [gameData.items]);
+    // Bounty lines name a mission; same longest-match rule.
+    const missionRanks = {};
+    Object.entries(gameData.missions || {}).forEach(([name, data]) => {
+      missionRanks[name] = data.Rank;
+    });
+    const missionNames = Object.keys(missionRanks).sort(
+      (a, b) => b.length - a.length
+    );
+    return { rankByItem, names, missionRanks, missionNames };
+  }, [gameData.items, gameData.missions]);
 
   const concernsLockedItem = (message) => {
     const name = itemIndex.names.find((n) => message.includes(n));
@@ -36,11 +44,21 @@ const NotificationsComponent = () => {
     return itemIndex.rankByItem[name] > player.level && !held;
   };
 
+  // A bounty on a mission the player can't run yet is noise (playtest).
+  const concernsLockedMission = (notification) => {
+    if (notification.type !== "bounty") return false;
+    const name = itemIndex.missionNames.find((n) =>
+      notification.message.includes(n)
+    );
+    return !!name && itemIndex.missionRanks[name] > player.level;
+  };
+
   const allowedTypes = FILTERS[filter].types;
   const visibleNotifications = notifications.filter(
     (notification) =>
       (!allowedTypes || allowedTypes.includes(notification.type || "info")) &&
-      !concernsLockedItem(notification.message)
+      !concernsLockedItem(notification.message) &&
+      !concernsLockedMission(notification)
   );
 
   return (

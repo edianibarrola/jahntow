@@ -273,9 +273,11 @@ const ItemsComponent = () => {
   const positionHeader = (
     <div className="market-line market-head">
       <span>Item</span>
-      <span>Holding</span>
+      <span title="Quantity @ average cost basis. Goods claimed from properties or warband salvage enter at their market value at claim time - a claim never counts as instant profit or loss; only price moves after it do.">
+        Holding
+      </span>
       <span>Sell price</span>
-      <span title="What liquidating at the current sell price would gain or lose vs what you paid">
+      <span title="What liquidating at the current sell price would gain or lose vs your cost basis. Claimed goods only contribute what the market has moved since you claimed them.">
         Unrealized P/L
       </span>
       <span></span>

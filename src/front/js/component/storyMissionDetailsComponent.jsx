@@ -111,6 +111,23 @@ const StoryMissionDetailsComponent = () => {
             </span>
           </div>
         )}
+        {/* Playtest (a non-gamer's first session): the NEWEST beat was
+            below the portraits, the recap, and every earlier beat -
+            off-screen until you scrolled. Newest-first now, like every
+            other list in the game: the current beat leads, earlier beats
+            of the chapter follow dimmed in reverse, and the cast +
+            dossiers close the card. */}
+        {[...sceneBeats].reverse().map(([index, beat]) => (
+          <Beat
+            key={index}
+            beat={beat}
+            beatIndex={index}
+            choiceCallbacks={choiceCallbacks}
+            storyChoices={player.storyChoices}
+            dimmed={index !== beatIndex}
+          />
+        ))}
+
         {previousBeat && (
           <p className="story-previously text-center">
             Previously: {firstSentence(previousBeat.Message)}
@@ -170,17 +187,6 @@ const StoryMissionDetailsComponent = () => {
             <p className="m-0 mt-1">{dossier.bio}</p>
           </div>
         )}
-
-        {sceneBeats.map(([index, beat]) => (
-          <Beat
-            key={index}
-            beat={beat}
-            beatIndex={index}
-            choiceCallbacks={choiceCallbacks}
-            storyChoices={player.storyChoices}
-            dimmed={index !== beatIndex}
-          />
-        ))}
       </div>
 
       {journalChapters.length > 0 && (

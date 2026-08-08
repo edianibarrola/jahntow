@@ -82,7 +82,7 @@ const StoryChoiceCard = ({ choice, onChoose, busy, gameData }) => (
 
 const StoryMissions = () => {
   const { store, actions } = useContext(Context);
-  const { player, gameData } = store;
+  const { player, gameData, marketPrices } = store;
   const storyMissionsData = gameData.storyMissions || {};
   const [isStoryMissionRunning, setStoryMissionRunning] = useState(false);
   const [isChoosing, setChoosing] = useState(false);
@@ -95,6 +95,10 @@ const StoryMissions = () => {
       equipCostByName[name] = data["Base Cost"];
     })
   );
+  const buyPriceByName = {};
+  (marketPrices || []).forEach((row) => {
+    buyPriceByName[row.item_name] = row.buy_price;
+  });
   const missingFor = (missionData) => {
     let cost = 0;
     let count = 0;
@@ -103,6 +107,17 @@ const StoryMissions = () => {
       if (short > 0) {
         count += short;
         cost += short * (equipCostByName[name] || 0);
+      }
+    });
+    // Story campaigns eat materiel too now (round 6): the outfit
+    // endpoint buys missing supplies at the live market price alongside
+    // the gear, so count them in the estimate.
+    Object.entries(missionData.requiredSupplies || {}).forEach(([name, qty]) => {
+      const short =
+        qty - Math.floor(player.inventory?.[name]?.quantity || 0);
+      if (short > 0) {
+        count += short;
+        cost += short * (buyPriceByName[name] || 0);
       }
     });
     return { count, cost: Math.round(cost) };
@@ -290,7 +305,23 @@ const StoryMissions = () => {
                     eventKey={storyMissionName} // Use storyMissionName as the eventKey
                     key={storyMissionName}
                   >
-                    <Accordion.Header>{storyMissionName}</Accordion.Header>
+                    {/* Playtest: with only the chapter name in the title,
+                        five identical "Run Mission" clicks looked like
+                        nothing was advancing. Show which part of the
+                        chapter the next win lands. */}
+                    <Accordion.Header>
+                      {storyMissionName}
+                      {isRemnant ? (
+                        <span className="tx-choice ms-2">— remnant hunt</span>
+                      ) : (
+                        isUnlocked && (
+                          <span className="tx-info ms-2">
+                            — part {(player.storyWins % STORY_WINS_PER_UNLOCK) + 1}{" "}
+                            of {STORY_WINS_PER_UNLOCK}
+                          </span>
+                        )
+                      )}
+                    </Accordion.Header>
                     <Accordion.Body>
                       <div className="col-12 pl-5 pr-5 text-center">
                         <ul className="holo">
@@ -483,6 +514,39 @@ const StoryMissions = () => {
                               );
                             })}
                           </ul>
+                          {Object.keys(storyMissionData.requiredSupplies || {})
+                            .length > 0 && (
+                            <>
+                              <li>
+                                Supplies{" "}
+                                <span className="tx-info">
+                                  (market items, consumed every attempt —
+                                  campaigns eat materiel)
+                                </span>
+                                :
+                              </li>
+                              <ul>
+                                {Object.entries(
+                                  storyMissionData.requiredSupplies || {}
+                                ).map(([item, quantity]) => {
+                                  const owned = Math.floor(
+                                    player.inventory?.[item]?.quantity || 0
+                                  );
+                                  const met = owned >= quantity;
+                                  return (
+                                    <li
+                                      key={item}
+                                      style={{
+                                        color: met ? "#8aff8a" : "#ff8a8a",
+                                      }}
+                                    >
+                                      {item} x{quantity} (Owned: {owned})
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </>
+                          )}
                         </ul>
                         {!isUnlocked ? (
                           <p className="text-muted">

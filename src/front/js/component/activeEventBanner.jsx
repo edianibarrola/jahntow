@@ -53,9 +53,10 @@ const ActiveEventBanner = ({ events }) => {
   const { player, gameData } = store;
 
   // Price events target one item; hide them for items the player hasn't
-  // unlocked and doesn't hold (same rule as the price feed). Bounties stay
-  // visible even above level - aspirational by design - and merchant gear
-  // sales aren't level-locked at all.
+  // unlocked and doesn't hold (same rule as the price feed). Bounties on
+  // missions above the player's level are hidden too - "aspirational" was
+  // the design intent, playtesting called it noise. Merchant gear sales
+  // aren't level-locked at all.
   const rankOf = (itemName) => {
     for (const items of Object.values(gameData.items || {})) {
       if (items[itemName]) return items[itemName].Rank;
@@ -63,6 +64,10 @@ const ActiveEventBanner = ({ events }) => {
     return null;
   };
   const visible = (events || []).filter((event) => {
+    if (event.kind === "bounty") {
+      const mission = (gameData.missions || {})[event.category];
+      return !mission || mission.Rank <= player.level;
+    }
     if (event.kind !== "price_spike" && event.kind !== "price_crash")
       return true;
     const rank = rankOf(event.category);
