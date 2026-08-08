@@ -44,21 +44,22 @@ const factionBonus = (player, mission) => {
 
 // Mirrors economy.WARBAND_* / ESCORT_*: warband escorts on regular ops.
 const WARBAND_KIT_SIZE = 10;
-const WARBAND_READINESS_FLOOR = 40;
+// Round 6: dry = 0 readiness (no bonuses at all); fed-but-kitless runs
+// at the base; full kits reach 100. Mirrors economy.warband_readiness.
+const WARBAND_READINESS_BASE = 25;
 const ESCORT_SUCCESS_MAX = 0.05;
 const ESCORT_SOLO_RANK = 8;
 
 const warbandReadiness = (state, boon = 0) => {
   const strength = state.strength || 0;
   if (strength <= 0) return 0;
-  if ((state.provisions || 0) <= 0)
-    return Math.min(100, WARBAND_READINESS_FLOOR + boon);
+  if ((state.provisions || 0) <= 0) return 0;
   const kitsNeeded = Math.max(1, Math.ceil(strength / WARBAND_KIT_SIZE));
   const coverage = Math.min(1, (state.kits || 0) / kitsNeeded);
   return Math.min(
     100,
     Math.round(
-      WARBAND_READINESS_FLOOR + (100 - WARBAND_READINESS_FLOOR) * coverage
+      WARBAND_READINESS_BASE + (100 - WARBAND_READINESS_BASE) * coverage
     ) + boon
   );
 };

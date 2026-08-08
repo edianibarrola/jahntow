@@ -235,10 +235,20 @@ WARBAND_KIT_COST_MULT = 5
 # The cap stays a single DAY of stock - deliberately short, so a warband
 # that's working needs the player back roughly daily. (72h in the first
 # release; playtesting found nobody ever needed to return.)
-WARBAND_UPKEEP_TIER_RATE = 5.0
+# 8, up from 5 (round 6): at 5 a single provision item covered days of
+# supply ("set it and forget it") and upkeep undercut even a kitless
+# patrol. At 8, fully deployed upkeep is ~53% of full-readiness patrol
+# gross - profitable with kits, a slow loss without them - and the
+# faster burn restores the daily check-in cadence.
+WARBAND_UPKEEP_TIER_RATE = 8.0
 WARBAND_PROVISION_CAP_HOURS = 24
-# Readiness: 40% floor (dry), up to 100% with full kits + provisions.
-WARBAND_READINESS_FLOOR = 40
+# Readiness (round-6 rework): a DRY band is at 0 - no gate bonus, no
+# escort bonus, operations stalled. Being out of food matters, which the
+# old 40% floor quietly denied ("readiness never drops under 40 makes no
+# sense... negates the need for gear kits" - playtest). Fed but kitless
+# runs at the base; full kits reach 100. Kits are the profitability
+# switch: at 25% effect a patrol grosses less than its upkeep.
+WARBAND_READINESS_BASE = 25
 # Escorted missions: success bonus up to +5% at 100% readiness (halved
 # for an out-of-region escort), and failure health loss reduced up to 20%.
 ESCORT_SUCCESS_MAX = 0.05
@@ -386,14 +396,61 @@ def warband_boon_points(player, faction):
     return 0
 
 
+def warband_orders(raw, strength=None):
+    """
+    Normalized list of a warband's standing orders (round 6: several
+    detachments can be out at once). Legacy single-order records
+    (assignment/deployed at the top level) convert on read.
+    """
+    raw = raw or {}
+    if strength is None:
+        strength = raw.get("strength", 0)
+    orders = []
+    for order in raw.get("orders") or []:
+        kind = (order or {}).get("kind")
+        if kind not in WARBAND_OP_KINDS:
+            continue
+        deployed = order.get("deployed") or 0
+        if deployed <= 0:
+            continue
+        orders.append({
+            "kind": kind,
+            "deployed": deployed,
+            "assigned_at": order.get("assigned_at"),
+        })
+    if not orders and raw.get("assignment") in WARBAND_OP_KINDS:
+        deployed = raw.get("deployed") or 0
+        orders.append({
+            "kind": raw["assignment"],
+            "deployed": deployed if deployed > 0 else strength,
+            "assigned_at": raw.get("assigned_at"),
+        })
+    # A record can never field more than its strength, whatever history
+    # it carries: trim newest-first orders down to fit.
+    fielded = 0
+    fitted = []
+    for order in orders:
+        take = min(order["deployed"], max(0, strength - fielded))
+        if take <= 0:
+            continue
+        fielded += take
+        fitted.append(dict(order, deployed=take))
+    return fitted
+
+
+def warband_deployed_total(raw, strength=None):
+    return sum(o["deployed"] for o in warband_orders(raw, strength))
+
+
 def warband_state(player, faction):
     """A faction's warband record with defaults filled in (never None)."""
     state = (player.warbands or {}).get(faction) or {}
+    strength = state.get("strength", 0)
     return {
-        "strength": state.get("strength", 0),
+        "strength": strength,
         "kits": state.get("kits", 0),
         "provisions": state.get("provisions", 0.0),
-        "deployed": state.get("deployed", 0),
+        "orders": warband_orders(state, strength),
         "last_provision_tick_at": state.get("last_provision_tick_at"),
     }
 
@@ -445,22 +502,22 @@ def warband_salvage_units_per_day(faction):
 
 def warband_readiness(state, boon=0):
     """
-    40 (dry floor) .. 100 (full kits, provisioned). Computed live from
-    the raw state - nothing stored, nothing to drift. Kits cover 10
-    volunteers each; provisions are binary here (any stock = fed).
-    `boon` adds a story-earned permanent bonus (WARBAND_BOONS), capped
-    at 100.
+    0 (dry - out of food, nothing works) .. 100 (full kits,
+    provisioned). Computed live from the raw state - nothing stored,
+    nothing to drift. Kits cover 10 volunteers each; provisions are
+    binary here (any stock = fed). `boon` adds a story-earned permanent
+    bonus (WARBAND_BOONS) - it needs a fed band to apply, loyalty
+    doesn't fill stomachs - capped at 100.
     """
     strength = state["strength"]
     if strength <= 0:
         return 0
+    if state["provisions"] <= 0:
+        return 0
     kits_needed = max(1, math.ceil(strength / WARBAND_KIT_SIZE))
     gear_coverage = min(1.0, state["kits"] / kits_needed)
-    provisioned = state["provisions"] > 0
-    if not provisioned:
-        return min(100, WARBAND_READINESS_FLOOR + boon)
-    return min(100, round(WARBAND_READINESS_FLOOR
-                          + (100 - WARBAND_READINESS_FLOOR) * gear_coverage)
+    return min(100, round(WARBAND_READINESS_BASE
+                          + (100 - WARBAND_READINESS_BASE) * gear_coverage)
                + boon)
 
 
@@ -544,9 +601,13 @@ def apply_warband_ticks(player, now):
         state = dict(raw or {})
         strength = state.get("strength", 0)
         provisions = float(state.get("provisions", 0.0))
-        assignment = state.get("assignment")
-        if assignment not in WARBAND_OP_KINDS:
-            assignment = None
+        # Round 6: several detachments can be out at once. Legacy
+        # single-order records convert here and the legacy keys drop.
+        orders = warband_orders(state, strength)
+        state["orders"] = orders
+        state.pop("assignment", None)
+        state.pop("deployed", None)
+        state.pop("assigned_at", None)
         last = state.get("last_provision_tick_at")
         hours = 0.0
         if last:
@@ -559,17 +620,12 @@ def apply_warband_ticks(player, now):
                 hours = 0.0
         state["last_provision_tick_at"] = now.isoformat()
 
-        # Detachments (round 4): only the DEPLOYED detachment works the
-        # operation and eats double; the reserves eat normal rations and
-        # stand ready for gates/escorts (which always use total strength).
-        deployed = min(state.get("deployed", 0) or 0, strength)
-        if assignment and deployed <= 0:
-            deployed = strength  # legacy records: whole band deployed
         if strength > 0 and hours > 0 and provisions > 0:
+            # Every warrior eats; each deployed detachment eats double.
             drain_rate = warband_provision_drain_per_hour(strength, faction)
-            if assignment:
+            for order in orders:
                 drain_rate += warband_provision_drain_per_hour(
-                    deployed, faction) * (WARBAND_OP_DRAIN_MULT - 1.0)
+                    order["deployed"], faction) * (WARBAND_OP_DRAIN_MULT - 1.0)
             # Yields only accrue while there was food on the wagons.
             worked = min(hours, provisions / drain_rate) if drain_rate else 0.0
             state["provisions"] = round(
@@ -577,41 +633,43 @@ def apply_warband_ticks(player, now):
             # The >0 guard on this whole block means the dry line logs
             # exactly once per dry spell - a band already at zero never
             # re-enters here until it's provisioned again.
-            if assignment and state["provisions"] <= 0:
+            if orders and state["provisions"] <= 0:
                 log_activity(
                     player,
                     f"🍞 The {game_data.WARBANDS[faction]['name']}'s wagons "
-                    "have run dry - their operation is stalled until you "
+                    "have run dry - their operations are stalled until you "
                     "provision them.",
                     "warband",
                 )
 
-            if assignment and worked > 0:
+            if orders and worked > 0:
                 # Readiness during the worked stretch (it was provisioned
                 # then by definition, whatever the state looks like now).
                 readiness = warband_readiness(
                     dict(state, provisions=1.0),
                     warband_boon_points(player, faction),
                 )
-                effect = (deployed / 100) * (readiness / 100)
                 tier = game_data.WARBANDS[faction]["volunteer_cost"]
                 stash = dict(state.get("stash") or
                              {"credits": 0.0, "items": 0.0, "rep": 0.0})
-                if assignment == "patrol":
-                    stash["credits"] = round(
-                        stash["credits"]
-                        + worked * WARBAND_PATROL_RATE * tier * effect, 3)
-                elif assignment == "salvage":
-                    stash["items"] = round(
-                        stash["items"]
-                        + worked * warband_salvage_units_per_day(faction)
-                        / 24.0 * effect, 3)
-                elif (assignment == "banners"
-                      and deployed >= WARBAND_BANNER_MIN_STRENGTH):
-                    stash["rep"] = round(
-                        stash["rep"]
-                        + worked * WARBAND_BANNER_REP_PER_DAY / 24
-                        * (readiness / 100), 3)
+                for order in orders:
+                    effect = (order["deployed"] / 100) * (readiness / 100)
+                    if order["kind"] == "patrol":
+                        stash["credits"] = round(
+                            stash["credits"]
+                            + worked * WARBAND_PATROL_RATE * tier * effect, 3)
+                    elif order["kind"] == "salvage":
+                        stash["items"] = round(
+                            stash["items"]
+                            + worked * warband_salvage_units_per_day(faction)
+                            / 24.0 * effect, 3)
+                    elif (order["kind"] == "banners"
+                          and order["deployed"]
+                          >= WARBAND_BANNER_MIN_STRENGTH):
+                        stash["rep"] = round(
+                            stash["rep"]
+                            + worked * WARBAND_BANNER_REP_PER_DAY / 24
+                            * (readiness / 100), 3)
                 state["stash"] = stash
 
         warbands[faction] = state

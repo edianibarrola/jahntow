@@ -1074,15 +1074,11 @@ def warband_provision():
     state = economy.warband_state(player, faction)
     if state["strength"] <= 0:
         return jsonify({"message": "fund some volunteers first"}), 400
-    # The cap must be sized at the band's ACTUAL burn rate: a deployed
-    # detachment eats double, and the tick drains at that rate - capping
+    # The cap must be sized at the band's ACTUAL burn rate: deployed
+    # detachments eat double, and the tick drains at that rate - capping
     # at the idle rate rejected the UI's own (correct) 24h restock the
     # moment any detachment was in the field.
-    raw = (player.warbands or {}).get(faction) or {}
-    active = raw.get("assignment") in economy.WARBAND_OP_KINDS
-    deployed = min(state["deployed"] or 0, state["strength"]) if active else 0
-    if active and deployed <= 0:
-        deployed = state["strength"]  # legacy records: whole band deployed
+    deployed = sum(o["deployed"] for o in state["orders"])
     drain = (
         economy.warband_provision_drain_per_hour(state["strength"], faction)
         + economy.warband_provision_drain_per_hour(deployed, faction)
@@ -1135,10 +1131,13 @@ def warband_provision():
 @jwt_required()
 def warband_assign():
     """
-    Set (or clear, with assignment: null) a warband's standing operation.
-    A deployed warband burns provisions at double rate and accrues its
-    yield only while provisioned - assigning a dry warband is allowed,
-    it just stalls until fed.
+    Issue a standing order: a detachment drawn from the RESERVES marches
+    out (round 6: several orders can run at once - reserves = strength
+    minus everyone already fielded). assignment: null recalls every
+    order at once (the legacy "stand down"); /warband/recall pulls back
+    a single detachment. A deployed detachment burns provisions at
+    double rate and accrues its yield only while provisioned - issuing
+    orders to a dry warband is allowed, it just stalls until fed.
     """
     player, err = _player_or_404()
     if err:
@@ -1156,18 +1155,33 @@ def warband_assign():
         }), 400
 
     state = economy.warband_state(player, faction)
-    if assignment and state["strength"] <= 0:
-        return jsonify({"message": "recruit some volunteers first"}), 400
+    cfg = game_data.WARBANDS[faction]
 
-    # Detachment size: how many march out. Yields scale with the
-    # detachment (which also eats double); the reserves keep normal
-    # rations, and gates/escorts always count TOTAL strength - when the
-    # horn sounds for a story battle, everyone comes home.
-    deployed = data.get("deployed", state["strength"])
-    if assignment:
+    warbands = dict(player.warbands or {})
+    stored = dict(warbands.get(faction) or {})
+    stored.update(state)
+    stored.pop("assignment", None)
+    stored.pop("deployed", None)
+    stored.pop("assigned_at", None)
+
+    if assignment is None:
+        stored["orders"] = []
+        message = f"🎯 The {cfg['name']} are standing down - all detachments recalled."
+    else:
+        if state["strength"] <= 0:
+            return jsonify({"message": "recruit some volunteers first"}), 400
+        reserves = state["strength"] - sum(
+            o["deployed"] for o in state["orders"])
+        deployed = data.get("deployed", reserves)
         if not isinstance(deployed, int) or deployed <= 0:
             return jsonify({"message": "deployed must be a positive integer"}), 400
-        deployed = min(deployed, state["strength"])
+        if deployed > reserves:
+            return jsonify({
+                "message": (
+                    f"only {reserves} of the {cfg['name']} are in reserve - "
+                    "recall a detachment to free up warriors"
+                )
+            }), 400
         if (assignment == "banners"
                 and deployed < economy.WARBAND_BANNER_MIN_STRENGTH):
             return jsonify({
@@ -1176,32 +1190,64 @@ def warband_assign():
                     f"{economy.WARBAND_BANNER_MIN_STRENGTH}"
                 )
             }), 400
-    else:
-        deployed = 0
+        labels = {"patrol": "patrolling their land (credits)",
+                  "salvage": "running salvage sweeps (goods)",
+                  "banners": "showing the banners (reputation)"}
+        stored["orders"] = state["orders"] + [{
+            "kind": assignment,
+            "deployed": deployed,
+            # When the order began - the UI's "marching for Nh" clock.
+            # Z-suffixed like every other browser-bound timestamp.
+            "assigned_at": iso_utc(utcnow()),
+        }]
+        message = (
+            f"🎯 A detachment of {deployed} of the {cfg['name']} "
+            f"({state['strength']} strong) is now {labels[assignment]}."
+        )
+
+    warbands[faction] = stored
+    player.warbands = warbands
+
+    activity = economy.log_activity(player, message, "warband")
+    db.session.commit()
+    return jsonify({
+        "player": player.serialize(),
+        "activity": activity.serialize(),
+    }), 200
+
+
+@game_api.route('/warband/recall', methods=['POST'])
+@jwt_required()
+def warband_recall():
+    """Pull one detachment back to the reserves. The stash stays claimable."""
+    player, err = _player_or_404()
+    if err:
+        return err
+    economy.apply_passive_tick(player)
+
+    data = request.get_json(silent=True) or {}
+    faction, err = _warband_or_400(player, data)
+    if err:
+        return err
+    index = data.get("order_index")
+    state = economy.warband_state(player, faction)
+    if (not isinstance(index, int) or index < 0
+            or index >= len(state["orders"])):
+        return jsonify({"message": "no such order"}), 400
 
     warbands = dict(player.warbands or {})
     stored = dict(warbands.get(faction) or {})
     stored.update(state)
-    stored["assignment"] = assignment
-    stored["deployed"] = deployed
-    # When the order began - the UI's "running for Nh" clock. Z-suffixed
-    # like every other timestamp we hand the browser (see iso_utc).
-    stored["assigned_at"] = iso_utc(utcnow()) if assignment else None
+    recalled = state["orders"][index]
+    stored["orders"] = [o for i, o in enumerate(state["orders"]) if i != index]
     warbands[faction] = stored
     player.warbands = warbands
 
     cfg = game_data.WARBANDS[faction]
-    labels = {"patrol": "patrolling their land (credits)",
-              "salvage": "running salvage sweeps (goods)",
-              "banners": "showing the banners (reputation)",
-              None: "standing down"}
-    detachment_note = (
-        f" - a detachment of {deployed} of {state['strength']}"
-        if assignment and deployed < state["strength"] else ""
-    )
     activity = economy.log_activity(
         player,
-        f"🎯 The {cfg['name']} are now {labels[assignment]}{detachment_note}.",
+        f"↩ A detachment of {recalled['deployed']} of the {cfg['name']} "
+        "returns to the reserves.",
         "warband",
     )
     db.session.commit()
@@ -1315,9 +1361,41 @@ def story_mission_start():
     # stay pinned at the final beat) - it pays a bonus instead.
     is_remnant = player.storyWins >= STORY_TOTAL_WINS
 
+    # The war horn is literal now (playtest: "all 80 on patrol and the
+    # story battle still triggered... it should call them back"). A
+    # warband-gated battle recalls that tribe's detachments; a host
+    # battle recalls all six. Gates still count total strength - but
+    # answering the horn costs the running operations. Stashes keep.
+    gate = game_data.STORY_WARBAND_GATES.get(mission_name)
+    horn_entries = []
+    if gate:
+        summoned = ([gate["faction"]] if "faction" in gate
+                    else list(game_data.WARBANDS))
+        warbands = dict(player.warbands or {})
+        recalled = []
+        for horn_faction in summoned:
+            raw = warbands.get(horn_faction)
+            state = economy.warband_state(player, horn_faction)
+            if not state["orders"]:
+                continue
+            stored = dict(raw or {})
+            stored.update(state)
+            stored["orders"] = []
+            warbands[horn_faction] = stored
+            recalled.append(game_data.WARBANDS[horn_faction]["name"])
+        if recalled:
+            player.warbands = warbands
+            horn_entries.append(economy.log_activity(
+                player,
+                f"📯 The war horn sounds - the {', '.join(recalled)} "
+                "abandon their operations and answer the muster.",
+                "warband",
+            ))
+
     success, message, goal_entries = economy.resolve_mission(
         player, mission, is_story=True
     )
+    goal_entries = horn_entries + goal_entries
 
     if success:
         if is_remnant:
@@ -1753,9 +1831,10 @@ def prestige():
             band = dict(wb_raw or {})
             band["strength"] = int(round(
                 (band.get("strength") or 0) * economy.CHRONICLE_MUSTER_RATE))
-            band["assignment"] = None
-            band["deployed"] = 0
-            band["assigned_at"] = None
+            band["orders"] = []
+            band.pop("assignment", None)
+            band.pop("deployed", None)
+            band.pop("assigned_at", None)
             warbands[wb_faction] = band
         player.warbands = warbands
         escalation = round(

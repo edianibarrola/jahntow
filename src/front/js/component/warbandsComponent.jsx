@@ -10,15 +10,17 @@ const KIT_SIZE = 10;
 const KIT_COST_MULT = 5;
 const COST_GROWTH = 50;
 const MAX_STRENGTH = 200;
-const READINESS_FLOOR = 40;
+// Round 6: dry = 0 (nothing works on empty wagons); fed-but-kitless
+// runs at the base; full kits reach 100.
+const READINESS_BASE = 25;
 const PROVISION_CAP_HOURS = 24;
 
-// Yield/upkeep mirrors of economy.WARBAND_* (round-5 rebalance) -
-// display only, the server accrues the real stash and drains the real
-// provisions. Upkeep and salvage are credit-anchored at the item's BASE
-// cost, so drain needs the tribe config plus that base price.
+// Yield/upkeep mirrors of economy.WARBAND_* - display only, the server
+// accrues the real stash and drains the real provisions. Upkeep and
+// salvage are credit-anchored at the item's BASE cost, so drain needs
+// the tribe config plus that base price.
 const PATROL_RATE = 1.25;
-const UPKEEP_TIER_RATE = 5.0;
+const UPKEEP_TIER_RATE = 8.0;
 const SALVAGE_TARGET_MULT = 1.2;
 const BANNER_REP_PER_DAY = 2.0;
 const BANNER_MIN = 10;
@@ -48,14 +50,39 @@ const fundCost = (base, current, count) => {
 const readinessOf = (state, boon = 0) => {
   const strength = state.strength || 0;
   if (strength <= 0) return 0;
-  if ((state.provisions || 0) <= 0)
-    return Math.min(100, READINESS_FLOOR + boon);
+  if ((state.provisions || 0) <= 0) return 0;
   const kitsNeeded = Math.max(1, Math.ceil(strength / KIT_SIZE));
   const coverage = Math.min(1, (state.kits || 0) / kitsNeeded);
   return Math.min(
     100,
-    Math.round(READINESS_FLOOR + (100 - READINESS_FLOOR) * coverage) + boon
+    Math.round(READINESS_BASE + (100 - READINESS_BASE) * coverage) + boon
   );
+};
+
+// Normalized standing orders (mirrors economy.warband_orders, legacy
+// single-order records included).
+const ordersOf = (state) => {
+  const strength = state.strength || 0;
+  let orders = (state.orders || []).filter(
+    (o) => o && o.kind && (o.deployed || 0) > 0
+  );
+  if (orders.length === 0 && state.assignment) {
+    orders = [
+      {
+        kind: state.assignment,
+        deployed: state.deployed || strength,
+        assigned_at: state.assigned_at,
+      },
+    ];
+  }
+  let fielded = 0;
+  return orders
+    .map((o) => {
+      const take = Math.min(o.deployed, Math.max(0, strength - fielded));
+      fielded += take;
+      return { ...o, deployed: take };
+    })
+    .filter((o) => o.deployed > 0);
 };
 
 const WarbandsComponent = () => {
@@ -86,6 +113,8 @@ const WarbandsComponent = () => {
         ? actions.kitWarband(faction, amount)
         : kind === "assign"
         ? actions.assignWarband(faction, amount.assignment, amount.deployed)
+        : kind === "recall"
+        ? actions.recallWarbandOrder(faction, amount)
         : kind === "collect"
         ? actions.collectWarband(faction)
         : actions.provisionWarband(faction, amount);
@@ -154,9 +183,9 @@ const WarbandsComponent = () => {
           1,
           Math.ceil(Math.max(1, state.strength) / KIT_SIZE)
         );
-        const deployed = state.assignment
-          ? Math.min(state.deployed || state.strength, state.strength)
-          : 0;
+        const orders = ordersOf(state);
+        const deployed = orders.reduce((sum, o) => sum + o.deployed, 0);
+        const reserves = state.strength - deployed;
         // Deployed troops eat double; reserves eat normal rations.
         const provBase = baseCostByItem[cfg.provision_item];
         const drain =
@@ -197,7 +226,7 @@ const WarbandsComponent = () => {
                 </div>
               </div>
 
-              <div className="warband-readiness mt-2" title="Readiness: 40% floor when provisions run dry, up to 100% with full gear kits. It modulates escort effects - it never locks anything.">
+              <div className="warband-readiness mt-2" title="Readiness: ZERO when provisions run dry (nothing works on empty wagons), 25% fed but kitless, up to 100% with full gear kits. It scales yields and battle bonuses - it never locks anything.">
                 <div
                   className="warband-readiness-fill"
                   style={{ width: `${readiness}%` }}
@@ -280,20 +309,86 @@ const WarbandsComponent = () => {
                   <span className="warband-caption">
                     Food for ~{PROVISION_CAP_HOURS}h, bought at the live
                     market price. Drains hourly — twice as fast while
-                    deployed. Dry means readiness floor and stalled
+                    deployed. Dry means ZERO readiness and stalled
                     operations, never losses.
                   </span>
                 </div>
               </div>
 
               <div className="warband-orders mt-2">
-                {!state.assignment ? (
+                {/* Round 6: several detachments can be out at once, each
+                    drawn from the reserves with its own recall. */}
+                {orders.map((order, orderIndex) => {
+                  const assignedAt = order.assigned_at
+                    ? new Date(order.assigned_at).getTime()
+                    : null;
+                  const elapsedH =
+                    assignedAt != null
+                      ? Math.max(0, (Date.now() - assignedAt) / 3600000)
+                      : null;
+                  const elapsedText =
+                    elapsedH == null
+                      ? null
+                      : elapsedH < 1
+                      ? `${Math.max(1, Math.round(elapsedH * 60))}m`
+                      : `${elapsedH.toFixed(1)}h`;
+                  const effect = (order.deployed / 100) * (readiness / 100);
+                  const perDay =
+                    order.kind === "patrol"
+                      ? `~${Math.round(
+                          cfg.volunteer_cost * PATROL_RATE * effect * 24
+                        ).toLocaleString()} cr/day`
+                      : order.kind === "salvage"
+                      ? `~${(
+                          salvageUnitsPerDay(
+                            cfg,
+                            baseCostByItem[cfg.salvage_item]
+                          ) * effect
+                        ).toFixed(1)} goods/day`
+                      : order.deployed >= BANNER_MIN
+                      ? `~${(BANNER_REP_PER_DAY * (readiness / 100)).toFixed(
+                          1
+                        )} rep/day`
+                      : `stalled — banners need a detachment of ${BANNER_MIN}+`;
+                  return (
+                    <div className="warband-order-card" key={orderIndex}>
+                      <div className="tx-info small">
+                        ⚔️ {OP_LABELS[order.kind] || order.kind} — detachment
+                        of {order.deployed}
+                        {elapsedText && ` · marching ${elapsedText}`}
+                        {` · ${perDay}`}
+                        {" · "}
+                        {hoursLeft > 0 ? (
+                          <span className={hoursLeft < 12 ? "tx-error" : ""}>
+                            supplies ~{Math.floor(hoursLeft)}h
+                          </span>
+                        ) : (
+                          <span className="tx-error">
+                            dry — stalled until provisioned
+                          </span>
+                        )}
+                        <button
+                          className="btn-sell ms-2"
+                          disabled={isBusy}
+                          title="Pull this detachment back to the reserves. The stash stays claimable."
+                          onClick={() => act("recall", faction, orderIndex)}
+                        >
+                          ↩ Recall
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {reserves > 0 &&
                   (() => {
-                    // No active order: stage one, then commit with Begin.
+                    // Stage a new order from the reserves, commit with
+                    // Begin (a dropdown that fires on selection was a
+                    // playtest footgun).
                     const stagedOrder = staged[faction] || {};
                     const stagedDeployed = Math.min(
-                      stagedOrder.deployed || state.strength,
-                      state.strength
+                      stagedOrder.deployed || reserves,
+                      reserves
                     );
                     const setStagedFor = (patch) =>
                       setStaged((prev) => ({
@@ -301,8 +396,10 @@ const WarbandsComponent = () => {
                         [faction]: { ...stagedOrder, ...patch },
                       }));
                     return (
-                      <>
-                        <label className="tx-info small me-2">🎯 Orders:</label>
+                      <div className="mt-1">
+                        <label className="tx-info small me-2">
+                          🎯 Orders{orders.length > 0 && ` (${reserves} in reserve)`}:
+                        </label>
                         <select
                           value={stagedOrder.assignment || ""}
                           disabled={isBusy || state.strength === 0}
@@ -322,7 +419,7 @@ const WarbandsComponent = () => {
                             className="ms-1"
                             value={String(stagedDeployed)}
                             disabled={isBusy}
-                            title="Detachment size: the detachment works the operation (and eats double); reserves stand ready. Gates and escorts always count your full strength. Size locks when the order begins - recall to change it."
+                            title="Detachment size, drawn from the reserves. The detachment works the operation (and eats double); gates and escorts always count your full strength. Size locks when the order begins - recall to change it."
                             onChange={(e) =>
                               setStagedFor({
                                 deployed: parseInt(e.target.value, 10),
@@ -330,16 +427,16 @@ const WarbandsComponent = () => {
                             }
                           >
                             {[
-                              Math.max(1, Math.round(state.strength / 4)),
-                              Math.max(1, Math.round(state.strength / 2)),
-                              state.strength,
+                              Math.max(1, Math.round(reserves / 4)),
+                              Math.max(1, Math.round(reserves / 2)),
+                              reserves,
                             ]
                               .filter((v, i, arr) => arr.indexOf(v) === i)
                               .map((size) => (
                                 <option key={size} value={String(size)}>
-                                  {size === state.strength
-                                    ? `All ${size}`
-                                    : `${size} of ${state.strength}`}
+                                  {size === reserves
+                                    ? `All ${size} reserves`
+                                    : `${size} of ${reserves}`}
                                 </option>
                               ))}
                           </select>
@@ -351,85 +448,19 @@ const WarbandsComponent = () => {
                             !stagedOrder.assignment ||
                             state.strength === 0
                           }
-                          onClick={() =>
+                          onClick={() => {
+                            setStagedFor({ assignment: "" });
                             act("assign", faction, {
                               assignment: stagedOrder.assignment,
                               deployed: stagedDeployed,
-                            })
-                          }
+                            });
+                          }}
                         >
                           🚩 Begin orders
                         </button>
-                      </>
-                    );
-                  })()
-                ) : (
-                  (() => {
-                    // Active order card: what they're doing, since when,
-                    // at what rate, and how long the food lasts.
-                    const assignedAt = state.assigned_at
-                      ? new Date(state.assigned_at).getTime()
-                      : null;
-                    const elapsedH =
-                      assignedAt != null
-                        ? Math.max(0, (Date.now() - assignedAt) / 3600000)
-                        : null;
-                    const elapsedText =
-                      elapsedH == null
-                        ? null
-                        : elapsedH < 1
-                        ? `${Math.max(1, Math.round(elapsedH * 60))}m`
-                        : `${elapsedH.toFixed(1)}h`;
-                    const effect = (deployed / 100) * (readiness / 100);
-                    const perDay =
-                      state.assignment === "patrol"
-                        ? `~${Math.round(
-                            cfg.volunteer_cost * PATROL_RATE * effect * 24
-                          ).toLocaleString()} cr/day`
-                        : state.assignment === "salvage"
-                        ? `~${(
-                            salvageUnitsPerDay(
-                              cfg,
-                              baseCostByItem[cfg.salvage_item]
-                            ) * effect
-                          ).toFixed(1)} goods/day`
-                        : deployed >= BANNER_MIN
-                        ? `~${(BANNER_REP_PER_DAY * (readiness / 100)).toFixed(
-                            1
-                          )} rep/day`
-                        : `stalled — banners need a detachment of ${BANNER_MIN}+`;
-                    return (
-                      <div className="warband-order-card">
-                        <div className="tx-info small">
-                          ⚔️ {OP_LABELS[state.assignment] || state.assignment}{" "}
-                          — detachment of {deployed} of {state.strength}
-                          {elapsedText && ` · marching ${elapsedText}`}
-                          {` · ${perDay}`}
-                          {" · "}
-                          {hoursLeft > 0 ? (
-                            <span className={hoursLeft < 12 ? "tx-error" : ""}>
-                              supplies ~{Math.floor(hoursLeft)}h
-                            </span>
-                          ) : (
-                            <span className="tx-error">
-                              dry — stalled until provisioned
-                            </span>
-                          )}
-                        </div>
-                        <button
-                          className="btn-sell mt-1"
-                          disabled={isBusy}
-                          title="Stand the warband down. The stash stays claimable; recruit/kit/provision anytime - recalling is only needed to change orders or detachment size."
-                          onClick={() =>
-                            act("assign", faction, { assignment: null })
-                          }
-                        >
-                          ↩ Recall
-                        </button>
                       </div>
                     );
-                  })()
-                )}
+                  })()}
                 {(() => {
                   const stash = state.stash || {};
                   const credits = Math.floor(stash.credits || 0);
@@ -453,7 +484,7 @@ const WarbandsComponent = () => {
                             )}
                             {rep > 0 && `+${rep} rep `}
                           </>
-                        ) : state.assignment ? (
+                        ) : orders.length > 0 ? (
                           "accruing…"
                         ) : (
                           "— assign an operation"
