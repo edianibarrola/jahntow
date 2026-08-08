@@ -5,6 +5,7 @@ import HealthComponent from "./healthComponent";
 import EnergyComponent from "./energyComponent";
 import CreditsComponent from "./creditsComponent";
 import StoryMissionDetailsComponent from "./storyMissionDetailsComponent";
+import MissionTheater from "./missionTheater";
 import { successBreakdown } from "../missionOdds";
 
 // Mirrors STORY_WINS_PER_UNLOCK in src/api/game_routes.py, which is what
@@ -86,6 +87,7 @@ const StoryMissions = () => {
   const storyMissionsData = gameData.storyMissions || {};
   const [isStoryMissionRunning, setStoryMissionRunning] = useState(false);
   const [isChoosing, setChoosing] = useState(false);
+  const [theater, setTheater] = useState(null);
 
   // One-click outfitting for the chapter's gear - estimate only; the
   // server reprices with merchant/ally discounts applied.
@@ -164,12 +166,23 @@ const StoryMissions = () => {
 
   const runStoryMission = (missionName) => {
     setStoryMissionRunning(true);
+    // Staged reveal, same as regular missions: the theater plays the
+    // chapter's authored start message while flux holds the outcome.
+    setTheater({
+      name: missionName,
+      startMessage: (storyMissionsData[missionName] || {}).startMessage,
+      startedAt: Date.now(),
+    });
     actions
       .startStoryMission(missionName)
-      // flux.js already surfaces both the result and any failure via the
-      // activity toast/log - nothing left to do here on rejection besides
-      // making sure it doesn't become an unhandled promise rejection.
-      .catch(() => {})
+      .then((data) => {
+        if (data && data.message != null) {
+          setTheater((t) => (t ? { ...t, outcome: data } : t));
+        } else {
+          setTheater(null);
+        }
+      })
+      .catch(() => setTheater(null))
       .finally(() => {
         setStoryMissionRunning(false);
       });
@@ -177,6 +190,7 @@ const StoryMissions = () => {
 
   return (
     <div className="row mb-3">
+      <MissionTheater run={theater} onClose={() => setTheater(null)} />
       <div className="row  sticky-top holo text-center">
         <div className="row pt-2 pb-1 m-0 mb-1 justify-content-around text-center">
           <HealthComponent health={player.health} maxHealth={player.maxHealth} />

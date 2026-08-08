@@ -152,6 +152,10 @@ const getState = ({ getStore, getActions, setStore }) => {
   // else, then the rejection is re-thrown so the calling component's own
   // .finally() (button spinner reset, etc.) still runs. Unlike successful
   // actions, these stay client-side - many can't reach the server at all.
+  // How long a mission's staged reveal runs (see missionTheater.jsx) -
+  // the outcome is withheld this long so the start message gets read.
+  const MISSION_THEATER_MS = 2200;
+
   const reportError = (error, fallbackMessage) => {
     let message = error?.message || fallbackMessage;
     if (error?.status === 429 && error?.data?.retry_after_seconds != null) {
@@ -587,16 +591,26 @@ const getState = ({ getStore, getActions, setStore }) => {
           .catch((error) => reportError(error, "Failed to purchase property"));
       },
 
+      // Mission outcomes are held for a short beat before the stats and
+      // toasts land, so the mission-theater overlay can play the authored
+      // start message first. Instant resolution made those messages
+      // unreachable and the run feel like a slot machine (playtest).
+      // Refusals (rejects) surface immediately - only outcomes wait.
       startMission: (missionName, repeat = 1) => {
         return apiRequest("/api/mission/start", {
           method: "POST",
           body: { mission_name: missionName, repeat },
         })
-          .then((data) => {
-            applyPlayerResult(data);
-            appendActivityEntry(data.activity);
-            return data;
-          })
+          .then(
+            (data) =>
+              new Promise((resolve) =>
+                setTimeout(() => {
+                  applyPlayerResult(data);
+                  appendActivityEntry(data.activity);
+                  resolve(data);
+                }, MISSION_THEATER_MS)
+              )
+          )
           .catch((error) => reportError(error, "Failed to start mission"));
       },
 
@@ -618,11 +632,16 @@ const getState = ({ getStore, getActions, setStore }) => {
           method: "POST",
           body: { mission_name: missionName },
         })
-          .then((data) => {
-            applyPlayerResult(data);
-            appendActivityEntry(data.activity);
-            return data;
-          })
+          .then(
+            (data) =>
+              new Promise((resolve) =>
+                setTimeout(() => {
+                  applyPlayerResult(data);
+                  appendActivityEntry(data.activity);
+                  resolve(data);
+                }, MISSION_THEATER_MS)
+              )
+          )
           .catch((error) =>
             reportError(error, "Failed to start story mission")
           );
