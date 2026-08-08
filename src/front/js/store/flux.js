@@ -407,6 +407,19 @@ const getState = ({ getStore, getActions, setStore }) => {
           .catch((error) => reportError(error, "Failed to prestige"));
       },
 
+      recallWarbandOrder: (faction, orderIndex) => {
+        return apiRequest("/api/warband/recall", {
+          method: "POST",
+          body: { faction, order_index: orderIndex },
+        })
+          .then((data) => {
+            applyPlayerResult(data);
+            appendActivityEntry(data.activity);
+            return data;
+          })
+          .catch((error) => reportError(error, "Failed to recall"));
+      },
+
       selectTitle: (title) => {
         return apiRequest("/api/player/title", {
           method: "POST",

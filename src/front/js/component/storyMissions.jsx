@@ -434,13 +434,17 @@ const StoryMissions = () => {
                               const strength =
                                 player.warbands?.[gate.faction]?.strength || 0;
                               const met = strength >= need;
-                              // Gates count TOTAL strength by design - a
-                              // band out on operations still answers the
-                              // war horn. Say so, or a deployed band
-                              // passing its gate looks like a bug.
-                              const fieldNote = player.warbands?.[gate.faction]
-                                ?.assignment
-                                ? " They're in the field — they'll answer the horn when you strike."
+                              // Gates count TOTAL strength by design - and
+                              // since round 6 the horn is literal: running
+                              // the battle recalls this band's detachments.
+                              const bandRaw =
+                                player.warbands?.[gate.faction] || {};
+                              const inField =
+                                (bandRaw.orders || []).some(
+                                  (o) => o && (o.deployed || 0) > 0
+                                ) || !!bandRaw.assignment;
+                              const fieldNote = inField
+                                ? " They're in the field — the war horn will recall their detachments when you strike."
                                 : "";
                               return (
                                 <li className={met ? "tx-rep" : "tx-error"}>
