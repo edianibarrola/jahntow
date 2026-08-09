@@ -81,17 +81,23 @@ const MissionsComponent = () => {
 
   const runMission = (missionName, repeat = 1) => {
     setRunningMission(missionName);
-    // The theater overlay plays the authored start message while flux
-    // holds the outcome; refusals (rejections) close it immediately and
-    // surface through the error toast as before.
+    // The theater plays the authored start message at the player's own
+    // pace: flux holds the outcome (and the stat/toast updates) until
+    // the start step's Continue resolves this hold. Refusals reject
+    // before the hold and close the theater immediately as before.
+    let release;
+    const hold = new Promise((resolve) => {
+      release = resolve;
+    });
     setTheater({
       name: missionName,
       startMessage: (missionsData[missionName] || {}).startMessage,
       repeat,
       startedAt: Date.now(),
+      release,
     });
     actions
-      .startMission(missionName, repeat)
+      .startMission(missionName, repeat, hold)
       .then((data) => {
         if (data && data.message != null) {
           setTheater((t) => (t ? { ...t, outcome: data } : t));
@@ -105,9 +111,21 @@ const MissionsComponent = () => {
       });
   };
 
+  const advanceTheater = () => {
+    setTheater((t) => {
+      if (!t) return t;
+      t.release?.();
+      return { ...t, advanced: true };
+    });
+  };
+
   return (
     <div className="row mb-3">
-      <MissionTheater run={theater} onClose={() => setTheater(null)} />
+      <MissionTheater
+        run={theater}
+        onAdvance={advanceTheater}
+        onClose={() => setTheater(null)}
+      />
       <div className="row  sticky-top holo text-center">
         <div className="row pt-2 pb-1 m-0 mb-1 justify-content-around text-center">
           <HealthComponent health={player.health} maxHealth={player.maxHealth} />
