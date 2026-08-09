@@ -6,6 +6,10 @@ const KIND_LABEL = {
   price_crash: "Price Crash",
 };
 
+// One compact chip per event - the strip is a single scrollable line of
+// sticky chrome now, so the full sentence ("settles back after", etc.)
+// moved into each chip's tooltip. The notifications feed still carries
+// the verbose announcement.
 const EventLine = ({ event }) => {
   const minutesLeft = Math.max(
     1,
@@ -18,16 +22,22 @@ const EventLine = ({ event }) => {
   // events, so they arrive through the same feed with their own kind.
   if (event.kind === "bounty") {
     return (
-      <div className="tx-bounty">
-        ⭐ Bounty: {event.multiplier}x reward on {event.category} for {minutesText}
+      <div
+        className="tx-bounty"
+        title={`Bounty: ${event.multiplier}x credit reward on ${event.category} for ${minutesText}`}
+      >
+        ⭐ {event.category} ×{event.multiplier} · {minutesLeft}m
       </div>
     );
   }
   if (event.kind === "merchant") {
     const off = Math.round((1 - event.multiplier) * 100);
     return (
-      <div className="tx-merchant">
-        🛒 Merchant: {event.category} gear {off}% off for {minutesText}
+      <div
+        className="tx-merchant"
+        title={`Merchant: ${event.category} gear ${off}% off for ${minutesText}`}
+      >
+        🛒 {event.category} −{off}% · {minutesLeft}m
       </div>
     );
   }
@@ -35,13 +45,17 @@ const EventLine = ({ event }) => {
   const pct = Math.round(Math.abs(event.multiplier - 1) * 100);
   const isSpike = event.multiplier > 1;
 
-  // "settles back after": the countdown is a real trading window - the
-  // multiplier stops applying at zero - and playtesting showed that
-  // without saying so it read as decorative.
+  // The countdown is a real trading window - the multiplier stops
+  // applying at zero, and the price settles back after.
   return (
-    <div className={isSpike ? "tx-price-up" : "tx-price-down"}>
-      ⚡ {KIND_LABEL[event.kind] || event.kind}: {event.category} {isSpike ? "+" : "-"}
-      {pct}% for {minutesText} — settles back after
+    <div
+      className={isSpike ? "tx-price-up" : "tx-price-down"}
+      title={`${KIND_LABEL[event.kind] || event.kind}: ${event.category} ${
+        isSpike ? "+" : "-"
+      }${pct}% for ${minutesText} — settles back after`}
+    >
+      ⚡ {event.category} {isSpike ? "+" : "−"}
+      {pct}% · {minutesLeft}m
     </div>
   );
 };

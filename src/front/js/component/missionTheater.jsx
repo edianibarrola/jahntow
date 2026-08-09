@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 // The staged mission reveal (playtest: "click a button, get an instant
 // outcome - the start messages never show, it's not very game-like").
@@ -55,7 +56,11 @@ const MissionTheater = ({ run, onAdvance, onClose }) => {
   const progressLine =
     PROGRESS_LINES[Math.abs(hashOf(run.name)) % PROGRESS_LINES.length];
 
-  return (
+  // Portaled to <body>: rendered inside the tab pane, any ancestor with a
+  // backdrop-filter/transform silently turned position:fixed into
+  // page-relative - the overlay centered on the DOCUMENT, which on a long
+  // mobile page put it far below the viewport (playtest bug).
+  return createPortal(
     <div
       style={overlayStyle}
       onClick={() => (outcome ? onClose() : !run.advanced && onAdvance())}
@@ -99,7 +104,8 @@ const MissionTheater = ({ run, onAdvance, onClose }) => {
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

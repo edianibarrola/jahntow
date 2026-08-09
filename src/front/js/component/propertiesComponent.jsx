@@ -1,9 +1,6 @@
 import React, { useContext } from "react";
 import { Context } from "../store/appContext";
 import { Accordion } from "react-bootstrap";
-import HealthComponent from "./healthComponent";
-import EnergyComponent from "./energyComponent";
-import CreditsComponent from "./creditsComponent";
 
 const PropertiesComponent = () => {
   const { store, actions } = useContext(Context);
@@ -83,11 +80,6 @@ const PropertiesComponent = () => {
   return (
     <div className="row mb-3">
       <div className="row  sticky-top holo text-center">
-        <div className="row pt-2 pb-1 m-0 mb-2 justify-content-around text-center">
-          <HealthComponent health={player.health} maxHealth={player.maxHealth} />
-          <EnergyComponent energy={player.energy} maxEnergy={player.maxEnergy} />
-          <CreditsComponent credits={player.credits} />
-        </div>
         <div className="col-12  text-center  ">
           <p className="m-0">Properties</p>
           {pendingEntries.length > 0 ? (

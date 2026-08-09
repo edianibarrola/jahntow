@@ -1,9 +1,6 @@
 import React, { useContext, useState } from "react";
 import { Context } from "../store/appContext";
 import { Accordion } from "react-bootstrap";
-import HealthComponent from "./healthComponent";
-import EnergyComponent from "./energyComponent";
-import CreditsComponent from "./creditsComponent";
 import StoryMissionDetailsComponent from "./storyMissionDetailsComponent";
 import MissionTheater from "./missionTheater";
 import { successBreakdown } from "../missionOdds";
@@ -209,11 +206,6 @@ const StoryMissions = () => {
         onClose={() => setTheater(null)}
       />
       <div className="row  sticky-top holo text-center">
-        <div className="row pt-2 pb-1 m-0 mb-1 justify-content-around text-center">
-          <HealthComponent health={player.health} maxHealth={player.maxHealth} />
-          <EnergyComponent energy={player.energy} maxEnergy={player.maxEnergy} />
-          <CreditsComponent credits={player.credits} />
-        </div>
         <div className="col-12 text-center">
           <p>Story Missions:</p>
         </div>

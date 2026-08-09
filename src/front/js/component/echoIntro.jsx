@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Context } from "../store/appContext";
 
 // First-login onboarding, in E.C.H.O.'s voice (the oldest open playtest
@@ -97,7 +98,9 @@ const EchoIntro = ({ open, setOpen }) => {
   const last = step === STEPS.length - 1;
   const current = STEPS[step];
 
-  return (
+  // Portaled to <body> so no ancestor CSS can break its fixed centering
+  // (same bug the mission theater had).
+  return createPortal(
     <div style={overlayStyle} onClick={close}>
       <div
         className="holo echo-intro"
@@ -125,7 +128,8 @@ const EchoIntro = ({ open, setOpen }) => {
           </span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

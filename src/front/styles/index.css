@@ -1,9 +1,34 @@
+/* ==================== Dark Soft-UI theme tokens ====================
+   Direction B (playtest-chosen). Edges are made of light and shadow,
+   not borders and glow; the background art ghosts through a heavy dim
+   because soft edges only read on a near-flat ground. Class names are
+   unchanged - this file swaps materials, not structure. */
+:root {
+  --ground: #151922;
+  --ghost: rgba(21, 25, 34, 0.93);
+  --card: #1a1f2a;
+  --card-2: #181d27;
+  --well: #171b25;
+  --ink: #e7ecf4;
+  --mut: #9aa5b4;
+  --faint: #6b7787;
+  --accent: #6bd9cb;
+  --accent-deep: #54bfb1;
+  --good: #7bde9c;
+  --bad: #f58b8b;
+  --warm: #ebc97e;
+  --raise: 5px 5px 12px rgba(0, 0, 0, 0.45), -3px -3px 9px rgba(255, 255, 255, 0.045);
+  --raise-sm: 3px 3px 7px rgba(0, 0, 0, 0.45), -2px -2px 5px rgba(255, 255, 255, 0.045);
+  --inset: inset 2px 2px 5px rgba(0, 0, 0, 0.55), inset -2px -2px 5px rgba(255, 255, 255, 0.045);
+  --inset-sm: inset 1px 1px 4px rgba(0, 0, 0, 0.5), inset -1px -1px 4px rgba(255, 255, 255, 0.04);
+}
+
 /* 
     General Styles
 */
 body {
-  /* background-image: url("https://res.cloudinary.com/petrep/image/upload/v1690411745/backgroundspaceascii_nf9lug.png"); */
-  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691784146/planetbg4_phpssd.png");
+  background-image: linear-gradient(var(--ghost), var(--ghost)),
+    url("https://res.cloudinary.com/petrep/image/upload/v1691784146/planetbg4_phpssd.png");
 
   /* background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691785163/_edian__the__Equipment_Wall_section_inside_of_a_futuristic_spac_ce910ae5-1dbc-4808-94a4-7d8e036969f2_vgqm8p.png"); */
   background-size: cover;
@@ -13,10 +38,9 @@ body {
   background-attachment: fixed;
   /* Add some padding to the body to ensure the content doesn't overlap with the background */
   padding: 20px;
-  /* Set a fallback background color in case the image is not available or fails to load */
-  background-color: #000000;
-  /* Set the font color for the text on the page */
-  color: #ffffff;
+  background-color: var(--ground);
+  color: var(--ink);
+  font-weight: 400;
 }
 .characterlogo {
   background-image: url("https://res.cloudinary.com/petrep/image/upload/v1692047254/_edian__Human_surviving_on_a_dessert_alien_planet_o7ngyv.png");
@@ -34,7 +58,7 @@ body {
   background-repeat: no-repeat;
 }
 .characterleathers {
-  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691961881/characterleathers_i4yke7.png");
+  background-image: linear-gradient(var(--ghost), var(--ghost)), url("https://res.cloudinary.com/petrep/image/upload/v1691961881/characterleathers_i4yke7.png");
 
   background-size: cover;
   /* Center the background image horizontally and vertically */
@@ -49,7 +73,7 @@ body {
   background-repeat: no-repeat;
 }
 .charactersand {
-  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691961889/charactersand_epuzoc.png");
+  background-image: linear-gradient(var(--ghost), var(--ghost)), url("https://res.cloudinary.com/petrep/image/upload/v1691961889/charactersand_epuzoc.png");
 
   background-size: cover;
   /* Center the background image horizontally and vertically */
@@ -64,7 +88,7 @@ body {
   background-repeat: no-repeat;
 }
 .ship {
-  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691786341/_edian__The_view_from_the_pilots_seat_looking_out_the_front_of__255c9199-b286-4b79-a4c1-519be74b4745_z4yyx9.png");
+  background-image: linear-gradient(var(--ghost), var(--ghost)), url("https://res.cloudinary.com/petrep/image/upload/v1691786341/_edian__The_view_from_the_pilots_seat_looking_out_the_front_of__255c9199-b286-4b79-a4c1-519be74b4745_z4yyx9.png");
 
   background-size: cover;
   /* Center the background image horizontally and vertically */
@@ -79,7 +103,7 @@ body {
   background-repeat: no-repeat;
 }
 .shipinside {
-  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691785163/_edian__the__Equipment_Wall_section_inside_of_a_futuristic_spac_ce910ae5-1dbc-4808-94a4-7d8e036969f2_vgqm8p.png");
+  background-image: linear-gradient(var(--ghost), var(--ghost)), url("https://res.cloudinary.com/petrep/image/upload/v1691785163/_edian__the__Equipment_Wall_section_inside_of_a_futuristic_spac_ce910ae5-1dbc-4808-94a4-7d8e036969f2_vgqm8p.png");
 
   background-size: cover;
   /* Center the background image horizontally and vertically */
@@ -95,7 +119,7 @@ body {
 }
 
 .shipbed {
-  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691792695/_edian__the__Equipment_Wall_section_inside_of_a_futuristic_spac_d6a97ca6-9b96-4e59-bdbc-ebd2cc00341e_xsuyas.png");
+  background-image: linear-gradient(var(--ghost), var(--ghost)), url("https://res.cloudinary.com/petrep/image/upload/v1691792695/_edian__the__Equipment_Wall_section_inside_of_a_futuristic_spac_d6a97ca6-9b96-4e59-bdbc-ebd2cc00341e_xsuyas.png");
 
   background-size: cover;
   /* Center the background image horizontally and vertically */
@@ -111,7 +135,7 @@ body {
 }
 
 .shipeqp {
-  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691791939/_edian__the__Equipment_Wall_section_inside_of_a_futuristic_spac_00116430-6ea7-402f-be6e-9f8b4c03c8f4_musnuq.png");
+  background-image: linear-gradient(var(--ghost), var(--ghost)), url("https://res.cloudinary.com/petrep/image/upload/v1691791939/_edian__the__Equipment_Wall_section_inside_of_a_futuristic_spac_00116430-6ea7-402f-be6e-9f8b4c03c8f4_musnuq.png");
 
   background-size: cover;
   /* Center the background image horizontally and vertically */
@@ -127,7 +151,7 @@ body {
 }
 
 .marketplace {
-  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691788906/_edian__an_abandoned_Alien_Flea_Market_with_alot_of_empty_shops_bad8c916-e8c7-4d19-b63f-e79d0bba9db0_kwurpv.png");
+  background-image: linear-gradient(var(--ghost), var(--ghost)), url("https://res.cloudinary.com/petrep/image/upload/v1691788906/_edian__an_abandoned_Alien_Flea_Market_with_alot_of_empty_shops_bad8c916-e8c7-4d19-b63f-e79d0bba9db0_kwurpv.png");
 
   background-size: cover;
   /* Center the background image horizontally and vertically */
@@ -143,7 +167,7 @@ body {
 }
 
 .properties {
-  background-image: url("https://res.cloudinary.com/petrep/image/upload/v1691790558/_edian__several_strange_alien_architecture_structures_and_build_5fa72d73-2e26-412f-9399-b671ceb6ee47_lrox76.png");
+  background-image: linear-gradient(var(--ghost), var(--ghost)), url("https://res.cloudinary.com/petrep/image/upload/v1691790558/_edian__several_strange_alien_architecture_structures_and_build_5fa72d73-2e26-412f-9399-b671ceb6ee47_lrox76.png");
 
   background-size: cover;
   /* Center the background image horizontally and vertically */
@@ -158,28 +182,19 @@ body {
   background-repeat: no-repeat;
 }
 .holo {
-  /* border: 1px solid #faf6f6; 1px solid black border */
-  padding: 20px;
-  background-color: rgba(
-    0,
-    0,
-    0,
-    0.541
-  ); /* Green color with opacity (adjust the alpha value) */
-  backdrop-filter: blur(3px);
-  border-radius: 20px;
-  box-shadow: 0 0 10px rgba(1, 247, 255, 0.596),
-    0 0 20px rgba(26, 201, 245, 0.418);
-  color: #fff;
+  padding: 14px 16px;
+  background-color: var(--card);
+  border-radius: 18px;
+  box-shadow: var(--raise);
+  color: var(--ink);
 }
 
 .holobg {
-  background-color: rgba(0, 0, 0, 0.527);
-  backdrop-filter: blur(3px);
-  border-radius: 20px;
-  box-shadow: 0 0 20px rgb(0, 0, 0), 0 0 30px rgb(0, 0, 0),
-    0 0 40px rgb(0, 0, 0), 0 0 50px rgb(0, 0, 0);
-  color: #fff;
+  /* The page shell: the ghosted art IS the ground now - no second slab,
+     and no backdrop-filter (it was silently breaking position: fixed for
+     every overlay and toast in the app). */
+  background: transparent;
+  color: var(--ink);
 }
 
 .scrolldiv {
@@ -189,39 +204,52 @@ body {
 ul {
   list-style: none;
 }
-html * {
-  color: #ffffff;
-  font-weight: bold;
+/* The old `html * { bold white }` made every character on every screen
+   shout at the same volume - hierarchy now comes from the type scale. */
+body {
+  font-weight: 400;
 }
+h1, h2, h3, h4, h5, h6, strong, b {
+  color: var(--ink);
+}
+h2 { font-size: 1.15rem; font-weight: 650; }
+h4 { font-size: 1.05rem; font-weight: 650; }
 
 select {
-  background-color: #60a3be98; /* Replace #f2f2f2 with your desired background color */
-  color: #b1af62; /* Replace #333 with your desired text color */
+  background-color: var(--well);
+  color: var(--ink);
+  border: none;
   border-radius: 10px;
-  box-shadow: 0 0 10px rgba(33, 75, 33, 0.199),
-    0 0 20px rgba(69, 200, 233, 0.418);
+  padding: 4px 10px;
+  box-shadow: var(--inset-sm);
 }
 button {
-  background-color: #60a3be98; /* Replace #f2f2f2 with your desired background color */
-  color: #b1af62; /* Replace #333 with your desired text color */
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(33, 75, 33, 0.199),
-    0 0 20px rgba(69, 200, 233, 0.418);
+  background-color: var(--card);
+  color: var(--ink);
+  border: none;
+  border-radius: 12px;
+  padding: 6px 14px;
+  box-shadow: var(--raise-sm);
+  transition: box-shadow 0.12s ease, transform 0.12s ease;
+}
+button:active:not(:disabled) {
+  box-shadow: var(--inset-sm);
+  transform: translateY(1px);
+}
+button:disabled {
+  opacity: 0.45;
+  box-shadow: none;
 }
 .healthbutton {
-  background-color: #b83a9c98; /* Replace #f2f2f2 with your desired background color */
-  color: #b1af62; /* Replace #333 with your desired text color */
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(33, 75, 33, 0.199),
-    0 0 20px rgba(69, 200, 233, 0.418);
+  color: #f0a8d8;
 }
 
 input {
-  background-color: #60a3be98; /* Replace #f2f2f2 with your desired background color */
-  color: #b1af62; /* Replace #333 with your desired text color */
+  background-color: var(--well);
+  color: var(--ink);
+  border: none;
   border-radius: 10px;
-  box-shadow: 0 0 10px rgba(33, 75, 33, 0.199),
-    0 0 20px rgba(69, 200, 233, 0.418);
+  box-shadow: var(--inset-sm);
 }
 
 .carousel-control-prev,
@@ -273,34 +301,28 @@ input {
   overflow: visible !important;
 }
 
+.accordion-item.holo {
+  padding: 0;
+  overflow: hidden;
+  margin-bottom: 10px;
+  border: none;
+}
 .accordion-button {
-  background-color: transparent !important;
-  color: #fffeea !important;
-  font-weight: bold !important;
-  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
-    1px 1px 0 #000 !important;
-  border-color: #60a3be98 !important;
+  background-color: var(--card) !important;
+  color: var(--ink) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  border: none !important;
 }
-
 .accordion-button:not(.collapsed) {
-  background-color: #60a3be98 !important;
-  color: #b1af62 !important;
+  background-color: var(--card) !important;
+  color: var(--accent) !important;
+}
+.accordion-collapse {
+  background-color: var(--card-2) !important;
+  color: var(--ink);
 }
 
-.accordion-collapse {
-  background-color: rgba(0, 0, 0, 0.233) !important;
-  backdrop-filter: blur(3px);
-  border-radius: 20px;
-  box-shadow: 0 0 10px rgba(1, 247, 255, 0.596),
-    0 0 20px rgba(26, 201, 245, 0.418);
-  color: #fff;
-}
-.healthbutton {
-  background-color: rgba(0, 0, 0, 0.233) !important;
-}
-button {
-  background-color: rgba(0, 0, 0, 0.493) !important;
-}
 .accordion-button {
   text-align: center;
   padding-left: 1rem !important; /* adjust these padding values to your needs */
@@ -318,8 +340,10 @@ input.form-control {
 }
 
 .activity-toast-stack {
+  /* Bottom-anchored: the top slot collided with the event strip, and on
+     phones a thumb hovers near the bottom anyway. */
   position: fixed;
-  top: 12px;
+  bottom: 14px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1050;
@@ -419,7 +443,8 @@ input.form-control {
 }
 
 .tx-info {
-  color: #ffffff;
+  color: var(--mut);
+  font-weight: 400;
 }
 
 .tx-price-up {
@@ -662,38 +687,40 @@ input.form-control {
 
 .tab-groups button {
   background: transparent;
-  border: 1px solid rgba(126, 200, 255, 0.45);
-  border-radius: 6px;
-  color: #7ec8ff;
-  padding: 4px 14px;
+  border: none;
+  box-shadow: none;
+  border-radius: 12px;
+  color: var(--mut);
+  font-weight: 600;
+  padding: 6px 14px;
   white-space: nowrap;
 }
 
 .tab-groups button.active {
-  background: rgba(126, 200, 255, 0.18);
-  color: #ffffff;
-  font-weight: bold;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--raise-sm);
 }
 
 .tab-subs {
-  border-bottom: 1px solid rgba(126, 200, 255, 0.35);
   margin-bottom: 6px;
 }
 
 .tab-subs button {
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
-  color: #7ec8ff;
-  padding: 2px 12px 4px;
+  box-shadow: none;
+  border-radius: 999px;
+  color: var(--mut);
+  font-weight: 600;
+  padding: 4px 13px;
   white-space: nowrap;
 }
 
 .tab-subs button.active {
-  color: #ffffff;
-  border-bottom-color: #7ec8ff;
-  font-weight: bold;
+  color: var(--accent);
+  background: var(--card);
+  box-shadow: var(--inset-sm);
 }
 
 
@@ -914,17 +941,18 @@ input.form-control {
    anything that sells is amber; the full-liquidation button gets the
    strongest treatment of the family. */
 .btn-buy {
-  border: 1px solid rgba(105, 224, 255, 0.7) !important;
-  color: #9be2ff !important;
+  background: linear-gradient(145deg, #2a5a55, #1f4641) !important;
+  color: #9fe3da !important;
+  font-weight: 600;
 }
 .btn-sell {
-  border: 1px solid rgba(255, 193, 105, 0.55) !important;
+  background: linear-gradient(145deg, #5a4a2a, #46381f) !important;
   color: #ffd591 !important;
 }
 .btn-sell-all {
-  border: 1px solid rgba(255, 193, 105, 0.9) !important;
+  background: linear-gradient(145deg, #5a4a2a, #46381f) !important;
   color: #ffc169 !important;
-  font-weight: 600;
+  font-weight: 650;
 }
 
 /* Zebra striping + row hover: the board's rows had nothing separating
@@ -1078,3 +1106,177 @@ input.form-control {
   color: rgba(224, 200, 255, 0.75);
   margin-top: 2px;
 }
+
+/* ==================== Soft-UI shell additions (batch M) ==================== */
+
+/* One thin sticky HUD for the whole app - replaces the stat block every
+   tab used to repeat (190-316px of duplicated chrome per screen). */
+.hud-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--ground);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
+}
+.hud-bar::-webkit-scrollbar { display: none; }
+
+.hud-bar .stat-chip {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  background: var(--ground);
+  border-radius: 12px;
+  box-shadow: var(--inset-sm);
+  padding: 4px 9px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Regen countdowns ride inside the chip on the same line - the bar must
+   stay one row tall (it's sticky chrome on every screen). */
+.hud-bar .regen-hint {
+  display: inline;
+  margin-left: 6px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--faint);
+}
+
+/* The event strip: one horizontally-scrolling line of chips instead of a
+   stack of centered multi-line banners. */
+.event-banner {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  gap: 8px;
+  justify-content: flex-start;
+  padding: 6px 10px !important;
+  scrollbar-width: none;
+}
+.event-banner::-webkit-scrollbar { display: none; }
+.event-banner .col-12 {
+  display: flex;
+  gap: 8px;
+  width: auto;
+  flex: 0 0 auto;
+}
+.event-banner .col-12 > div {
+  white-space: nowrap;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 3px 12px;
+  background: var(--card);
+  box-shadow: var(--inset-sm);
+}
+
+/* Per-tab sticky headers are section labels now - the stat rows they
+   used to carry live in the app-wide HUD. Thin strips, not cards, and
+   they stack just below the sticky HUD instead of fighting it. */
+.row.sticky-top.holo {
+  top: 42px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  box-shadow: var(--raise-sm);
+}
+.row.sticky-top.holo p {
+  margin-bottom: 0.1rem;
+}
+
+/* Slimmed identity row above the HUD (name, level, xp, streaks). */
+.app-header {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+.app-header .header-strip {
+  padding: 4px 0 2px;
+}
+.app-header .stat-chip {
+  font-size: 0.85rem;
+}
+
+/* Soften every remaining neon-cyan edge to the soft-UI language. */
+.qty-input,
+.market-sort,
+.warband-orders select,
+.char-chip {
+  border: none;
+  background: var(--well);
+  box-shadow: var(--inset-sm);
+  color: var(--ink);
+}
+.story-chapter-tag {
+  border: none;
+  background: var(--card);
+  box-shadow: var(--inset-sm);
+  color: var(--accent);
+}
+.region-header {
+  color: var(--accent);
+  border-bottom: none;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+}
+.market-head {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.story-journal-chapter {
+  border-left: 2px solid rgba(255, 255, 255, 0.12);
+}
+.story-beat-title {
+  color: var(--accent);
+}
+.tx-rep { color: #8fc7e8; }
+.tx-buy { color: #8fc7e8; }
+.choice-card { border: none; box-shadow: var(--raise); }
+.dossier-card {
+  border: none;
+  background: var(--well);
+  box-shadow: var(--inset-sm);
+}
+.char-chip-active {
+  border: none;
+  color: var(--accent);
+  box-shadow: var(--inset);
+}
+.warband-card { border: none; }
+.warband-readiness {
+  background: var(--well);
+  box-shadow: var(--inset-sm);
+}
+.warband-readiness-fill {
+  background: linear-gradient(90deg, #3e9e92, var(--accent));
+}
+.warband-order-card {
+  background: var(--well);
+  border-radius: 12px;
+  box-shadow: var(--inset-sm);
+  padding: 8px 10px;
+  margin-bottom: 6px;
+}
+.achievement-earned,
+.achievement-progressing,
+.achievement-locked {
+  background: var(--card-2);
+  border: none !important;
+  border-radius: 14px;
+  box-shadow: var(--raise-sm);
+}
+.achievement-earned { box-shadow: var(--raise-sm), 0 0 0 1px rgba(255, 215, 0, 0.35); }
+.goal-progress {
+  background: var(--well);
+  box-shadow: var(--inset-sm);
+}
+.xp-bar { background: var(--well); }
+.xp-bar-fill { background: var(--accent); }
+.mission-theater h5 { color: var(--accent); }

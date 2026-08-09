@@ -1,11 +1,12 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Context } from "../store/appContext";
 
-// Energy is the real constraint on how much you can play, so showing it
-// without its maximum (as this did) hid the single most important number
-// for deciding whether to run another mission. The countdown exists
-// because a disabled button with no timer FEELS like downtime even when
-// the wait is short - "full in 4:10" turns a wall into a plan.
+// Energy is the real constraint on how much you can play, so it shows with
+// its maximum - the single most important number for deciding whether to
+// run another mission. The countdown exists because a disabled button with
+// no timer FEELS like downtime even when the wait is short - "full in
+// 4:10" turns a wall into a plan. Chip-sized for the sticky HUD: icon
+// label, compact hints, full wording in the tooltip.
 const EnergyComponent = ({ energy, maxEnergy }) => {
   const { store } = useContext(Context);
   const isLow = maxEnergy ? energy / maxEnergy <= 0.15 : false;
@@ -23,28 +24,26 @@ const EnergyComponent = ({ energy, maxEnergy }) => {
   const seconds = missing > 0 ? Math.ceil(missing / perTick) * 10 : 0;
   const mm = Math.floor(seconds / 60);
   const ss = String(seconds % 60).padStart(2, "0");
+  const rested = store.player.restedEnergy || 0;
 
   return (
     <div
-      className="stat-chip stat-chip-wrap"
+      className="stat-chip"
+      title={`Energy ${energy}${maxEnergy ? ` of ${maxEnergy}` : ""}. Regen +${perTick}/10s${
+        missing > 0 ? ` — full in ${mm}:${ss}` : ""
+      }${
+        rested > 0
+          ? `. +${rested} rested banked while the bar was full — it refills the bar as you spend.`
+          : ""
+      }`}
       style={isLow ? { color: "#ffb84d" } : undefined}
     >
-      <span className="stat-bit">
-        Energy: {energy}
-        {maxEnergy ? ` / ${maxEnergy}` : ""}
-      </span>
-      {(store.player.restedEnergy || 0) > 0 && (
-        <div
-          className="regen-hint"
-          title="Regen banked while your bar was full - it refills the bar as you spend."
-        >
-          +{store.player.restedEnergy} rested in reserve
-        </div>
-      )}
+      ⚡ {energy}
+      {rested > 0 && <span className="regen-hint">+{rested}</span>}
       {maxEnergy && energy < maxEnergy ? (
-        <div className="regen-hint">
-          +{perTick}/10s · full in {mm}:{ss}
-        </div>
+        <span className="regen-hint">
+          ⏳{mm}:{ss}
+        </span>
       ) : null}
     </div>
   );
