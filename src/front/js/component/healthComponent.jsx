@@ -3,10 +3,11 @@ import { Context } from "../store/appContext";
 
 const LOW_HEALTH_RATIO = 0.25;
 
-// A toast fades after a few seconds and is easy to miss if you're not
-// looking at the screen at that instant. This readout is on the sticky
-// header of every tab, so a player who's low on health sees it no matter
-// what they're doing - not just in the instant right after the hit.
+// Lives in the one sticky HUD every tab shares, so it must stay chip-sized
+// on a 390px phone: icon label, no spaces, countdown as a compact inline
+// hint with the full wording in the tooltip. A toast fades after a few
+// seconds; this readout is always on screen, so a player who's low on
+// health sees it no matter what they're doing.
 const HealthComponent = ({ health, maxHealth }) => {
   const { store } = useContext(Context);
   const isLow = maxHealth ? health / maxHealth <= LOW_HEALTH_RATIO : false;
@@ -21,15 +22,17 @@ const HealthComponent = ({ health, maxHealth }) => {
   return (
     <div
       className="stat-chip"
+      title={`Health ${health}${maxHealth ? ` of ${maxHealth}` : ""}${
+        isLow ? " — LOW" : ""
+      }. Regen +${perTick}/45s${missing > 0 ? ` — full in ${mm}:${ss}` : ""}`}
       style={isLow ? { color: "#ff4d4d", fontWeight: "bold" } : undefined}
     >
-      Health: {health}
-      {maxHealth ? ` / ${maxHealth}` : ""}
+      ❤️ {health}
       {isLow && " ⚠"}
       {maxHealth && health < maxHealth ? (
-        <div className="regen-hint">
-          +{perTick}/45s · full in {mm}:{ss}
-        </div>
+        <span className="regen-hint">
+          ⏳{mm}:{ss}
+        </span>
       ) : null}
     </div>
   );

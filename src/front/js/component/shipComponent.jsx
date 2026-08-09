@@ -1,8 +1,5 @@
 import React, { useContext, useState } from "react";
 import { Context } from "../store/appContext";
-import HealthComponent from "./healthComponent";
-import EnergyComponent from "./energyComponent";
-import CreditsComponent from "./creditsComponent";
 import PrestigeButton from "./prestigeButton";
 import ResetPlayerStats from "./resetPlayerStats";
 
@@ -110,11 +107,6 @@ const ShipComponent = () => {
   return (
     <div className="row mb-3">
       <div className="row sticky-top holo text-center">
-        <div className="row pt-2 pb-1 m-0 mb-2 justify-content-around text-center">
-          <HealthComponent health={player.health} maxHealth={player.maxHealth} />
-          <EnergyComponent energy={player.energy} maxEnergy={player.maxEnergy} />
-          <CreditsComponent credits={player.credits} />
-        </div>
 
         <div className="col-12 text-center">
           <p>Your Ship</p>

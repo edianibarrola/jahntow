@@ -3,6 +3,9 @@ import { Context } from "../store/appContext";
 
 import LevelComponent from "../component/levelComponent";
 import ExperienceComponent from "../component/experienceComponent";
+import HealthComponent from "../component/healthComponent";
+import EnergyComponent from "../component/energyComponent";
+import CreditsComponent from "../component/creditsComponent";
 import LoginStreakComponent from "../component/loginStreakComponent";
 import WinStreakComponent from "../component/winStreakComponent";
 import ItemsComponent from "../component/itemsComponent";
@@ -153,11 +156,11 @@ export const Home = () => {
     <div className="mt-2 container-fluid holobg">
       <ActivityToast />
       <EchoIntro open={guideOpen} setOpen={setGuideOpen} />
-      <div className="row mb-2 holo app-header">
-        {/* Auto-width chips in a wrapping flex strip. The old version gave
-            every stat a col-4 - five 33% columns plus a logout in one row,
-            which collided the name into the level on any phone. */}
-        <div className="header-strip pt-2 pb-1">
+      {/* Slim identity row, then ONE sticky HUD for the whole app - every
+          tab used to repeat its own Health/Energy/Credits block (190-316px
+          of duplicated chrome per screen on a phone). */}
+      <div className="row mb-1 app-header">
+        <div className="header-strip pt-1">
           <span className="stat-chip">
             <strong>{player.name}</strong>
           </span>
@@ -180,9 +183,14 @@ export const Home = () => {
             logout
           </button>
         </div>
-        <div className="row pb-2 m-0 justify-content-around text-center event-banner">
-          <ActiveEventBanner events={store.activeEvents} />
-        </div>
+      </div>
+      <div className="hud-bar">
+        <HealthComponent health={player.health} maxHealth={player.maxHealth} />
+        <EnergyComponent energy={player.energy} maxEnergy={player.maxEnergy} />
+        <CreditsComponent credits={player.credits} />
+      </div>
+      <div className="event-banner">
+        <ActiveEventBanner events={store.activeEvents} />
       </div>
 
       {/* The game on the left, the live feeds in an always-visible rail on
