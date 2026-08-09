@@ -166,15 +166,20 @@ const StoryMissions = () => {
 
   const runStoryMission = (missionName) => {
     setStoryMissionRunning(true);
-    // Staged reveal, same as regular missions: the theater plays the
-    // chapter's authored start message while flux holds the outcome.
+    // Staged reveal, same as regular missions: click-gated, with flux
+    // holding the outcome until the start step's Continue.
+    let release;
+    const hold = new Promise((resolve) => {
+      release = resolve;
+    });
     setTheater({
       name: missionName,
       startMessage: (storyMissionsData[missionName] || {}).startMessage,
       startedAt: Date.now(),
+      release,
     });
     actions
-      .startStoryMission(missionName)
+      .startStoryMission(missionName, hold)
       .then((data) => {
         if (data && data.message != null) {
           setTheater((t) => (t ? { ...t, outcome: data } : t));
@@ -188,9 +193,21 @@ const StoryMissions = () => {
       });
   };
 
+  const advanceTheater = () => {
+    setTheater((t) => {
+      if (!t) return t;
+      t.release?.();
+      return { ...t, advanced: true };
+    });
+  };
+
   return (
     <div className="row mb-3">
-      <MissionTheater run={theater} onClose={() => setTheater(null)} />
+      <MissionTheater
+        run={theater}
+        onAdvance={advanceTheater}
+        onClose={() => setTheater(null)}
+      />
       <div className="row  sticky-top holo text-center">
         <div className="row pt-2 pb-1 m-0 mb-1 justify-content-around text-center">
           <HealthComponent health={player.health} maxHealth={player.maxHealth} />
