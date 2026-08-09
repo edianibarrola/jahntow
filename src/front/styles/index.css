@@ -1280,3 +1280,174 @@ input.form-control {
 .xp-bar { background: var(--well); }
 .xp-bar-fill { background: var(--accent); }
 .mission-theater h5 { color: var(--accent); }
+
+/* ==================== Card interiors (batch N) ====================
+   The approved mockup's information design: a pressed-in stat well with
+   a two-column label:value grid, odds as a bar the eye can read without
+   arithmetic, requirements as met/miss chips, and the guidance sentences
+   folded behind an inline disclosure. The goal is an open mission card
+   that fits one phone screen with Run visible - the old bullet list ran
+   1132px. */
+.stat-well {
+  border-radius: 14px;
+  padding: 11px 13px;
+  margin-bottom: 10px;
+  background: var(--well);
+  box-shadow: var(--inset);
+  text-align: left;
+}
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+.lab2 {
+  font: 600 10px/1 ui-monospace, Menlo, monospace;
+  letter-spacing: 0.12em;
+  color: var(--faint);
+  text-transform: uppercase;
+}
+.stat-grid .v {
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+  color: var(--ink);
+}
+.stat-grid .v.ok { color: var(--good); }
+.stat-grid .v.no { color: var(--bad); }
+.stat-grid .v.warm { color: var(--warm); }
+.stat-grid .you {
+  color: var(--faint);
+  font-weight: 400;
+  font-size: 0.75rem;
+}
+.oddsrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.oddsbar {
+  flex: 1;
+  height: 10px;
+  border-radius: 99px;
+  background: #12161f;
+  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+.oddsbar i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #3e9e92, var(--accent));
+  box-shadow: 0 0 8px rgba(107, 217, 203, 0.35);
+}
+.oddspct {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+/* The ⓘ disclosure: guidance prose lives here, not on the card face. */
+details.info-disclosure {
+  margin: -2px 2px 8px;
+  text-align: left;
+}
+details.info-disclosure summary {
+  font-size: 0.75rem;
+  color: var(--faint);
+  cursor: pointer;
+  padding: 4px 2px;
+  list-style: none;
+}
+details.info-disclosure summary::-webkit-details-marker { display: none; }
+details.info-disclosure summary::before {
+  content: "ⓘ ";
+  color: var(--accent);
+}
+details.info-disclosure p {
+  margin: 4px 2px;
+  font-size: 0.78rem;
+  color: var(--mut);
+}
+.req-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 10px;
+  justify-content: flex-start;
+}
+.req-chip {
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 99px;
+  padding: 5px 12px;
+  background: var(--card);
+  box-shadow: var(--inset-sm);
+  white-space: nowrap;
+}
+.req-chip.met { color: var(--good); }
+.req-chip.miss { color: var(--bad); }
+.req-chip small { opacity: 0.65; font-weight: 500; }
+.actions-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+.actions-row .btn-run {
+  flex: 1;
+  text-align: center;
+  color: #0e2b29;
+  background: linear-gradient(145deg, #74e3d4, #54bfb1);
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-radius: 14px;
+  padding: 12px;
+  border: 0;
+  box-shadow: var(--raise-sm);
+}
+.actions-row .btn-run:disabled {
+  opacity: 0.45;
+  box-shadow: none;
+}
+.actions-row .btn-run5 {
+  width: 84px;
+  flex: 0 0 auto;
+  text-align: center;
+  background: var(--card);
+  color: #9fe3da;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-radius: 14px;
+  padding: 12px 0;
+  border: 0;
+  box-shadow: var(--raise-sm);
+}
+/* Closed missions read as one compact row: name, LV chip, odds. The
+   accordion header IS that row, so the chips ride inside the button. */
+.lvl-chip {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #93a0b2;
+  border-radius: 8px;
+  padding: 3px 8px;
+  background: var(--card);
+  box-shadow: var(--inset-sm);
+  letter-spacing: 0.05em;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.hdr-pct {
+  font-size: 0.78rem;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  margin-left: 8px;
+  margin-right: 10px;
+  white-space: nowrap;
+}
+.accordion-button .lvl-chip { margin-left: auto; }
+.accordion-button .hdr-part {
+  white-space: nowrap;
+  font-size: 0.75rem;
+}
