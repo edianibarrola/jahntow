@@ -211,268 +211,279 @@ const MissionsComponent = () => {
                   <Accordion.Header>
                     {missionName}
                     {bounty && <span className="tx-bounty ms-2">⭐ Bounty!</span>}
+                    <span className="lvl-chip">LV {missionData.Rank}</span>
+                    <span className="hdr-pct">
+                      {missionData.Guaranteed ? "100%" : `${odds.chance}%`}
+                    </span>
                   </Accordion.Header>
                   <Accordion.Body>
-                    <div className="col-12 pl-5 pr-5 text-center">
-                      <ul className="holo">
-                        {/* The mission's own rank, stated as the level it's
-                            built for. Without it "below your level" looked
-                            wrong on a mission the player had only just
-                            unlocked, because nothing on the card said what
-                            level it was meant for. */}
-                        <li>
-                          Suggested level: {missionData.Rank}{" "}
-                          <span className="tx-info">(you: {player.level})</span>
-                        </li>
-                        {/* Mirrors economy.mission_reward_award, LEVEL_GRACE
-                            included: credits fall off for over-levelled
-                            content, so show the payout the player will
-                            actually get - otherwise the reason to move up to
-                            harder missions is invisible until after the run. */}
-                        {(() => {
-                          const over = Math.max(
-                            0,
-                            player.level - missionData.Rank - 2
-                          );
-                          const mult = missionData.Guaranteed
-                            ? 1
-                            : Math.max(0.25, 1 - 0.08 * over);
-                          const effective = Math.max(
-                            1,
-                            Math.round(missionData.Reward * mult)
-                          );
-                          return (
-                            <li>
-                              Reward:{" "}
-                              {mult < 1 ? (
-                                <>
-                                  <s className="tx-info">{missionData.Reward}</s>{" "}
-                                  <span className="tx-error">{effective}</span>{" "}
-                                  <span className="tx-info">
-                                    (well below your level — {Math.round(mult * 100)}%
-                                    payout)
+                    {(() => {
+                      // Mirrors economy.mission_reward_award, LEVEL_GRACE
+                      // included: credits fall off for over-levelled content,
+                      // so the payout shown is what the player actually gets.
+                      const over = Math.max(0, player.level - missionData.Rank - 2);
+                      const mult = missionData.Guaranteed
+                        ? 1
+                        : Math.max(0.25, 1 - 0.08 * over);
+                      const effective = Math.max(
+                        1,
+                        Math.round(missionData.Reward * mult)
+                      );
+                      const energyNeed = effectiveEnergy(
+                        missionData["Required Energy"]
+                      );
+                      const creditsOk =
+                        player.credits >= missionData["Required Credits"];
+                      const energyOk = player.energy >= energyNeed;
+                      const missing = missingFor(missionData);
+                      return (
+                        <div className="col-12">
+                          <div className="stat-well">
+                            <div className="stat-grid">
+                              <div>
+                                <div className="lab2">Entry</div>
+                                <div className={`v ${creditsOk ? "ok" : "no"}`}>
+                                  {missionData["Required Credits"].toLocaleString()}{" "}
+                                  <span className="you">
+                                    {creditsOk
+                                      ? "✓"
+                                      : `you: ${Math.floor(player.credits).toLocaleString()}`}
                                   </span>
-                                </>
-                              ) : (
-                                missionData.Reward
-                              )}
-                              {bounty && (
-                                <span className="tx-bounty">
-                                  {" "}⭐ Bounty active: {bounty.multiplier}x!
-                                </span>
-                              )}
-                            </li>
-                          );
-                        })()}
-                        {/* Green when you can afford it, red when you
-                            can't - same at-a-glance rule as the item
-                            requirement lists below. */}
-                        <li
-                          style={{
-                            color:
-                              player.credits >= missionData["Required Credits"]
-                                ? "#8aff8a"
-                                : "#ff8a8a",
-                          }}
-                        >
-                          Required Credits: {missionData["Required Credits"]}{" "}
-                          <span className="tx-info">
-                            (you: {Math.floor(player.credits).toLocaleString()})
-                          </span>
-                        </li>
-                        <li
-                          style={{
-                            color:
-                              player.energy >=
-                              effectiveEnergy(missionData["Required Energy"])
-                                ? "#8aff8a"
-                                : "#ff8a8a",
-                          }}
-                        >
-                          Required Energy: {missionData["Required Energy"]}
-                          {transportsPct > 0 && (
-                            <span className="tx-info">
-                              {" "}
-                              → {effectiveEnergy(missionData["Required Energy"])}{" "}
-                              with your Transports perk
-                            </span>
-                          )}{" "}
-                          <span className="tx-info">(you: {player.energy})</span>
-                        </li>
-                        <li style={{ color: wouldSurvive ? "#8aff8a" : "#ff8a8a" }}>
-                          Health Risk: -{missionData["Health Effect"]}{" "}
-                          <span className="tx-info">(you: {player.health})</span>
-                        </li>
-                        {odds.escort &&
-                          (odds.escort.met ? (
-                            <li className="tx-rep">
-                              Escort: {odds.escort.name} —{" "}
-                              {odds.escort.strength} strong, readiness{" "}
-                              {odds.escort.readiness}% (+
-                              {(odds.escort.bonus * 100).toFixed(1)}% success
-                              {odds.escort.isHome ? "" : ", out of region"})
-                            </li>
+                                </div>
+                              </div>
+                              <div>
+                                <div className="lab2">Energy</div>
+                                <div className={`v ${energyOk ? "ok" : "no"}`}>
+                                  {energyNeed}{" "}
+                                  <span className="you">
+                                    {energyOk ? "✓" : `you: ${player.energy}`}
+                                  </span>
+                                </div>
+                              </div>
+                              <div>
+                                <div className="lab2">Health risk</div>
+                                <div className={`v ${wouldSurvive ? "" : "no"}`}>
+                                  −{missionData["Health Effect"]}{" "}
+                                  <span className="you">of {player.health}</span>
+                                </div>
+                              </div>
+                              <div>
+                                <div className="lab2">Payout</div>
+                                <div className={`v ${mult < 1 ? "warm" : ""}`}>
+                                  {mult < 1 && (
+                                    <s className="you">
+                                      {missionData.Reward.toLocaleString()}
+                                    </s>
+                                  )}{" "}
+                                  {effective.toLocaleString()}
+                                  {bounty && (
+                                    <span className="tx-bounty">
+                                      {" "}⭐×{bounty.multiplier}
+                                    </span>
+                                  )}{" "}
+                                  {mult < 1 && (
+                                    <span className="you">
+                                      {Math.round(mult * 100)}% — over-leveled
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="oddsrow">
+                              <span className="lab2">Odds</span>
+                              <div className="oddsbar">
+                                <i
+                                  style={{
+                                    width: `${
+                                      missionData.Guaranteed ? 100 : odds.chance
+                                    }%`,
+                                  }}
+                                />
+                              </div>
+                              <span className="oddspct">
+                                {missionData.Guaranteed ? "100%" : `${odds.chance}%`}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Guidance prose folds behind the ⓘ - the card
+                              face stays scannable, the reasoning stays one
+                              tap away. */}
+                          {missionData.Guaranteed ? (
+                            <details className="info-disclosure">
+                              <summary>always succeeds</summary>
+                              <p>
+                                A guaranteed fallback when you're short on
+                                credits.
+                                {bailoutLocked &&
+                                  ` Locked above ${missionData.AvailableBelowCredits} credits.`}
+                              </p>
+                            </details>
                           ) : (
-                            <li className="tx-error">
-                              Needs a warband escort of {odds.escort.need}{" "}
-                              (your best: {odds.escort.strength}) — fund your
-                              allies on the Warbands tab.
-                            </li>
-                          ))}
-                        {missionData.Guaranteed ? (
-                          <li className={bailoutLocked ? "tx-info" : "tx-sell"}>
-                            Always succeeds — a guaranteed fallback when you're
-                            short on credits.
-                            {bailoutLocked &&
-                              ` Locked above ${missionData.AvailableBelowCredits} credits.`}
-                          </li>
-                        ) : (
-                          <>
-                            <li>
-                              Est. Success Chance: {odds.chance}%{" "}
-                              <span className="tx-info">
-                                (base {odds.basePct}%
+                            <details className="info-disclosure">
+                              <summary>
+                                base {odds.basePct}
                                 {odds.levelPct !== 0 &&
-                                  ` · your level ${odds.levelPct > 0 ? "+" : ""}${odds.levelPct}%`}
-                                {` · spare equipment +${odds.gearPct}% (max ${odds.gearMaxPct}%)`}
+                                  ` · level ${odds.levelPct > 0 ? "+" : ""}${odds.levelPct}`}
+                                {` · gear +${odds.gearPct} (max ${odds.gearMaxPct})`}
                                 {odds.escort && odds.escort.bonus > 0 &&
-                                  ` · warband escort +${(odds.escort.bonus * 100).toFixed(1)}%`}
+                                  ` · escort +${(odds.escort.bonus * 100).toFixed(1)}`}
+                              </summary>
+                              <p>
+                                Built for level {missionData.Rank} (you:{" "}
+                                {player.level}).
+                              </p>
+                              {odds.gearCapped ? (
+                                <p>
+                                  Spare-equipment bonus maxed at +{odds.gearMaxPct}%
+                                  — owning {odds.usefulTotal} is all that counts,
+                                  extras add nothing.
+                                </p>
+                              ) : (
+                                odds.sparesToMax > 0 &&
+                                Object.keys(missionData.requiredEquipment || {})
+                                  .length > 0 && (
+                                  <p>
+                                    Own {odds.usefulTotal} to max the
+                                    spare-equipment bonus at +{odds.gearMaxPct}% —{" "}
+                                    {odds.sparesToMax} more to go.
+                                  </p>
                                 )
-                              </span>
-                            </li>
-                            {Object.keys(missionData.requiredSupplies || {})
-                              .length > 0 && (
-                              <li className="tx-info">
-                                Supplies are fuel — they're consumed every
-                                attempt but never change the odds.
-                              </li>
-                            )}
-                          </>
-                        )}
-                        {/* One number, in the same units as the "Owned: N"
-                            line below: the total holding that maxes the
-                            bonus. Earlier versions quoted the spare count,
-                            or the total plus a required/spare breakdown -
-                            both left the player doing arithmetic to work
-                            out when to stop buying. */}
-                        {odds.gearCapped ? (
-                          <li className="tx-info">
-                            Spare-equipment bonus maxed at +{odds.gearMaxPct}% —{" "}
-                            <strong>owning {odds.usefulTotal}</strong> is all
-                            that counts, extras add nothing.
-                          </li>
-                        ) : (
-                          odds.sparesToMax > 0 &&
-                          Object.keys(missionData.requiredEquipment || {}).length >
-                            0 && (
-                            <li className="tx-info">
-                              <strong>Own {odds.usefulTotal}</strong> to max the
-                              spare-equipment bonus at +{odds.gearMaxPct}% —{" "}
-                              {odds.sparesToMax} more to go.
-                            </li>
-                          )
-                        )}
-                        <li>Required Equipment:</li>
-                        <ul>
-                          {Object.entries(missionData.requiredEquipment || {}).map(
-                            ([equipment, quantity]) => {
-                              const owned =
-                                player.equipment[equipment]?.quantity || 0;
-                              const met = owned >= quantity;
-                              return (
-                                <li
-                                  key={equipment}
-                                  style={{ color: met ? "#8aff8a" : "#ff8a8a" }}
-                                >
-                                  {equipment} x{quantity} (Owned: {owned})
-                                </li>
-                              );
-                            }
-                          )}
-                        </ul>
-                        {Object.keys(missionData.requiredSupplies || {}).length >
-                          0 && (
-                          <>
-                            <li>
-                              Supplies{" "}
-                              <span className="tx-info">
-                                (market items, consumed every attempt)
-                              </span>
-                              :
-                            </li>
-                            <ul>
-                              {Object.entries(missionData.requiredSupplies).map(
-                                ([item, quantity]) => {
-                                  const owned = Math.floor(
-                                    player.inventory?.[item]?.quantity || 0
-                                  );
-                                  const met = owned >= quantity;
-                                  return (
-                                    <li
-                                      key={item}
-                                      style={{
-                                        color: met ? "#8aff8a" : "#ff8a8a",
-                                      }}
-                                    >
-                                      {item} x{quantity} (Owned: {owned})
-                                    </li>
-                                  );
-                                }
                               )}
-                            </ul>
-                          </>
-                        )}
-                      </ul>
-                      {wouldSurvive ? (
-                        <>
-                          {(() => {
-                            const missing = missingFor(missionData);
-                            return (
-                              missing.count > 0 && (
+                              {transportsPct > 0 && (
+                                <p>
+                                  Energy shown includes your −{transportsPct}%
+                                  Transports perk (listed cost{" "}
+                                  {missionData["Required Energy"]}).
+                                </p>
+                              )}
+                              {Object.keys(missionData.requiredSupplies || {})
+                                .length > 0 && (
+                                <p>
+                                  Supplies are fuel — consumed every attempt,
+                                  never change the odds.
+                                </p>
+                              )}
+                              {odds.escort && odds.escort.met && (
+                                <p>
+                                  Escort: {odds.escort.name} —{" "}
+                                  {odds.escort.strength} strong, readiness{" "}
+                                  {odds.escort.readiness}%
+                                  {odds.escort.isHome ? "" : ", out of region"}.
+                                </p>
+                              )}
+                            </details>
+                          )}
+
+                          {odds.escort && !odds.escort.met && (
+                            <p className="tx-error">
+                              Needs a warband escort of {odds.escort.need} (your
+                              best: {odds.escort.strength}) — fund your allies on
+                              the Warbands tab.
+                            </p>
+                          )}
+
+                          {/* Requirements as met/miss chips - the old nested
+                              bullet lists spent a line per item. */}
+                          {(Object.keys(missionData.requiredEquipment || {})
+                            .length > 0 ||
+                            Object.keys(missionData.requiredSupplies || {})
+                              .length > 0) && (
+                            <div className="req-chips">
+                              {Object.entries(
+                                missionData.requiredEquipment || {}
+                              ).map(([equipment, quantity]) => {
+                                const owned =
+                                  player.equipment[equipment]?.quantity || 0;
+                                const met = owned >= quantity;
+                                return (
+                                  <span
+                                    key={equipment}
+                                    className={`req-chip ${met ? "met" : "miss"}`}
+                                    title={`${equipment}: need ${quantity}, own ${owned}`}
+                                  >
+                                    {equipment} ×{quantity}{" "}
+                                    {met ? "✓" : <small>· own {owned}</small>}
+                                  </span>
+                                );
+                              })}
+                              {Object.entries(
+                                missionData.requiredSupplies || {}
+                              ).map(([item, quantity]) => {
+                                const owned = Math.floor(
+                                  player.inventory?.[item]?.quantity || 0
+                                );
+                                const met = owned >= quantity;
+                                return (
+                                  <span
+                                    key={item}
+                                    className={`req-chip ${met ? "met" : "miss"}`}
+                                    title={`${item} (supply, consumed every attempt): need ${quantity}, own ${owned}`}
+                                  >
+                                    {item} ×{quantity}{" "}
+                                    {met ? <small>· fuel</small> : (
+                                      <small>· own {owned}</small>
+                                    )}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {wouldSurvive ? (
+                            <>
+                              {missing.count > 0 && (
                                 <button
                                   className="btn-buy mb-2"
                                   onClick={() => outfitMission(missionName)}
                                   disabled={runningMission !== null}
                                   title="Buy every missing requirement in one transaction (merchant and ally discounts apply)"
                                 >
-                                  🧰 Buy missing (≈
-                                  {missing.cost.toLocaleString()} cr)
+                                  🧰 Buy missing (≈{missing.cost.toLocaleString()}{" "}
+                                  cr)
                                 </button>
-                              )
-                            );
-                          })()}
-                          <button
-                            onClick={() => runMission(missionName)}
-                            disabled={runningMission !== null || bailoutLocked}
-                          >
-                            {runningMission === missionName
-                              ? "Running..."
-                              : "Run Mission"}
-                          </button>
-                          {!missionData.Guaranteed && (
-                            <button
-                              className="ms-2"
-                              onClick={() => runMission(missionName, 5)}
-                              disabled={runningMission !== null || bailoutLocked}
-                              title="Runs up to 5 attempts back-to-back, stopping if energy, credits, health or supplies run short."
-                            >
-                              Run up to ×5
-                            </button>
-                          )}
-                          {energyShortSeconds(missionData) > 0 && (
-                            <p className="tx-info regen-hint mb-0 mt-1">
-                              Not enough energy — ready in{" "}
-                              {fmtWait(energyShortSeconds(missionData))}
+                              )}
+                              <div className="actions-row">
+                                <button
+                                  className="btn-run"
+                                  onClick={() => runMission(missionName)}
+                                  disabled={
+                                    runningMission !== null || bailoutLocked
+                                  }
+                                >
+                                  {runningMission === missionName
+                                    ? "Running..."
+                                    : "▶ Run Mission"}
+                                </button>
+                                {!missionData.Guaranteed && (
+                                  <button
+                                    className="btn-run5"
+                                    onClick={() => runMission(missionName, 5)}
+                                    disabled={
+                                      runningMission !== null || bailoutLocked
+                                    }
+                                    title="Runs up to 5 attempts back-to-back, stopping if energy, credits, health or supplies run short."
+                                  >
+                                    ×5
+                                  </button>
+                                )}
+                              </div>
+                              {energyShortSeconds(missionData) > 0 && (
+                                <p className="tx-info regen-hint mb-0 mt-1">
+                                  Not enough energy — ready in{" "}
+                                  {fmtWait(energyShortSeconds(missionData))}
+                                </p>
+                              )}
+                            </>
+                          ) : (
+                            <p className="tx-error">
+                              Your health is too low to survive a failed attempt.
+                              Recover first — or grab a Medlab item.
                             </p>
                           )}
-                        </>
-                      ) : (
-                        <p className="tx-error">
-                          Your health is too low to survive a failed attempt.
-                          Recover first — or grab a Medlab item.
-                        </p>
-                      )}
-                    </div>
+                        </div>
+                      );
+                    })()}
                   </Accordion.Body>
                 </Accordion.Item>
               );

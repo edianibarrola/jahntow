@@ -338,94 +338,145 @@ const StoryMissions = () => {
                         <span className="tx-choice ms-2">— remnant hunt</span>
                       ) : (
                         isUnlocked && (
-                          <span className="tx-info ms-2">
-                            — part {(player.storyWins % STORY_WINS_PER_UNLOCK) + 1}{" "}
-                            of {STORY_WINS_PER_UNLOCK}
+                          <span className="tx-info ms-2 hdr-part">
+                            part {(player.storyWins % STORY_WINS_PER_UNLOCK) + 1}/
+                            {STORY_WINS_PER_UNLOCK}
                           </span>
                         )
                       )}
+                      <span className="lvl-chip">LV {storyMissionData.Rank}</span>
+                      <span className="hdr-pct">{odds.chance}%</span>
                     </Accordion.Header>
                     <Accordion.Body>
-                      <div className="col-12 pl-5 pr-5 text-center">
-                        <ul className="holo">
-                          {isRemnant && (
-                            <li className="tx-choice">
-                              🏴 Remnant hunt — repeatable. The war is won,
-                              but holdout cells still haunt this
-                              battlefield: pays the story reward +
-                              {Math.round(REMNANT_REWARD_BONUS * 100)}%
-                              bonus credits, and your story progress stays
-                              complete.
-                            </li>
-                          )}
-                          {storyMissionData.Boss && (
-                            <li className="tx-error">
-                              ⚔️ BOSS FIGHT — success is capped at 75% no
-                              matter how prepared you are, and the health
-                              stakes are doubled.
-                            </li>
-                          )}
+                      <div className="col-12">
+                        {isRemnant && (
+                          <p className="tx-choice mb-2">
+                            🏴 Remnant hunt — repeatable. Pays the story
+                            reward +{Math.round(REMNANT_REWARD_BONUS * 100)}%
+                            bonus credits; your story progress stays complete.
+                          </p>
+                        )}
+                        {storyMissionData.Boss && (
+                          <p className="tx-error mb-2">
+                            ⚔️ BOSS FIGHT — success capped at 75%, health
+                            stakes doubled.
+                          </p>
+                        )}
+                        {(() => {
+                          const creditsOk =
+                            player.credits >=
+                            storyMissionData["Required Credits"];
+                          const energyOk =
+                            player.energy >= storyMissionData["Required Energy"];
+                          return (
+                            <div className="stat-well">
+                              <div className="stat-grid">
+                                <div>
+                                  <div className="lab2">Entry</div>
+                                  <div className={`v ${creditsOk ? "ok" : "no"}`}>
+                                    {storyMissionData[
+                                      "Required Credits"
+                                    ].toLocaleString()}{" "}
+                                    <span className="you">
+                                      {creditsOk
+                                        ? "✓"
+                                        : `you: ${Math.floor(player.credits).toLocaleString()}`}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="lab2">Energy</div>
+                                  <div className={`v ${energyOk ? "ok" : "no"}`}>
+                                    {storyMissionData["Required Energy"]}{" "}
+                                    <span className="you">
+                                      {energyOk
+                                        ? "✓"
+                                        : `you: ${Math.floor(player.energy)}`}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="lab2">Health risk</div>
+                                  <div className={`v ${wouldSurvive ? "" : "no"}`}>
+                                    −{storyMissionData["Health Effect"]}{" "}
+                                    <span className="you">
+                                      of {Math.floor(player.health)}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="lab2">Payout</div>
+                                  <div className="v">
+                                    {storyMissionData.Reward.toLocaleString()}
+                                    {isRemnant && (
+                                      <span className="tx-choice"> +50%</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="oddsrow">
+                                <span className="lab2">Odds</span>
+                                <div className="oddsbar">
+                                  <i style={{ width: `${odds.chance}%` }} />
+                                </div>
+                                <span className="oddspct">{odds.chance}%</span>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                        <details className="info-disclosure">
+                          <summary>
+                            base {odds.basePct}
+                            {odds.levelPct !== 0 &&
+                              ` · level ${odds.levelPct > 0 ? "+" : ""}${odds.levelPct}`}
+                            {` · gear +${odds.gearPct} (max ${odds.gearMaxPct})`}
+                            {gate && ` · war host +${odds.gateBonusPct}`}
+                          </summary>
+                          <p
+                            className={
+                              player.level < storyMissionData.Rank
+                                ? "tx-error"
+                                : undefined
+                            }
+                          >
+                            Built for level {storyMissionData.Rank} (you:{" "}
+                            {player.level}).
+                            {player.level < storyMissionData.Rank &&
+                              " You're attempting this chapter early."}
+                          </p>
                           {storyMissionData.Faction && (
-                            <li className="tx-rep">
+                            <p>
                               Faction: {storyMissionData.Faction}
                               {storyMissionData.Faction !== "United Front" &&
-                                ` (+1 rep per win — allies get discounts and better odds)`}
-                            </li>
+                                " (+1 rep per win — allies get discounts and better odds)."}
+                            </p>
                           )}
-                          {/* Story missions aren't level-gated, so knowing
-                              what level a chapter is built for is the only
-                              warning that you're attempting it early. Their
-                              reward never falls off for out-levelling. */}
-                          <li
-                            style={{
-                              color:
-                                player.level < storyMissionData.Rank
-                                  ? "#ff8a8a"
-                                  : undefined,
-                            }}
-                          >
-                            Suggested level: {storyMissionData.Rank}{" "}
-                            <span className="tx-info">(you: {player.level})</span>
-                          </li>
-                          <li>Reward: {storyMissionData.Reward}</li>
-                          {/* Same at-a-glance rule as regular missions:
-                              green when you meet it, red when you don't. */}
-                          <li
-                            style={{
-                              color:
-                                player.credits >=
-                                storyMissionData["Required Credits"]
-                                  ? "#8aff8a"
-                                  : "#ff8a8a",
-                            }}
-                          >
-                            Required Credits:{" "}
-                            {storyMissionData["Required Credits"]}{" "}
-                            <span className="tx-info">
-                              (you: {Math.floor(player.credits).toLocaleString()})
-                            </span>
-                          </li>
-                          <li
-                            style={{
-                              color:
-                                player.energy >=
-                                storyMissionData["Required Energy"]
-                                  ? "#8aff8a"
-                                  : "#ff8a8a",
-                            }}
-                          >
-                            Required Energy:{" "}
-                            {storyMissionData["Required Energy"]}{" "}
-                            <span className="tx-info">
-                              (you: {Math.floor(player.energy)})
-                            </span>
-                          </li>
-                          <li style={{ color: wouldSurvive ? undefined : "#ff8a8a" }}>
-                            Health Risk: -{storyMissionData["Health Effect"]}{" "}
-                            <span className="tx-info">
-                              (you: {Math.floor(player.health)})
-                            </span>
-                          </li>
+                          {odds.gearCapped ? (
+                            <p>
+                              Spare-equipment bonus maxed at +{odds.gearMaxPct}%
+                              — owning {odds.usefulTotal} is all that counts,
+                              extras add nothing.
+                            </p>
+                          ) : (
+                            odds.sparesToMax > 0 &&
+                            Object.keys(storyMissionData.requiredEquipment || {})
+                              .length > 0 && (
+                              <p>
+                                Own {odds.usefulTotal} to max the
+                                spare-equipment bonus at +{odds.gearMaxPct}% —{" "}
+                                {odds.sparesToMax} more to go.
+                              </p>
+                            )
+                          )}
+                          {Object.keys(storyMissionData.requiredSupplies || {})
+                            .length > 0 && (
+                            <p>
+                              Supplies are fuel — consumed every attempt,
+                              never change the odds. Campaigns eat materiel.
+                            </p>
+                          )}
+                        </details>
+                        <ul className="list-unstyled mb-2">
                           {(() => {
                             if (!gate) return null;
                             const bands = gameData.warbands || {};
@@ -486,43 +537,12 @@ const StoryMissions = () => {
                               </li>
                             );
                           })()}
-                          {/* Same plain-language breakdown as regular
-                              missions - the spare-gear bonus in particular
-                              was invisible here. */}
-                          <li>
-                            Est. Success Chance: {odds.chance}%{" "}
-                            <span className="tx-info">
-                              (base {odds.basePct}%
-                              {odds.levelPct !== 0 &&
-                                ` · your level ${odds.levelPct > 0 ? "+" : ""}${odds.levelPct}%`}
-                              {` · spare equipment +${odds.gearPct}% (max ${odds.gearMaxPct}%)`}
-                              {gate &&
-                                ` · war host +${odds.gateBonusPct}%`}
-                              )
-                            </span>
-                          </li>
-                          {odds.gearCapped ? (
-                            <li className="tx-info">
-                              Spare-equipment bonus maxed at +
-                              {odds.gearMaxPct}% —{" "}
-                              <strong>owning {odds.usefulTotal}</strong> is
-                              all that counts, extras add nothing.
-                            </li>
-                          ) : (
-                            odds.sparesToMax > 0 &&
-                            Object.keys(
-                              storyMissionData.requiredEquipment || {}
-                            ).length > 0 && (
-                              <li className="tx-info">
-                                <strong>Own {odds.usefulTotal}</strong> to max
-                                the spare-equipment bonus at +
-                                {odds.gearMaxPct}% — {odds.sparesToMax} more
-                                to go.
-                              </li>
-                            )
-                          )}
-                          <li>Required Equipment:</li>
-                          <ul>
+                        </ul>
+                        {(Object.keys(storyMissionData.requiredEquipment || {})
+                          .length > 0 ||
+                          Object.keys(storyMissionData.requiredSupplies || {})
+                            .length > 0) && (
+                          <div className="req-chips">
                             {Object.entries(
                               storyMissionData.requiredEquipment || {}
                             ).map(([equipment, quantity]) => {
@@ -530,51 +550,38 @@ const StoryMissions = () => {
                                 player.equipment[equipment]?.quantity || 0;
                               const met = owned >= quantity;
                               return (
-                                <li
+                                <span
                                   key={equipment}
-                                  style={{
-                                    color: met ? "#8aff8a" : "#ff8a8a",
-                                  }}
+                                  className={`req-chip ${met ? "met" : "miss"}`}
+                                  title={`${equipment}: need ${quantity}, own ${owned}`}
                                 >
-                                  {equipment} x{quantity} (Owned: {owned})
-                                </li>
+                                  {equipment} ×{quantity}{" "}
+                                  {met ? "✓" : <small>· own {owned}</small>}
+                                </span>
                               );
                             })}
-                          </ul>
-                          {Object.keys(storyMissionData.requiredSupplies || {})
-                            .length > 0 && (
-                            <>
-                              <li>
-                                Supplies{" "}
-                                <span className="tx-info">
-                                  (market items, consumed every attempt —
-                                  campaigns eat materiel)
+                            {Object.entries(
+                              storyMissionData.requiredSupplies || {}
+                            ).map(([item, quantity]) => {
+                              const owned = Math.floor(
+                                player.inventory?.[item]?.quantity || 0
+                              );
+                              const met = owned >= quantity;
+                              return (
+                                <span
+                                  key={item}
+                                  className={`req-chip ${met ? "met" : "miss"}`}
+                                  title={`${item} (supply, consumed every attempt): need ${quantity}, own ${owned}`}
+                                >
+                                  {item} ×{quantity}{" "}
+                                  {met ? <small>· fuel</small> : (
+                                    <small>· own {owned}</small>
+                                  )}
                                 </span>
-                                :
-                              </li>
-                              <ul>
-                                {Object.entries(
-                                  storyMissionData.requiredSupplies || {}
-                                ).map(([item, quantity]) => {
-                                  const owned = Math.floor(
-                                    player.inventory?.[item]?.quantity || 0
-                                  );
-                                  const met = owned >= quantity;
-                                  return (
-                                    <li
-                                      key={item}
-                                      style={{
-                                        color: met ? "#8aff8a" : "#ff8a8a",
-                                      }}
-                                    >
-                                      {item} x{quantity} (Owned: {owned})
-                                    </li>
-                                  );
-                                })}
-                              </ul>
-                            </>
-                          )}
-                        </ul>
+                              );
+                            })}
+                          </div>
+                        )}
                         {!isUnlocked ? (
                           <p className="text-muted">
                             Complete "{availableMissionName}" first to unlock
@@ -605,14 +612,19 @@ const StoryMissions = () => {
                                 )
                               );
                             })()}
-                            <button
-                              onClick={() => runStoryMission(storyMissionName)}
-                              disabled={isStoryMissionRunning}
-                            >
-                              {isStoryMissionRunning
-                                ? "Running..."
-                                : "Run Mission"}
-                            </button>
+                            <div className="actions-row">
+                              <button
+                                className="btn-run"
+                                onClick={() =>
+                                  runStoryMission(storyMissionName)
+                                }
+                                disabled={isStoryMissionRunning}
+                              >
+                                {isStoryMissionRunning
+                                  ? "Running..."
+                                  : "▶ Run Mission"}
+                              </button>
+                            </div>
                           </>
                         )}
                       </div>
