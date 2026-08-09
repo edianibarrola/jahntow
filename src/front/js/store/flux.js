@@ -139,7 +139,15 @@ const getState = ({ getStore, getActions, setStore }) => {
   const appendActivityEntry = (entry) => {
     if (!entry) return;
     const store = getStore();
-    setStore({ transactions: [entry, ...store.transactions].slice(0, 50) });
+    // Idempotent by id: with mission outcomes now held until the theater's
+    // Continue click, the 20s activity poll can fetch a server entry while
+    // the player is still reading - then the click appended the same id a
+    // second time, and React warned about duplicate keys on every render
+    // after that. Replacing any existing copy (rather than skipping) also
+    // upgrades a poll-inserted "historical" copy to a toasting one, which
+    // is right: it DID just happen in front of the player, at reveal time.
+    const without = store.transactions.filter((t) => t.id !== entry.id);
+    setStore({ transactions: [entry, ...without].slice(0, 50) });
   };
 
   // Client-only entries (errors) use negative ids so they can never collide
